@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "t2i_diffusion_benchmark"
+version = "0.1.0"
+description = ""
+authors = ["soumik12345 <19soumik.rakshit96@gmail.com>"]
+readme = "README.md"
+packages = [{ include = "t2i_diffusion_benchmark" }]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+diffusers = "^0.27.2"
+accelerate = "^0.30.1"
+wandb = "^0.17.0"
+poetry = "^1.8.3"
+weave = "^0.50.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
