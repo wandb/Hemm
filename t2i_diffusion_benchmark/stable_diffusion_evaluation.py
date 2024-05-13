@@ -1,3 +1,4 @@
+import asyncio
 import os
 from functools import partial
 from typing import Dict
@@ -11,6 +12,7 @@ from diffusers.utils.loading_utils import load_image
 
 import wandb
 import weave
+from weave import Evaluation
 
 
 class StableDiffusionEvaluationPipeline:
@@ -50,6 +52,15 @@ class StableDiffusionEvaluationPipeline:
         self.wandb_table = wandb.Table(
             columns=["model", "prompt", "image", "clip_score"]
         )
+
+        self.evaluation_configs = {
+            "diffusion_pipeline": dict(self.pipeline.config),
+            "clip_model_name_or_path": clip_model_name_or_path,
+            "torch_dtype": str(torch_dtype),
+            "enable_cpu_offfload": enable_cpu_offfload,
+            "seed": seed,
+        }
+
         self.metric_functions = [self.calculate_clip_score]
 
     @weave.op()
@@ -85,16 +96,15 @@ class StableDiffusionEvaluationPipeline:
         return {"clip_score": clip_score}
 
     def log_summary(self, init_params: Dict):
-        if wandb.run is not None:
+        if wandb.run is None:
             wandb.init(**init_params)
-            config = wandb.config
-            config.update(
-                {
-                    "diffusion_pipeline": dict(self.pipeline.config),
-                    "clip_model_name_or_path": self.clip_model_name_or_path,
-                    "torch_dtype": str(self.torch_dtype),
-                    "enable_cpu_offfload": self.enable_cpu_offfload,
-                    "seed": self.seed,
-                }
-            )
-            wandb.log({"Evalution": self.wandb_table})
+        config = wandb.config
+        config.update(self.evaluation_configs)
+        wandb.log({"Evalution": self.wandb_table})
+
+    def __call__(self, dataset: Dict, init_params: Dict):
+        weave.init(project_name="t2i_eval")
+        evaluation = Evaluation(dataset=dataset, scorers=[self.calculate_clip_score])
+        with weave.attributes(self.evaluation_configs):
+            asyncio.run(evaluation.evaluate(self.infer))
+        self.log_summary(init_params)
