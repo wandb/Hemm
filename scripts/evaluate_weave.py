@@ -14,7 +14,7 @@ if __name__ == "__main__":
     ]
 
     diffuion_evaluation_pipeline = StableDiffusionEvaluationPipeline(
-        "CompVis/stable-diffusion-v1-4"
+        "CompVis/stable-diffusion-v1-4", huggingface_repo="geekyrakshit/t2i_eval"
     )
     diffuion_evaluation_pipeline(
         dataset=dataset, init_params=dict(project="t2i_eval", entity="geekyrakshit")
