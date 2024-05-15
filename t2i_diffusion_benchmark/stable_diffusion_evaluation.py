@@ -1,7 +1,7 @@
 import asyncio
 import os
 from functools import partial
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
 import numpy as np
 import torch
@@ -13,6 +13,8 @@ import huggingface_hub
 import wandb
 import weave
 from weave import Evaluation
+
+from .utils import pathify_image_url, base64_encode_image
 
 
 class StableDiffusionEvaluationPipeline:
@@ -82,18 +84,26 @@ class StableDiffusionEvaluationPipeline:
             num_images_per_prompt=1,
             generator=torch.Generator(device="cuda").manual_seed(self.seed),
         ).images[0].save(image_path)
-        return {"image_url": image_url}
+        base64_image = base64_encode_image(image_path)
+        return {
+            "image_url": image_url,
+            # "image": f"![](data:image/png;base64,{base64_image})",
+            "image": f"""
+            <img
+                src="data:image/png;base64,{base64_image}"
+                alt="Red dot"
+            />
+            """,
+        }
 
     @weave.op()
     async def calculate_clip_score(
-        self, prompt: str, model_output: Dict
+        self, prompt: str, model_output: Dict[str, Any]
     ) -> Dict[str, float]:
-        image_local_path = (
-            os.path.join(
-                self.generated_images_dir, model_output["image_url"].split("/")[-1]
-            )
-            if self.huggingface_repo is not None
-            else model_output["image_url"]
+        image_local_path = pathify_image_url(
+            image_url=model_output["image_url"],
+            generated_images_dir=self.generated_images_dir,
+            huggingface_repo=self.huggingface_repo,
         )
         pil_image = load_image(image_local_path)
         images = np.expand_dims(np.array(pil_image), axis=0)
