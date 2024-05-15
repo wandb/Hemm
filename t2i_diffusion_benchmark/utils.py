@@ -1,15 +1,14 @@
 import base64
 import io
-import os
 from PIL import Image
+from pathlib import Path
 
 
-def pathify_image_url(image_url: str, generated_images_dir: str, huggingface_repo: str):
-    return (
-        os.path.join(generated_images_dir, image_url.split("/")[-1])
-        if huggingface_repo is not None
-        else image_url
-    )
+EXT_TO_MIMETYPE = {
+    ".jpg": "image/jpeg",
+    ".png": "image/png",
+    ".svg": "image/svg+xml",
+}
 
 
 def base64_encode_image(image_path: str) -> str:
@@ -17,3 +16,13 @@ def base64_encode_image(image_path: str) -> str:
     byte_arr = io.BytesIO()
     image.save(byte_arr, format="PNG")
     return base64.b64encode(byte_arr.getvalue()).decode("ascii")
+
+
+def image_to_data_url(file_path):
+    ext = Path(file_path).suffix  # Maybe introduce a mimetype map
+    mimetype = EXT_TO_MIMETYPE[ext]
+    with open(file_path, "rb") as image_file:
+        encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
+
+    data_url = f"data:{mimetype};base64,{encoded_string}"
+    return data_url
