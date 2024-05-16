@@ -1,7 +1,10 @@
 from functools import partial
+from tqdm import tqdm
+
+from rich import print as pprint
 
 import torch
-from torchmetrics.functional.multimodal import clip_score
+from torchmetrics.functional.multimodal import clip_score, clip_image_quality_assessment
 from diffusers import StableDiffusionPipeline
 
 
@@ -9,6 +12,25 @@ sd_pipeline = StableDiffusionPipeline.from_pretrained(
     "CompVis/stable-diffusion-v1-4", torch_dtype=torch.float16
 ).to("cuda")
 clip_score_fn = partial(clip_score, model_name_or_path="openai/clip-vit-base-patch16")
+clip_iqa_fn = partial(clip_image_quality_assessment, model_name_or_path="clip_iqa")
+
+built_in_prompts = [
+    "quality",
+    "brightness",
+    "noisiness",
+    "colorfullness",
+    "sharpness",
+    "contrast",
+    "complexity",
+    "natural",
+    "happy",
+    "scary",
+    "new",
+    "real",
+    "beautiful",
+    "lonely",
+    "relaxing",
+]
 
 prompts = [
     "a photo of an astronaut riding a horse on mars",
@@ -29,5 +51,19 @@ def calculate_clip_score(images, prompts):
     return round(float(clip_score), 4)
 
 
+def calaculate_clip_iqa_score(images):
+    images_int = (images * 255).astype("uint8")
+    scores = {}
+    for prompt in tqdm(built_in_prompts):
+        prompts = tuple([prompt] * images_int.shape[0])
+        clip_iqa_score = clip_iqa_fn(
+            images=torch.from_numpy(images_int).permute(0, 3, 1, 2), prompts=prompts
+        )
+        scores.update(clip_iqa_score)
+    return scores
+
+
 sd_clip_score = calculate_clip_score(images, prompts)
-print(f"CLIP score: {sd_clip_score}")
+sd_clip_iqa_score = calaculate_clip_iqa_score(images)
+pprint(f"CLIP score: {sd_clip_score}")
+pprint(f"CLIP IQA scores: {sd_clip_iqa_score}")
