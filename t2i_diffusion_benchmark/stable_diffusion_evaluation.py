@@ -1,16 +1,9 @@
 import asyncio
-import base64
 import os
-from io import BytesIO
-from functools import partial
-from PIL import Image
-from typing import Any, Dict
+from typing import Callable, Dict, List
 
-import numpy as np
 import torch
-from torchmetrics.functional.multimodal import clip_score
 from diffusers import StableDiffusionPipeline
-from diffusers.utils.loading_utils import load_image
 
 import wandb
 import weave
@@ -24,14 +17,12 @@ class StableDiffusionEvaluationPipeline:
     def __init__(
         self,
         diffusion_model_name_or_path: str,
-        clip_model_name_or_path: str = "openai/clip-vit-base-patch16",
         torch_dtype: torch.dtype = torch.float16,
         enable_cpu_offfload: bool = False,
         seed: int = 42,
         images_dir: str = "generated_images",
     ) -> None:
         self.diffusion_model_name_or_path = diffusion_model_name_or_path
-        self.clip_model_name_or_path = clip_model_name_or_path
         self.torch_dtype = torch_dtype
         self.enable_cpu_offfload = enable_cpu_offfload
         self.seed = seed
@@ -49,27 +40,28 @@ class StableDiffusionEvaluationPipeline:
             self.pipeline = self.pipeline.to("cuda")
         self.pipeline.set_progress_bar_config(leave=False, desc="Generating Image")
 
-        self.clip_score_fn = partial(
-            clip_score, model_name_or_path=clip_model_name_or_path
-        )
-
         self.inference_counter = 1
-        self.wandb_table = wandb.Table(
-            columns=["model", "prompt", "image", "clip_score"]
-        )
+        self.table_columns = ["model", "prompt", "image"]
+        self.table_rows: List = []
+        self.wandb_table: wandb.Table = None
+        self.metric_functions: List[Callable] = []
 
         self.evaluation_configs = {
             "diffusion_pipeline": dict(self.pipeline.config),
-            "clip_model_name_or_path": clip_model_name_or_path,
             "torch_dtype": str(torch_dtype),
             "enable_cpu_offfload": enable_cpu_offfload,
             "seed": seed,
         }
 
-        self.metric_functions = [self.calculate_clip_score]
+    def add_metric(self, metric_fn: Callable):
+        self.table_columns.append(metric_fn.__class__.__name__)
+        self.evaluation_configs.update(metric_fn.config)
+        self.metric_functions.append(metric_fn)
 
     @weave.op()
     async def infer(self, prompt: str) -> Dict[str, str]:
+        if self.inference_counter == 1:
+            self.wandb_table = wandb.Table(columns=self.table_columns)
         image_path = os.path.join(
             self.generated_images_dir, f"{self.inference_counter}.png"
         )
@@ -79,39 +71,29 @@ class StableDiffusionEvaluationPipeline:
             num_images_per_prompt=1,
             generator=torch.Generator(device="cuda").manual_seed(self.seed),
         ).images[0].save(image_path)
+        self.table_rows.append(
+            [self.diffusion_model_name_or_path, prompt, wandb.Image(image_path)]
+        )
         return {"image": image_to_data_url(image_path)}
-
-    @weave.op()
-    async def calculate_clip_score(
-        self, prompt: str, model_output: Dict[str, Any]
-    ) -> Dict[str, float]:
-        pil_image = Image.open(
-            BytesIO(base64.b64decode(model_output["image"].split(";base64,")[-1]))
-        )
-        images = np.expand_dims(np.array(pil_image), axis=0)
-        clip_score = float(
-            self.clip_score_fn(
-                torch.from_numpy(images).permute(0, 3, 1, 2), prompt
-            ).detach()
-        )
-        self.wandb_table.add_data(
-            self.diffusion_model_name_or_path,
-            prompt,
-            wandb.Image(pil_image),
-            clip_score,
-        )
-        return {"clip_score": clip_score}
 
     def log_summary(self, init_params: Dict):
         if wandb.run is None:
             wandb.init(**init_params)
         config = wandb.config
         config.update(self.evaluation_configs)
+        for row_idx, row in enumerate(self.table_rows):
+            current_row = row
+            for metric_fn in self.metric_functions:
+                current_row.append(metric_fn.scores[row_idx])
+            self.wandb_table.add_data(*current_row)
         wandb.log({"Evalution": self.wandb_table})
 
     def __call__(self, dataset: Dict, init_params: Dict):
         weave.init(project_name="t2i_eval")
-        evaluation = Evaluation(dataset=dataset, scorers=[self.calculate_clip_score])
+        evaluation = Evaluation(
+            dataset=dataset,
+            scorers=[metric_fn.__call__ for metric_fn in self.metric_functions],
+        )
         with weave.attributes(self.evaluation_configs):
             asyncio.run(evaluation.evaluate(self.infer))
         self.log_summary(init_params)

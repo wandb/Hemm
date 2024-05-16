@@ -1,4 +1,4 @@
-from t2i_diffusion_benchmark import StableDiffusionEvaluationPipeline
+from t2i_diffusion_benchmark import CLIPScorer, StableDiffusionEvaluationPipeline
 
 
 if __name__ == "__main__":
@@ -14,8 +14,12 @@ if __name__ == "__main__":
     ]
 
     diffuion_evaluation_pipeline = StableDiffusionEvaluationPipeline(
-        "CompVis/stable-diffusion-v1-4", huggingface_repo="geekyrakshit/t2i_eval"
+        "CompVis/stable-diffusion-v1-4"
     )
+
+    clip_scorer = CLIPScorer()
+    diffuion_evaluation_pipeline.add_metric(clip_scorer)
+
     diffuion_evaluation_pipeline(
         dataset=dataset, init_params=dict(project="t2i_eval", entity="geekyrakshit")
     )
