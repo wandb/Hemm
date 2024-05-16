@@ -3,7 +3,8 @@
 `t2i_diffusion_benchmark` is a library for performing comprehensive benchmark of text-to-image diffusion models on image quality and prompt comprehension integrated with [Weights & Biases](https://wandb.ai/site) and [Weave](https://wandb.github.io/weave/).
 
 ```python
-from t2i_diffusion_benchmark import CLIPScorer, StableDiffusionEvaluationPipeline
+from t2i_diffusion_benchmark.metrics import CLIPImageQualityScorer, CLIPScorer
+from t2i_diffusion_benchmark.eval_pipelines import StableDiffusionEvaluationPipeline
 
 
 if __name__ == "__main__":
@@ -22,11 +23,15 @@ if __name__ == "__main__":
         "CompVis/stable-diffusion-v1-4"
     )
 
+    # Add CLIP Scorer metric
     clip_scorer = CLIPScorer()
     diffuion_evaluation_pipeline.add_metric(clip_scorer)
+
+    # Add CLIP IQA Metric
+    clip_iqa_scorer = CLIPImageQualityScorer()
+    diffuion_evaluation_pipeline.add_metric(clip_iqa_scorer)
 
     diffuion_evaluation_pipeline(
         dataset=dataset, init_params=dict(project="t2i_eval", entity="geekyrakshit")
     )
-
 ```
