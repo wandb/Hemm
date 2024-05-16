@@ -9,7 +9,7 @@ import wandb
 import weave
 from weave import Evaluation
 
-from .utils import image_to_data_url
+from ..utils import image_to_data_url
 
 
 class StableDiffusionEvaluationPipeline:
