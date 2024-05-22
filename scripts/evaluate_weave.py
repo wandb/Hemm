@@ -1,5 +1,5 @@
-from t2i_diffusion_benchmark.eval_pipelines import StableDiffusionEvaluationPipeline
-from t2i_diffusion_benchmark.metrics.prompt_alignment import (
+from hemm.eval_pipelines import StableDiffusionEvaluationPipeline
+from hemm.metrics.prompt_alignment import (
     BLIPScorer,
     CLIPImageQualityScorer,
     CLIPScorer,
