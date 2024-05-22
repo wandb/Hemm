@@ -1,6 +1,6 @@
 import asyncio
 import os
-from typing import Callable, Dict, List
+from typing import Callable, Dict, List, Union
 
 import torch
 from diffusers import StableDiffusionPipeline
@@ -88,8 +88,9 @@ class StableDiffusionEvaluationPipeline:
             self.wandb_table.add_data(*current_row)
         wandb.log({"Evalution": self.wandb_table})
 
-    def __call__(self, dataset: Dict, init_params: Dict):
+    def __call__(self, dataset: Union[Dict, str], init_params: Dict):
         weave.init(project_name="t2i_eval")
+        dataset = weave.ref(dataset).get() if isinstance(dataset, str) else dataset
         evaluation = Evaluation(
             dataset=dataset,
             scorers=[metric_fn.__call__ for metric_fn in self.metric_functions],
