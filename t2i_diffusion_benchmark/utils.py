@@ -34,9 +34,10 @@ def image_to_data_url(file_path):
     return data_url
 
 
-def publish_dataset_to_weave(
+def publish_prompt_dataset_to_weave(
     dataset_path,
     dataset_name: str,
+    prompt_column: str,
     split: Optional[str] = None,
     data_limit: Optional[int] = None,
     get_weave_dataset_reference: bool = True,
@@ -51,10 +52,9 @@ def publish_dataset_to_weave(
         if data_limit is not None and data_limit < len(dataset_dict)
         else dataset_dict
     )
+    dataset_dict = dataset_dict.rename_column(prompt_column, "prompt")
     weave_dataset_rows = []
-    print(f"{dataset_dict[0]=}")
     for data_item in tqdm(dataset_dict):
-        print(f"{data_item=}")
         for keys in data_item.keys():
             data_item[keys] = (
                 column_transforms[keys](data_item[keys])
