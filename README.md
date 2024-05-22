@@ -3,12 +3,12 @@
 `hemm` is a library for performing comprehensive benchmark of text-to-image diffusion models on image quality and prompt comprehension integrated with [Weights & Biases](https://wandb.ai/site) and [Weave](https://wandb.github.io/weave/). `hemm` is inspired by [Holistic Evaluation of Text-To-Image Models](https://crfm.stanford.edu/helm/heim/v1.0.0/).
 
 ```python
-from hemm.metrics import (
+from hemm.eval_pipelines import StableDiffusionEvaluationPipeline
+from hemm.metrics.prompt_alignment import (
+    BLIPScorer,
     CLIPImageQualityScorer,
     CLIPScorer,
-    BLIPScorer,
 )
-from hemm.eval_pipelines import StableDiffusionEvaluationPipeline
 
 
 diffuion_evaluation_pipeline = StableDiffusionEvaluationPipeline(
