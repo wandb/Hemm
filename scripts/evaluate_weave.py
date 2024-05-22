@@ -1,9 +1,9 @@
-from t2i_diffusion_benchmark.metrics import (
+from t2i_diffusion_benchmark.eval_pipelines import StableDiffusionEvaluationPipeline
+from t2i_diffusion_benchmark.metrics.prompt_alignment import (
+    BLIPScorer,
     CLIPImageQualityScorer,
     CLIPScorer,
-    BLIPScorer,
 )
-from t2i_diffusion_benchmark.eval_pipelines import StableDiffusionEvaluationPipeline
 
 
 if __name__ == "__main__":
