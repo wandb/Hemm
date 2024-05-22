@@ -1,6 +1,6 @@
 import weave
 from fire import Fire
-from t2i_diffusion_benchmark.utils import publish_prompt_dataset_to_weave
+from hemm.utils import publish_prompt_dataset_to_weave
 
 
 def publish(
