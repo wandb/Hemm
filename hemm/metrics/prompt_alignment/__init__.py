@@ -1,5 +1,5 @@
-from .blip_scorer import BLIPScorer
-from .clip_iqa_scorer import CLIPImageQualityScorer
-from .clip_scorer import CLIPScorer
+from .blip_score import BLIPScoreMertric
+from .clip_iqa_score import CLIPImageQualityScoreMetric
+from .clip_score import CLIPScoreMetric
 
-__all__ = ["BLIPScorer", "CLIPScorer", "CLIPImageQualityScorer"]
+__all__ = ["BLIPScoreMertric", "CLIPScoreMetric", "CLIPImageQualityScoreMetric"]
