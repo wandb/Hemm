@@ -2,7 +2,7 @@ import base64
 import io
 from PIL import Image
 from pathlib import Path
-from typing import Callable, Dict, Optional, Union
+from typing import Callable, Dict, List, Optional, Union
 
 import weave
 from datasets import load_dataset
@@ -17,21 +17,20 @@ EXT_TO_MIMETYPE = {
 }
 
 
-def base64_encode_image(image_path: str) -> str:
-    image = Image.open(image_path)
+def base64_encode_image(
+    image_path: Union[str, Image.Image], mimetype: Optional[str] = None
+) -> str:
+    image = Image.open(image_path) if isinstance(image_path, str) else image_path
+    mimetype = (
+        EXT_TO_MIMETYPE[Path(image_path).suffix]
+        if isinstance(image_path, str)
+        else "image/png"
+    )
     byte_arr = io.BytesIO()
     image.save(byte_arr, format="PNG")
-    return base64.b64encode(byte_arr.getvalue()).decode("ascii")
-
-
-def image_to_data_url(file_path):
-    ext = Path(file_path).suffix  # Maybe introduce a mimetype map
-    mimetype = EXT_TO_MIMETYPE[ext]
-    with open(file_path, "rb") as image_file:
-        encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
-
-    data_url = f"data:{mimetype};base64,{encoded_string}"
-    return data_url
+    encoded_string = base64.b64encode(byte_arr.getvalue()).decode("utf-8")
+    encoded_string = f"data:{mimetype};base64,{encoded_string}"
+    return encoded_string
 
 
 def publish_prompt_dataset_to_weave(
@@ -41,6 +40,7 @@ def publish_prompt_dataset_to_weave(
     split: Optional[str] = None,
     data_limit: Optional[int] = None,
     get_weave_dataset_reference: bool = True,
+    dataset_transforms: Optional[List[Callable]] = None,
     column_transforms: Optional[Dict[str, Callable]] = None,
     *args,
     **kwargs,
@@ -52,6 +52,9 @@ def publish_prompt_dataset_to_weave(
         if data_limit is not None and data_limit < len(dataset_dict)
         else dataset_dict
     )
+    if dataset_transforms:
+        for transform in dataset_transforms:
+            dataset_dict = dataset_dict.map(transform)
     dataset_dict = dataset_dict.rename_column(prompt_column, "prompt")
     weave_dataset_rows = []
     for data_item in tqdm(dataset_dict):

@@ -9,7 +9,7 @@ import wandb
 import weave
 from weave import Evaluation
 
-from ..utils import image_to_data_url
+from ..utils import base64_encode_image
 
 
 class StableDiffusionEvaluationPipeline:
@@ -74,7 +74,7 @@ class StableDiffusionEvaluationPipeline:
         self.table_rows.append(
             [self.diffusion_model_name_or_path, prompt, wandb.Image(image_path)]
         )
-        return {"image": image_to_data_url(image_path)}
+        return {"image": base64_encode_image(image_path)}
 
     def log_summary(self, init_params: Dict):
         if wandb.run is None:

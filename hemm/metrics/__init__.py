@@ -1,3 +1,3 @@
-from .image_quality_scorers import CLIPImageQualityScorer, CLIPScorer, BLIPScorer
+from .prompt_alignment import BLIPScorer, CLIPImageQualityScorer, CLIPScorer
 
-__all__ = ["CLIPImageQualityScorer", "CLIPScorer", "BLIPScorer"]
+__all__ = ["BLIPScorer", "CLIPImageQualityScorer", "CLIPScorer"]
