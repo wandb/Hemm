@@ -30,13 +30,14 @@ def base64_encode_image(
     image.save(byte_arr, format="PNG")
     encoded_string = base64.b64encode(byte_arr.getvalue()).decode("utf-8")
     encoded_string = f"data:{mimetype};base64,{encoded_string}"
-    return encoded_string
+    return str(encoded_string)
 
 
-def publish_prompt_dataset_to_weave(
+def publish_dataset_to_weave(
     dataset_path,
-    dataset_name: str,
-    prompt_column: str,
+    dataset_name: Optional[str] = None,
+    prompt_column: Optional[str] = None,
+    image_column: Optional[str] = None,
     split: Optional[str] = None,
     data_limit: Optional[int] = None,
     get_weave_dataset_reference: bool = True,
@@ -45,6 +46,7 @@ def publish_prompt_dataset_to_weave(
     *args,
     **kwargs,
 ) -> Union[ObjectRef, None]:
+    dataset_name = dataset_name or Path(dataset_path).stem
     dataset_dict = load_dataset(dataset_path, *args, **kwargs)
     dataset_dict = dataset_dict[split] if split else dataset_dict["train"]
     dataset_dict = (
@@ -55,15 +57,26 @@ def publish_prompt_dataset_to_weave(
     if dataset_transforms:
         for transform in dataset_transforms:
             dataset_dict = dataset_dict.map(transform)
-    dataset_dict = dataset_dict.rename_column(prompt_column, "prompt")
+    dataset_dict = (
+        dataset_dict.rename_column(prompt_column, "prompt")
+        if prompt_column
+        else dataset_dict
+    )
+    dataset_dict = (
+        dataset_dict.rename_column(image_column, "image")
+        if image_column
+        else dataset_dict
+    )
+    column_transforms = (
+        {**column_transforms, **{"image": base64_encode_image}}
+        if column_transforms
+        else {"image": base64_encode_image}
+    )
     weave_dataset_rows = []
     for data_item in tqdm(dataset_dict):
-        for keys in data_item.keys():
-            data_item[keys] = (
-                column_transforms[keys](data_item[keys])
-                if column_transforms
-                else data_item[keys]
-            )
+        for key in data_item.keys():
+            if column_transforms and key in column_transforms:
+                data_item[key] = column_transforms[key](data_item[key])
         weave_dataset_rows.append(data_item)
     weave_dataset = weave.Dataset(name=dataset_name, rows=weave_dataset_rows)
     weave.publish(weave_dataset)
