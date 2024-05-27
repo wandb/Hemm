@@ -20,6 +20,15 @@ EXT_TO_MIMETYPE = {
 def base64_encode_image(
     image_path: Union[str, Image.Image], mimetype: Optional[str] = None
 ) -> str:
+    """Converts an image to base64 encoded string to be logged and rendered on Weave dashboard.
+    
+    Args:
+        image_path (Union[str, Image.Image]): Path to the image or PIL Image object.
+        mimetype (Optional[str], optional): Mimetype of the image. Defaults to None.
+    
+    Returns:
+        str: Base64 encoded image string.
+    """
     image = Image.open(image_path) if isinstance(image_path, str) else image_path
     mimetype = (
         EXT_TO_MIMETYPE[Path(image_path).suffix]
@@ -46,6 +55,42 @@ def publish_dataset_to_weave(
     *args,
     **kwargs,
 ) -> Union[ObjectRef, None]:
+    """Publishes a HuggingFace dataset dictionary dataset as a Weave dataset.
+    
+    ??? example "Publish a subset of MSCOCO from Huggingface as a Weave Dataset"
+        ```python
+        import weave
+        from hemm.utils import publish_dataset_to_weave
+        
+        if __name__ == "__main__":
+            weave.init(project_name="t2i_eval")
+
+            dataset_reference = publish_dataset_to_weave(
+                dataset_path="HuggingFaceM4/COCO",
+                prompt_column="sentences",
+                ground_truth_image_column="image",
+                split="validation",
+                dataset_transforms=[
+                    lambda item: {**item, "sentences": item["sentences"]["raw"]}
+                ],
+                data_limit=5,
+            )
+        ```
+    
+    Args:
+        dataset_path ([type]): Path to the HuggingFace dataset.
+        dataset_name (Optional[str], optional): Name of the Weave dataset.
+        prompt_column (Optional[str], optional): Column name for prompt.
+        ground_truth_image_column (Optional[str], optional): Column name for ground truth image.
+        split (Optional[str], optional): Split to be used.
+        data_limit (Optional[int], optional): Limit the number of data items.
+        get_weave_dataset_reference (bool, optional): Whether to return the Weave dataset reference.
+        dataset_transforms (Optional[List[Callable]], optional): List of dataset transforms.
+        column_transforms (Optional[Dict[str, Callable]], optional): Column specific transforms.
+    
+    Returns:
+        Union[ObjectRef, None]: Weave dataset reference if get_weave_dataset_reference is True.
+    """
     dataset_name = dataset_name or Path(dataset_path).stem
     dataset_dict = load_dataset(dataset_path, *args, **kwargs)
     dataset_dict = dataset_dict[split] if split else dataset_dict["train"]
