@@ -37,7 +37,7 @@ def publish_dataset_to_weave(
     dataset_path,
     dataset_name: Optional[str] = None,
     prompt_column: Optional[str] = None,
-    image_column: Optional[str] = None,
+    ground_truth_image_column: Optional[str] = None,
     split: Optional[str] = None,
     data_limit: Optional[int] = None,
     get_weave_dataset_reference: bool = True,
@@ -63,14 +63,14 @@ def publish_dataset_to_weave(
         else dataset_dict
     )
     dataset_dict = (
-        dataset_dict.rename_column(image_column, "image")
-        if image_column
+        dataset_dict.rename_column(ground_truth_image_column, "ground_truth_image")
+        if ground_truth_image_column
         else dataset_dict
     )
     column_transforms = (
-        {**column_transforms, **{"image": base64_encode_image}}
+        {**column_transforms, **{"ground_truth_image": base64_encode_image}}
         if column_transforms
-        else {"image": base64_encode_image}
+        else {"ground_truth_image": base64_encode_image}
     )
     weave_dataset_rows = []
     for data_item in tqdm(dataset_dict):

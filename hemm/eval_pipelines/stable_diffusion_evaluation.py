@@ -1,6 +1,6 @@
 import asyncio
 import os
-from typing import Callable, Dict, List, Union
+from typing import Callable, Dict, List, Optional, Tuple, Union
 
 import torch
 from diffusers import StableDiffusionPipeline
@@ -19,12 +19,16 @@ class StableDiffusionEvaluationPipeline:
         diffusion_model_name_or_path: str,
         torch_dtype: torch.dtype = torch.float16,
         enable_cpu_offfload: bool = False,
+        image_size: Optional[Union[int, Tuple[int, int]]] = 512,
         seed: int = 42,
         images_dir: str = "generated_images",
     ) -> None:
         self.diffusion_model_name_or_path = diffusion_model_name_or_path
         self.torch_dtype = torch_dtype
         self.enable_cpu_offfload = enable_cpu_offfload
+        self.image_size = (
+            (image_size, image_size) if isinstance(image_size, int) else image_size
+        )
         self.seed = seed
 
         self.generated_images_dir = os.path.join(os.getcwd(), images_dir)
@@ -41,7 +45,7 @@ class StableDiffusionEvaluationPipeline:
         self.pipeline.set_progress_bar_config(leave=False, desc="Generating Image")
 
         self.inference_counter = 1
-        self.table_columns = ["model", "prompt", "image"]
+        self.table_columns = ["model", "prompt", "generated_image"]
         self.table_rows: List = []
         self.wandb_table: wandb.Table = None
         self.metric_functions: List[Callable] = []
@@ -50,6 +54,10 @@ class StableDiffusionEvaluationPipeline:
             "diffusion_pipeline": dict(self.pipeline.config),
             "torch_dtype": str(torch_dtype),
             "enable_cpu_offfload": enable_cpu_offfload,
+            "image_size": {
+                "height": self.image_size[0],
+                "width": self.image_size[1],
+            },
             "seed": seed,
         }
 
@@ -69,6 +77,8 @@ class StableDiffusionEvaluationPipeline:
         self.pipeline(
             prompt,
             num_images_per_prompt=1,
+            height=self.image_size[0],
+            width=self.image_size[1],
             generator=torch.Generator(device="cuda").manual_seed(self.seed),
         ).images[0].save(image_path)
         self.table_rows.append(
