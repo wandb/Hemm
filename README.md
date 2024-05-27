@@ -1,6 +1,18 @@
-# Holistic Evaluation of Multi-modal Generative Models
+# Hemm: Holistic Evaluation of Multi-modal Generative Models
 
 `hemm` is a library for performing comprehensive benchmark of text-to-image diffusion models on image quality and prompt comprehension integrated with [Weights & Biases](https://wandb.ai/site) and [Weave](https://wandb.github.io/weave/). `hemm` is inspired by [Holistic Evaluation of Text-To-Image Models](https://crfm.stanford.edu/helm/heim/v1.0.0/).
+
+## Installation
+
+```shell
+git clone https://github.com/soumik12345/Hemm
+cd Hemm
+pip install -e ".[core]"
+```
+
+## Quickstart
+
+Evaluating Stable Diffusion on prompt alignment metrics is showcased in the following code snippet:
 
 ```python
 from hemm.eval_pipelines import StableDiffusionEvaluationPipeline
@@ -31,4 +43,34 @@ diffuion_evaluation_pipeline(
     dataset="parti-prompts:v1",
     init_params=dict(project="t2i_eval", entity="geekyrakshit"),
 )
+```
+
+Evaluating Stable Diffusion on image quality metrics is showcased in the following code snippet:
+
+```python
+from hemm.eval_pipelines import StableDiffusionEvaluationPipeline
+from hemm.metrics.image_quality import LPIPSMetric, PSNRMetric, SSIMMetric
+
+
+if __name__ == "__main__":
+    diffuion_evaluation_pipeline = StableDiffusionEvaluationPipeline(
+        "CompVis/stable-diffusion-v1-4"
+    )
+
+    # Add PSNR Metric
+    psnr_metric = PSNRMetric(image_size=diffuion_evaluation_pipeline.image_size)
+    diffuion_evaluation_pipeline.add_metric(psnr_metric)
+
+    # Add SSIM Metric
+    ssim_metric = SSIMMetric(image_size=diffuion_evaluation_pipeline.image_size)
+    diffuion_evaluation_pipeline.add_metric(ssim_metric)
+    
+    # Add LPIPS Metric
+    lpips_metric = LPIPSMetric(image_size=diffuion_evaluation_pipeline.image_size)
+    diffuion_evaluation_pipeline.add_metric(lpips_metric)
+
+    diffuion_evaluation_pipeline(
+        dataset="COCO:v1",
+        init_params=dict(project="t2i_eval", entity="geekyrakshit"),
+    )
 ```
