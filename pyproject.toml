@@ -25,6 +25,7 @@ mkdocs-jupyter = "^0.24.1"
 jupyter = "^1.0.0"
 black = "^24.4.2"
 torcheval = "^0.0.7"
+ruff = "^0.4.5"
 
 [tool.poetry.extras]
 core = [
