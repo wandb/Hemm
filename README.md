@@ -36,7 +36,7 @@ if __name__ == "__main__":
 
 | ![](./docs/assets/weave_dataset.gif) | 
 |:--:| 
-|  |
+| [Weave Datasets](https://wandb.github.io/weave/guides/core-types/datasets/) enable you to collect examples for evaluation and automatically track versions for accurate comparisons. Easily update datasets with the UI and download the latest version locally with a simple API. |
 
 Next, you can evaluate Stable Diffusion 1.4 on image quality metrics as shown in the following code snippet:
 
