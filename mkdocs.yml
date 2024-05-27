@@ -44,6 +44,7 @@ nav:
   - Evaluation-Pipelines: 'eval_pipelines.md'
   - Metrics:
     - Image-Quality-Metrics: 'metrics/image_quality.md'
+    - Prompt-Image-Alignment: 'metrics/prompt_image_alignment.md'
   - Utils: 'utils.md'
 
 repo_url: https://github.com/soumik12345/Hemm

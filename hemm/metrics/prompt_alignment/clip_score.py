@@ -10,11 +10,21 @@ from .base import BasePromptAlignmentMetric
 
 
 class CLIPScoreMetric(BasePromptAlignmentMetric):
+    """[CLIP score](https://arxiv.org/abs/2104.08718) metric for text-to-image similarity.
+    CLIP Score is a reference free metric that can be used to evaluate the correlation between
+    a generated caption for an image and the actual content of the image. It has been found to
+    be highly correlated with human judgement.
+    
+    Args:
+        name (str, optional): Name of the metric. Defaults to "clip_score".
+        clip_model_name_or_path (str, optional): The name or path of the CLIP model to use.
+            Defaults to "openai/clip-vit-base-patch16".
+    """
 
     def __init__(
         self,
-        name: str = "clip_score",
         clip_model_name_or_path: str = "openai/clip-vit-base-patch16",
+        name: str = "clip_score",
     ) -> None:
         super().__init__(name)
         self.clip_score_fn = partial(
