@@ -16,6 +16,37 @@ weave = "^0.50.2"
 huggingface-hub = "^0.23.0"
 datasets = "^2.19.1"
 fire = "^0.6.0"
+mkdocs = "^1.4.3"
+mkdocstrings = { extras = ["python"], version = "^0.22.0" }
+mkdocs-material = "^9.1.15"
+mkdocs-minify-plugin = "^0.6.4"
+mkdocs-glightbox = "^0.3.4"
+mkdocs-jupyter = "^0.24.1"
+jupyter = "^1.0.0"
+black = "^24.4.2"
+torcheval = "^0.0.7"
+ruff = "^0.4.5"
+
+[tool.poetry.extras]
+core = [
+    "diffusers",
+    "accelerate",
+    "wandb",
+    "weave",
+    "poetry",
+    "huggingface-hub",
+    "datasets",
+    "fire"
+]
+docs = [
+    "mkdocs",
+    "mkdocstrings",
+    "mkdocs-material",
+    "mkdocs-minify-plugin",
+    "mkdocs-glightbox",
+    "mkdocs-jupyter",
+    "jupyter",
+]
 
 [build-system]
 requires = ["poetry-core"]

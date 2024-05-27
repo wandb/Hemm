@@ -1,0 +1,49 @@
+# mkdocs.yml
+site_name: Hemm
+
+theme:
+  name: material
+  features:
+    - content.code.copy
+    - content.code.select
+    - content.tabs.link
+
+plugins:
+  - mkdocstrings
+  - search
+  - minify
+  - glightbox
+  - mkdocs-jupyter:
+      include_source: True
+
+
+markdown_extensions:
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.details
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - admonition
+  - attr_list
+  - md_in_html
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+nav:
+  - Home: 'index.md'
+  - Evaluation-Pipelines: 'eval_pipelines.md'
+  - Metrics:
+    - Image-Quality-Metrics: 'metrics/image_quality.md'
+  - Utils: 'utils.md'
+
+repo_url: https://github.com/soumik12345/Hemm

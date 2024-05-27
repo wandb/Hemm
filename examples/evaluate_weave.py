@@ -1,9 +1,5 @@
 from hemm.eval_pipelines import StableDiffusionEvaluationPipeline
-from hemm.metrics.prompt_alignment import (
-    BLIPScorer,
-    CLIPImageQualityScorer,
-    CLIPScorer,
-)
+from hemm.metrics.prompt_alignment import CLIPScoreMetric, CLIPImageQualityScoreMetric
 
 
 if __name__ == "__main__":
@@ -12,16 +8,12 @@ if __name__ == "__main__":
     )
 
     # Add CLIP Scorer metric
-    clip_scorer = CLIPScorer()
+    clip_scorer = CLIPScoreMetric()
     diffuion_evaluation_pipeline.add_metric(clip_scorer)
 
     # Add CLIP IQA Metric
-    clip_iqa_scorer = CLIPImageQualityScorer()
+    clip_iqa_scorer = CLIPImageQualityScoreMetric()
     diffuion_evaluation_pipeline.add_metric(clip_iqa_scorer)
-
-    # Add BLIP Scorer Metric
-    blip_scorer = BLIPScorer()
-    diffuion_evaluation_pipeline.add_metric(blip_scorer)
 
     diffuion_evaluation_pipeline(
         dataset="parti-prompts:v1",

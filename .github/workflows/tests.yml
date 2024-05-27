@@ -1,0 +1,15 @@
+name: Tests
+on:
+  pull_request:
+    paths:
+      - .github/workflows/tests.yml
+      - hemm/**
+      - pyproject.toml
+
+jobs:
+  lint:
+    name: Check linting using black magic
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: psf/black@stable

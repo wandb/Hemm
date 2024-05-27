@@ -2,7 +2,7 @@ import base64
 import io
 from PIL import Image
 from pathlib import Path
-from typing import Callable, Dict, Optional, Union
+from typing import Callable, Dict, List, Optional, Union
 
 import weave
 from datasets import load_dataset
@@ -17,34 +17,81 @@ EXT_TO_MIMETYPE = {
 }
 
 
-def base64_encode_image(image_path: str) -> str:
-    image = Image.open(image_path)
+def base64_encode_image(
+    image_path: Union[str, Image.Image], mimetype: Optional[str] = None
+) -> str:
+    """Converts an image to base64 encoded string to be logged and rendered on Weave dashboard.
+
+    Args:
+        image_path (Union[str, Image.Image]): Path to the image or PIL Image object.
+        mimetype (Optional[str], optional): Mimetype of the image. Defaults to None.
+
+    Returns:
+        str: Base64 encoded image string.
+    """
+    image = Image.open(image_path) if isinstance(image_path, str) else image_path
+    mimetype = (
+        EXT_TO_MIMETYPE[Path(image_path).suffix]
+        if isinstance(image_path, str)
+        else "image/png"
+    )
     byte_arr = io.BytesIO()
     image.save(byte_arr, format="PNG")
-    return base64.b64encode(byte_arr.getvalue()).decode("ascii")
+    encoded_string = base64.b64encode(byte_arr.getvalue()).decode("utf-8")
+    encoded_string = f"data:{mimetype};base64,{encoded_string}"
+    return str(encoded_string)
 
 
-def image_to_data_url(file_path):
-    ext = Path(file_path).suffix  # Maybe introduce a mimetype map
-    mimetype = EXT_TO_MIMETYPE[ext]
-    with open(file_path, "rb") as image_file:
-        encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
-
-    data_url = f"data:{mimetype};base64,{encoded_string}"
-    return data_url
-
-
-def publish_prompt_dataset_to_weave(
+def publish_dataset_to_weave(
     dataset_path,
-    dataset_name: str,
-    prompt_column: str,
+    dataset_name: Optional[str] = None,
+    prompt_column: Optional[str] = None,
+    ground_truth_image_column: Optional[str] = None,
     split: Optional[str] = None,
     data_limit: Optional[int] = None,
     get_weave_dataset_reference: bool = True,
+    dataset_transforms: Optional[List[Callable]] = None,
     column_transforms: Optional[Dict[str, Callable]] = None,
     *args,
     **kwargs,
 ) -> Union[ObjectRef, None]:
+    """Publishes a HuggingFace dataset dictionary dataset as a Weave dataset.
+
+    ??? example "Publish a subset of MSCOCO from Huggingface as a Weave Dataset"
+        ```python
+        import weave
+        from hemm.utils import publish_dataset_to_weave
+
+        if __name__ == "__main__":
+            weave.init(project_name="t2i_eval")
+
+            dataset_reference = publish_dataset_to_weave(
+                dataset_path="HuggingFaceM4/COCO",
+                prompt_column="sentences",
+                ground_truth_image_column="image",
+                split="validation",
+                dataset_transforms=[
+                    lambda item: {**item, "sentences": item["sentences"]["raw"]}
+                ],
+                data_limit=5,
+            )
+        ```
+
+    Args:
+        dataset_path ([type]): Path to the HuggingFace dataset.
+        dataset_name (Optional[str], optional): Name of the Weave dataset.
+        prompt_column (Optional[str], optional): Column name for prompt.
+        ground_truth_image_column (Optional[str], optional): Column name for ground truth image.
+        split (Optional[str], optional): Split to be used.
+        data_limit (Optional[int], optional): Limit the number of data items.
+        get_weave_dataset_reference (bool, optional): Whether to return the Weave dataset reference.
+        dataset_transforms (Optional[List[Callable]], optional): List of dataset transforms.
+        column_transforms (Optional[Dict[str, Callable]], optional): Column specific transforms.
+
+    Returns:
+        Union[ObjectRef, None]: Weave dataset reference if get_weave_dataset_reference is True.
+    """
+    dataset_name = dataset_name or Path(dataset_path).stem
     dataset_dict = load_dataset(dataset_path, *args, **kwargs)
     dataset_dict = dataset_dict[split] if split else dataset_dict["train"]
     dataset_dict = (
@@ -52,15 +99,29 @@ def publish_prompt_dataset_to_weave(
         if data_limit is not None and data_limit < len(dataset_dict)
         else dataset_dict
     )
-    dataset_dict = dataset_dict.rename_column(prompt_column, "prompt")
+    if dataset_transforms:
+        for transform in dataset_transforms:
+            dataset_dict = dataset_dict.map(transform)
+    dataset_dict = (
+        dataset_dict.rename_column(prompt_column, "prompt")
+        if prompt_column
+        else dataset_dict
+    )
+    dataset_dict = (
+        dataset_dict.rename_column(ground_truth_image_column, "ground_truth_image")
+        if ground_truth_image_column
+        else dataset_dict
+    )
+    column_transforms = (
+        {**column_transforms, **{"ground_truth_image": base64_encode_image}}
+        if column_transforms
+        else {"ground_truth_image": base64_encode_image}
+    )
     weave_dataset_rows = []
     for data_item in tqdm(dataset_dict):
-        for keys in data_item.keys():
-            data_item[keys] = (
-                column_transforms[keys](data_item[keys])
-                if column_transforms
-                else data_item[keys]
-            )
+        for key in data_item.keys():
+            if column_transforms and key in column_transforms:
+                data_item[key] = column_transforms[key](data_item[key])
         weave_dataset_rows.append(data_item)
     weave_dataset = weave.Dataset(name=dataset_name, rows=weave_dataset_rows)
     weave.publish(weave_dataset)
