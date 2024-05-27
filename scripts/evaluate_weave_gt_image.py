@@ -1,5 +1,5 @@
 from hemm.eval_pipelines import StableDiffusionEvaluationPipeline
-from hemm.metrics.image_quality import PSNRMetric
+from hemm.metrics.image_quality import PSNRMetric, SSIMMetric
 
 
 if __name__ == "__main__":
@@ -7,9 +7,13 @@ if __name__ == "__main__":
         "CompVis/stable-diffusion-v1-4"
     )
 
-    # Add FID Metric
-    fid_metric = PSNRMetric(image_size=diffuion_evaluation_pipeline.image_size)
-    diffuion_evaluation_pipeline.add_metric(fid_metric)
+    # Add PSNR Metric
+    psnr_metric = PSNRMetric(image_size=diffuion_evaluation_pipeline.image_size)
+    diffuion_evaluation_pipeline.add_metric(psnr_metric)
+
+    # Add SSIM Metric
+    ssim_metric = SSIMMetric(image_size=diffuion_evaluation_pipeline.image_size)
+    diffuion_evaluation_pipeline.add_metric(ssim_metric)
 
     diffuion_evaluation_pipeline(
         dataset="COCO:v1",
