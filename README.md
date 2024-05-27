@@ -34,9 +34,9 @@ if __name__ == "__main__":
     )
 ```
 
-| ![](./assets/weave_dataset.gif) | 
+| ![](./docs/assets/weave_dataset.gif) | 
 |:--:| 
-| [Weave Datasets](https://wandb.github.io/weave/guides/core-types/datasets/) enable you to collect examples for evaluation and automatically track versions for accurate comparisons. Easily update datasets with the UI and download the latest version locally with a simple API. |
+|  |
 
 Next, you can evaluate Stable Diffusion 1.4 on image quality metrics as shown in the following code snippet:
 
@@ -68,6 +68,6 @@ if __name__ == "__main__":
     )
 ```
 
-| ![](./assets/weave_leaderboard.gif) | 
+| ![](./docs/assets/weave_leaderboard.gif) | 
 |:--:| 
 | The evaluation pipeline will take each example, pass it through your application and score the output on multiple custom scoring functions using [Weave Evaluation](https://wandb.github.io/weave/guides/core-types/evaluations). By doing this, you'll have a view of the performance of your model, and a rich UI to drill into individual ouputs and scores. |
