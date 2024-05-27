@@ -10,6 +10,16 @@ from .base import BaseImageQualityMetric
 
 
 class PSNRMetric(BaseImageQualityMetric):
+    """PSNR Metric to compute the Peak Signal-to-Noise Ratio (PSNR) between two images.
+
+    Args:
+        psnr_data_range (Optional[Union[float, Tuple[float, float]]]): The data range of the input
+            image (min, max). If None, the data range is determined from the image data type.
+        psnr_base (float): The base of the logarithm in the PSNR formula.
+        image_size (Tuple[int, int]): The size to which images will be resized before computing
+            PSNR.
+        name (str): The name of the metric.
+    """
 
     def __init__(
         self,

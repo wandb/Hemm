@@ -21,11 +21,11 @@ def base64_encode_image(
     image_path: Union[str, Image.Image], mimetype: Optional[str] = None
 ) -> str:
     """Converts an image to base64 encoded string to be logged and rendered on Weave dashboard.
-    
+
     Args:
         image_path (Union[str, Image.Image]): Path to the image or PIL Image object.
         mimetype (Optional[str], optional): Mimetype of the image. Defaults to None.
-    
+
     Returns:
         str: Base64 encoded image string.
     """
@@ -56,12 +56,12 @@ def publish_dataset_to_weave(
     **kwargs,
 ) -> Union[ObjectRef, None]:
     """Publishes a HuggingFace dataset dictionary dataset as a Weave dataset.
-    
+
     ??? example "Publish a subset of MSCOCO from Huggingface as a Weave Dataset"
         ```python
         import weave
         from hemm.utils import publish_dataset_to_weave
-        
+
         if __name__ == "__main__":
             weave.init(project_name="t2i_eval")
 
@@ -76,7 +76,7 @@ def publish_dataset_to_weave(
                 data_limit=5,
             )
         ```
-    
+
     Args:
         dataset_path ([type]): Path to the HuggingFace dataset.
         dataset_name (Optional[str], optional): Name of the Weave dataset.
@@ -87,7 +87,7 @@ def publish_dataset_to_weave(
         get_weave_dataset_reference (bool, optional): Whether to return the Weave dataset reference.
         dataset_transforms (Optional[List[Callable]], optional): List of dataset transforms.
         column_transforms (Optional[Dict[str, Callable]], optional): Column specific transforms.
-    
+
     Returns:
         Union[ObjectRef, None]: Weave dataset reference if get_weave_dataset_reference is True.
     """

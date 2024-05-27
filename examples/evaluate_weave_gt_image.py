@@ -14,7 +14,7 @@ if __name__ == "__main__":
     # Add SSIM Metric
     ssim_metric = SSIMMetric(image_size=diffuion_evaluation_pipeline.image_size)
     diffuion_evaluation_pipeline.add_metric(ssim_metric)
-    
+
     # Add LPIPS Metric
     lpips_metric = LPIPSMetric(image_size=diffuion_evaluation_pipeline.image_size)
     diffuion_evaluation_pipeline.add_metric(lpips_metric)

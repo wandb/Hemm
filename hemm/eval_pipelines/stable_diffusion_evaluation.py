@@ -15,7 +15,7 @@ from ..utils import base64_encode_image
 class StableDiffusionEvaluationPipeline:
     """Evaluation pipeline for Stable Diffusion variant models using the
     [`diffusers.StableDiffusionPipeline`](https://huggingface.co/docs/diffusers/v0.27.2/en/api/pipelines/stable_diffusion/text2img#diffusers.StableDiffusionPipeline).
-    
+
     ??? example "Evaluating Stable Diffusion v1.4 on prompt alignment metrics"
         ```python
         from hemm.eval_pipelines import StableDiffusionEvaluationPipeline
@@ -40,7 +40,7 @@ class StableDiffusionEvaluationPipeline:
                 init_params=dict(project="t2i_eval", entity="geekyrakshit"),
             )
         ```
-    
+
     ??? example "Evaluating Stable Diffusion v1.4 on image quality metrics"
         ```python
         from hemm.eval_pipelines import StableDiffusionEvaluationPipeline
@@ -59,7 +59,7 @@ class StableDiffusionEvaluationPipeline:
             # Add SSIM Metric
             ssim_metric = SSIMMetric(image_size=diffuion_evaluation_pipeline.image_size)
             diffuion_evaluation_pipeline.add_metric(ssim_metric)
-            
+
             # Add LPIPS Metric
             lpips_metric = LPIPSMetric(image_size=diffuion_evaluation_pipeline.image_size)
             diffuion_evaluation_pipeline.add_metric(lpips_metric)
@@ -69,7 +69,7 @@ class StableDiffusionEvaluationPipeline:
                 init_params=dict(project="t2i_eval", entity="geekyrakshit"),
             )
         ```
-    
+
     Args:
         diffusion_model_name_or_path (str): Name or path of the pre-trained Stable Diffusion
             variant model.
@@ -133,7 +133,7 @@ class StableDiffusionEvaluationPipeline:
 
     def add_metric(self, metric_fn: Callable):
         """Add a metric function to the evaluation pipeline.
-        
+
         Args:
             metric_fn (Callable): Metric function to evaluate the generated images.
         """
@@ -144,10 +144,10 @@ class StableDiffusionEvaluationPipeline:
     @weave.op()
     async def infer(self, prompt: str) -> Dict[str, str]:
         """Inference function to generate images for the given prompt.
-        
+
         Args:
             prompt (str): Prompt to generate the image.
-        
+
         Returns:
             Dict[str, str]: Dictionary containing base64 encoded image to be logged as
                 a Weave object.
@@ -172,7 +172,7 @@ class StableDiffusionEvaluationPipeline:
 
     def log_summary(self, init_params: Dict):
         """Log the evaluation summary to the Weights & Biases dashboard.
-        
+
         Args:
             init_params (Dict): Initialization parameters for the Weights & Biases run. Refer
                 to [official docs](https://docs.wandb.ai/ref/python/init) for more documentation
@@ -191,7 +191,7 @@ class StableDiffusionEvaluationPipeline:
 
     def __call__(self, dataset: Union[Dict, str], init_params: Dict):
         """Evaluate the Stable Diffusion model on the given dataset.
-        
+
         Args:
             dataset (Union[Dict, str]): Dataset to evaluate the model on. If a string is passed,
                 it is assumed to be a Weave dataset reference.

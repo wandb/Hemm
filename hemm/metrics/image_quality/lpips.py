@@ -10,6 +10,18 @@ from .base import BaseImageQualityMetric
 
 
 class LPIPSMetric(BaseImageQualityMetric):
+    """LPIPS Metric to compute the Learned Perceptual Image Patch Similarity (LPIPS) score
+    between two images. LPIPS essentially computes the similarity between the activations of
+    two image patches for some pre-defined network. This measure has been shown to match
+    human perception well. A low LPIPS score means that image patches are perceptual similar.
+
+    Args:
+        lpips_net_type (str): The network type to use for computing LPIPS. One of "alex", "vgg",
+            or "squeeze".
+        image_size (Tuple[int, int]): The size to which images will be resized before computing
+            LPIPS.
+        name (str): The name of the metric.
+    """
 
     def __init__(
         self,

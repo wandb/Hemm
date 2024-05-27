@@ -10,6 +10,22 @@ from .base import BaseImageQualityMetric
 
 
 class SSIMMetric(BaseImageQualityMetric):
+    """SSIM Metric to compute the
+    [Structural Similarity Index Measure (SSIM)](https://en.wikipedia.org/wiki/Structural_similarity)
+    between two images.
+
+    Args:
+        ssim_gaussian_kernel (bool): Whether to use a Gaussian kernel for SSIM computation.
+        ssim_sigma (float): The standard deviation of the Gaussian kernel.
+        ssim_kernel_size (int): The size of the Gaussian kernel.
+        ssim_data_range (Optional[Union[float, Tuple[float, float]]]): The data range of the input
+            image (min, max). If None, the data range is determined from the image data type.
+        ssim_k1 (float): The constant used to stabilize the SSIM numerator.
+        ssim_k2 (float): The constant used to stabilize the SSIM denominator.
+        image_size (Tuple[int, int]): The size to which images will be resized before computing
+            SSIM.
+        name (str): The name of the metric.
+    """
 
     def __init__(
         self,
