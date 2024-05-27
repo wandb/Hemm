@@ -161,3 +161,4 @@ cython_debug/
 
 wandb/
 **generated_images/
+.ruff_cache/

@@ -12,40 +12,33 @@ pip install -e ".[core]"
 
 ## Quickstart
 
-Evaluating Stable Diffusion on prompt alignment metrics is showcased in the following code snippet:
+First let's publish a small subset of the MSCOCO validation set as a [Weave Dataset](https://wandb.github.io/weave/guides/core-types/datasets/).
 
 ```python
-from hemm.eval_pipelines import StableDiffusionEvaluationPipeline
-from hemm.metrics.prompt_alignment import (
-    BLIPScorer,
-    CLIPImageQualityScorer,
-    CLIPScorer,
-)
+import weave
+from hemm.utils import publish_dataset_to_weave
 
 
-diffuion_evaluation_pipeline = StableDiffusionEvaluationPipeline(
-    "CompVis/stable-diffusion-v1-4"
-)
+if __name__ == "__main__":
+    weave.init(project_name="t2i_eval")
 
-# Add CLIP Scorer metric
-clip_scorer = CLIPScorer()
-diffuion_evaluation_pipeline.add_metric(clip_scorer)
-
-# Add CLIP IQA Metric
-clip_iqa_scorer = CLIPImageQualityScorer()
-diffuion_evaluation_pipeline.add_metric(clip_iqa_scorer)
-
-# Add BLIP Scorer Metric
-blip_scorer = BLIPScorer()
-diffuion_evaluation_pipeline.add_metric(blip_scorer)
-
-diffuion_evaluation_pipeline(
-    dataset="parti-prompts:v1",
-    init_params=dict(project="t2i_eval", entity="geekyrakshit"),
-)
+    dataset_reference = publish_dataset_to_weave(
+        dataset_path="HuggingFaceM4/COCO",
+        prompt_column="sentences",
+        ground_truth_image_column="image",
+        split="validation",
+        dataset_transforms=[
+            lambda item: {**item, "sentences": item["sentences"]["raw"]}
+        ],
+        data_limit=5,
+    )
 ```
 
-Evaluating Stable Diffusion on image quality metrics is showcased in the following code snippet:
+| ![](./assets/weave_dataset.gif) | 
+|:--:| 
+| [Weave Datasets](https://wandb.github.io/weave/guides/core-types/datasets/) enable you to collect examples for evaluation and automatically track versions for accurate comparisons. Easily update datasets with the UI and download the latest version locally with a simple API. |
+
+Next, you can evaluate Stable Diffusion 1.4 on image quality metrics as shown in the following code snippet:
 
 ```python
 from hemm.eval_pipelines import StableDiffusionEvaluationPipeline
@@ -74,3 +67,7 @@ if __name__ == "__main__":
         init_params=dict(project="t2i_eval", entity="geekyrakshit"),
     )
 ```
+
+| ![](./assets/weave_leaderboard.gif) | 
+|:--:| 
+| The evaluation pipeline will take each example, pass it through your application and score the output on multiple custom scoring functions using [Weave Evaluation](https://wandb.github.io/weave/guides/core-types/evaluations). By doing this, you'll have a view of the performance of your model, and a rich UI to drill into individual ouputs and scores. |
