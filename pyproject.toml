@@ -24,6 +24,7 @@ mkdocs-glightbox = "^0.4.0"
 mkdocs-jupyter = "^0.24.7"
 jupyter = "^1.0.0"
 black = "^24.4.2"
+torcheval = "^0.0.7"
 
 [tool.poetry.extras]
 core = [
