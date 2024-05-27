@@ -48,14 +48,22 @@ class SSIMMetric(BaseImageQualityMetric):
         generated_pil_image: Image.Image,
         prompt: str,
     ) -> Union[float, Dict[str, float]]:
-        ground_truth_image = torch.from_numpy(
-            np.expand_dims(
-                np.array(ground_truth_pil_image.resize(self.image_size)), axis=0
-            ).astype(np.uint8)
-        ).permute(0, 3, 1, 2).float()
-        generated_image = torch.from_numpy(
-            np.expand_dims(
-                np.array(generated_pil_image.resize(self.image_size)), axis=0
-            ).astype(np.uint8)
-        ).permute(0, 3, 1, 2).float()
+        ground_truth_image = (
+            torch.from_numpy(
+                np.expand_dims(
+                    np.array(ground_truth_pil_image.resize(self.image_size)), axis=0
+                ).astype(np.uint8)
+            )
+            .permute(0, 3, 1, 2)
+            .float()
+        )
+        generated_image = (
+            torch.from_numpy(
+                np.expand_dims(
+                    np.array(generated_pil_image.resize(self.image_size)), axis=0
+                ).astype(np.uint8)
+            )
+            .permute(0, 3, 1, 2)
+            .float()
+        )
         return float(self.ssim_metric(generated_image, ground_truth_image))
