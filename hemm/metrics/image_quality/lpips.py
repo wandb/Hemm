@@ -8,7 +8,8 @@ from torchmetrics.functional.image import learned_perceptual_image_patch_similar
 
 import weave
 
-from .base import BaseImageQualityMetric
+from .base import BaseImageQualityMetric, ComputeMetricOutput
+from ...utils import base64_encode_image
 
 
 class LPIPSMetric(BaseImageQualityMetric):
@@ -41,7 +42,7 @@ class LPIPSMetric(BaseImageQualityMetric):
     @weave.op()
     def compute_metric(
         self, ground_truth_pil_image: Image, generated_pil_image: Image, prompt: str
-    ) -> Union[float, Dict[str, float]]:
+    ) -> ComputeMetricOutput:
         ground_truth_image = (
             torch.from_numpy(
                 np.expand_dims(
@@ -62,7 +63,12 @@ class LPIPSMetric(BaseImageQualityMetric):
         )
         ground_truth_image = (ground_truth_image / 127.5) - 1.0
         generated_image = (generated_image / 127.5) - 1.0
-        return float(self.lpips_metric(generated_image, ground_truth_image).detach())
+        return ComputeMetricOutput(
+            score=float(
+                self.lpips_metric(generated_image, ground_truth_image).detach()
+            ),
+            ground_truth_image=base64_encode_image(ground_truth_pil_image),
+        )
 
     @weave.op()
     async def __call__(

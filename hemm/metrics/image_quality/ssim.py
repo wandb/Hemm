@@ -8,7 +8,8 @@ from torchmetrics.functional.image import structural_similarity_index_measure
 
 import weave
 
-from .base import BaseImageQualityMetric
+from .base import BaseImageQualityMetric, ComputeMetricOutput
+from ...utils import base64_encode_image
 
 
 class SSIMMetric(BaseImageQualityMetric):
@@ -66,7 +67,7 @@ class SSIMMetric(BaseImageQualityMetric):
         ground_truth_pil_image: Image.Image,
         generated_pil_image: Image.Image,
         prompt: str,
-    ) -> Union[float, Dict[str, float]]:
+    ) -> ComputeMetricOutput:
         ground_truth_image = (
             torch.from_numpy(
                 np.expand_dims(
@@ -85,7 +86,10 @@ class SSIMMetric(BaseImageQualityMetric):
             .permute(0, 3, 1, 2)
             .float()
         )
-        return float(self.ssim_metric(generated_image, ground_truth_image))
+        return ComputeMetricOutput(
+            score=float(self.ssim_metric(generated_image, ground_truth_image)),
+            ground_truth_image=base64_encode_image(ground_truth_pil_image),
+        )
 
     @weave.op()
     async def __call__(

@@ -8,7 +8,8 @@ from torchmetrics.functional.image import peak_signal_noise_ratio
 
 import weave
 
-from .base import BaseImageQualityMetric
+from .base import BaseImageQualityMetric, ComputeMetricOutput
+from ...utils import base64_encode_image
 
 
 class PSNRMetric(BaseImageQualityMetric):
@@ -47,7 +48,7 @@ class PSNRMetric(BaseImageQualityMetric):
         ground_truth_pil_image: Image.Image,
         generated_pil_image: Image.Image,
         prompt: str,
-    ) -> Union[float, Dict[str, float]]:
+    ) -> ComputeMetricOutput:
         ground_truth_image = torch.from_numpy(
             np.expand_dims(
                 np.array(ground_truth_pil_image.resize(self.image_size)), axis=0
@@ -58,7 +59,10 @@ class PSNRMetric(BaseImageQualityMetric):
                 np.array(generated_pil_image.resize(self.image_size)), axis=0
             ).astype(np.uint8)
         ).float()
-        return float(self.psnr_metric(generated_image, ground_truth_image).detach())
+        return ComputeMetricOutput(
+            score=float(self.psnr_metric(generated_image, ground_truth_image).detach()),
+            ground_truth_image=base64_encode_image(ground_truth_pil_image),
+        )
 
     @weave.op()
     async def __call__(

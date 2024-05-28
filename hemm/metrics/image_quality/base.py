@@ -4,6 +4,12 @@ from io import BytesIO
 from typing import Any, Dict, Union
 
 from PIL import Image
+from pydantic import BaseModel
+
+
+class ComputeMetricOutput(BaseModel):
+    score: Union[float, Dict[str, float]]
+    ground_truth_image: str
 
 
 class BaseImageQualityMetric(ABC):
@@ -25,7 +31,7 @@ class BaseImageQualityMetric(ABC):
         ground_truth_pil_image: Image.Image,
         generated_pil_image: Image.Image,
         prompt: str,
-    ) -> Union[float, Dict[str, float]]:
+    ) -> ComputeMetricOutput:
         """Compute the metric for the given images. This is an abstract
         method and must be overriden by the child class implementation.
 
@@ -35,7 +41,7 @@ class BaseImageQualityMetric(ABC):
             prompt (str): Prompt for the image generation.
 
         Returns:
-            Union[float, Dict[str, float]]: Metric score.
+            ComputeMetricOutput: Output containing the metric score and ground truth image.
         """
         pass
 
@@ -59,6 +65,8 @@ class BaseImageQualityMetric(ABC):
         generated_pil_image = Image.open(
             BytesIO(base64.b64decode(model_output["image"].split(";base64,")[-1]))
         )
-        score = self.compute_metric(ground_truth_pil_image, generated_pil_image, prompt)
-        self.scores.append(score)
-        return {self.name: score}
+        metric_output = self.compute_metric(
+            ground_truth_pil_image, generated_pil_image, prompt
+        )
+        self.scores.append(metric_output.score)
+        return {self.name: metric_output.score}
