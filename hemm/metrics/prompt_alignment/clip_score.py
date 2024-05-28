@@ -1,10 +1,12 @@
 from functools import partial
 from PIL import Image
-from typing import Dict, Union
+from typing import Any, Dict, Union
 
 import numpy as np
 import torch
 from torchmetrics.functional.multimodal import clip_score
+
+import weave
 
 from .base import BasePromptAlignmentMetric
 
@@ -32,6 +34,7 @@ class CLIPScoreMetric(BasePromptAlignmentMetric):
         )
         self.config = {"clip_model_name_or_path": clip_model_name_or_path}
 
+    @weave.op()
     def compute_metric(
         self, pil_image: Image.Image, prompt: str
     ) -> Union[float, Dict[str, float]]:
@@ -41,3 +44,10 @@ class CLIPScoreMetric(BasePromptAlignmentMetric):
                 torch.from_numpy(images).permute(0, 3, 1, 2), prompt
             ).detach()
         )
+
+    @weave.op()
+    async def __call__(
+        self, prompt: str, model_output: Dict[str, Any]
+    ) -> Dict[str, float]:
+        _ = "CLIPScoreMetric"
+        return super().__call__(prompt, model_output)

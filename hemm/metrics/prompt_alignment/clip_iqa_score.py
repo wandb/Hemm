@@ -1,11 +1,13 @@
 from functools import partial
 from PIL import Image
-from typing import Dict, Union
+from typing import Any, Dict, Union
 
 import numpy as np
 import torch
 from tqdm.auto import tqdm
 from torchmetrics.functional.multimodal import clip_image_quality_assessment
+
+import weave
 
 from .base import BasePromptAlignmentMetric
 
@@ -60,6 +62,7 @@ class CLIPImageQualityScoreMetric(BasePromptAlignmentMetric):
         ]
         self.config = {"clip_model_name_or_path": clip_model_name_or_path}
 
+    @weave.op()
     def compute_metric(
         self, pil_image: Image, prompt: str
     ) -> Union[float, Dict[str, float]]:
@@ -76,3 +79,10 @@ class CLIPImageQualityScoreMetric(BasePromptAlignmentMetric):
             )
             score_dict[f"{self.name}_{prompt}"] = clip_iqa_score
         return score_dict
+
+    @weave.op()
+    async def __call__(
+        self, prompt: str, model_output: Dict[str, Any]
+    ) -> Dict[str, float]:
+        _ = "CLIPImageQualityScoreMetric"
+        return super().__call__(prompt, model_output)
