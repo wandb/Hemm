@@ -13,7 +13,7 @@ from ..utils import base64_encode_image
 
 class BaseEvaluationPipeline(ABC):
     """Base class for evaluation pipelines.
-    
+
     Args:
         diffusion_model_name_or_path (str): Name or path of the pre-trained Stable Diffusion
             variant model.
