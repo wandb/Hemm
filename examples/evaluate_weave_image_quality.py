@@ -1,11 +1,15 @@
 from hemm.eval_pipelines import StableDiffusionEvaluationPipeline
-from hemm.metrics.image_quality import LPIPSMetric, PSNRMetric, SSIMMetric
+from hemm.metrics.image_quality import FIDScore, LPIPSMetric, PSNRMetric, SSIMMetric
 
 
 if __name__ == "__main__":
     diffuion_evaluation_pipeline = StableDiffusionEvaluationPipeline(
         "stabilityai/stable-diffusion-2-1"
     )
+
+    # Add FID Metric
+    fid_metric = FIDScore(image_size=diffuion_evaluation_pipeline.image_size)
+    diffuion_evaluation_pipeline.add_metric(fid_metric)
 
     # Add PSNR Metric
     psnr_metric = PSNRMetric(image_size=diffuion_evaluation_pipeline.image_size)
