@@ -26,7 +26,7 @@ class BasePromptAlignmentMetric(ABC):
         self, prompt: str, model_output: Dict[str, Any]
     ) -> Dict[str, float]:
         pil_image = Image.open(
-            BytesIO(base64.b64decode(model_output["image"].split(";base64,")[-1]))
+            BytesIO(base64.b64decode(model_output["image"][0].split(";base64,")[-1]))
         )
         score = self.compute_metric(pil_image, prompt)
         self.scores.append(score)
