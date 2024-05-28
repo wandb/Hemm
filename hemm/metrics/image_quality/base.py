@@ -8,6 +8,7 @@ from pydantic import BaseModel
 
 
 class ComputeMetricOutput(BaseModel):
+    """Output of the metric computation function."""
     score: Union[float, Dict[str, float]]
     ground_truth_image: str
 
