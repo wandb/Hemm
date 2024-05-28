@@ -13,7 +13,7 @@ from .base import BasePromptAlignmentMetric
 class CLIPImageQualityScoreMetric(BasePromptAlignmentMetric):
     """[CLIP Image Quality Assessment](https://arxiv.org/abs/2207.12396) metric
     for to measuring the visual content of images.
-    
+
     The metric is based on the [CLIP](https://arxiv.org/abs/2103.00020) model,
     which is a neural network trained on a variety of (image, text) pairs to be
     able to generate a vector representation of the image and the text that is
@@ -25,12 +25,13 @@ class CLIPImageQualityScoreMetric(BasePromptAlignmentMetric):
     embeddings and both the “positive” and “negative” prompt, the metric can determine which
     prompt the image is more similar to. The metric then returns the probability that the
     image is more similar to the first prompt than the second prompt.
-    
+
     Args:
         clip_model_name_or_path (str, optional): The name or path of the CLIP model to use.
             Defaults to "clip_iqa".
         name (str, optional): Name of the metric. Defaults to "clip_image_quality_assessment".
     """
+
     def __init__(
         self,
         clip_model_name_or_path: str = "clip_iqa",

@@ -14,7 +14,7 @@ class CLIPScoreMetric(BasePromptAlignmentMetric):
     CLIP Score is a reference free metric that can be used to evaluate the correlation between
     a generated caption for an image and the actual content of the image. It has been found to
     be highly correlated with human judgement.
-    
+
     Args:
         name (str, optional): Name of the metric. Defaults to "clip_score".
         clip_model_name_or_path (str, optional): The name or path of the CLIP model to use.

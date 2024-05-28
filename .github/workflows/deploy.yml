@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   documentation:
-    name: Update documentations on GitHub Pages
+    name: update documentations on gitHub pages
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
