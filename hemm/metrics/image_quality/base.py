@@ -3,7 +3,6 @@ import base64
 from io import BytesIO
 from typing import Any, Dict, Union
 
-import weave
 from PIL import Image
 
 
@@ -40,8 +39,7 @@ class BaseImageQualityMetric(ABC):
         """
         pass
 
-    @weave.op()
-    async def __call__(
+    def __call__(
         self, prompt: str, ground_truth_image: str, model_output: Dict[str, Any]
     ) -> Union[float, Dict[str, float]]:
         """Compute the metric for the given images. This method is used as the scorer

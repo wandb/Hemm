@@ -1,6 +1,6 @@
 from functools import partial
 from PIL import Image
-from typing import Dict, Union
+from typing import Any, Dict, Union
 
 import numpy as np
 import torch
@@ -44,3 +44,10 @@ class CLIPScoreMetric(BasePromptAlignmentMetric):
                 torch.from_numpy(images).permute(0, 3, 1, 2), prompt
             ).detach()
         )
+
+    @weave.op()
+    async def __call__(
+        self, prompt: str, model_output: Dict[str, Any]
+    ) -> Dict[str, float]:
+        _ = "CLIPScoreMetric"
+        return super().__call__(prompt, model_output)

@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Dict, Literal, Optional, Tuple, Union
+from typing import Any, Dict, Literal, Optional, Tuple, Union
 from PIL import Image
 
 import numpy as np
@@ -63,3 +63,10 @@ class LPIPSMetric(BaseImageQualityMetric):
         ground_truth_image = (ground_truth_image / 127.5) - 1.0
         generated_image = (generated_image / 127.5) - 1.0
         return float(self.lpips_metric(generated_image, ground_truth_image).detach())
+
+    @weave.op()
+    async def __call__(
+        self, prompt: str, ground_truth_image: str, model_output: Dict[str, Any]
+    ) -> Union[float, Dict[str, float]]:
+        _ = "LPIPSMetric"
+        return super().__call__(prompt, ground_truth_image, model_output)

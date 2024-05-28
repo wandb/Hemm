@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Dict, Optional, Tuple, Union
+from typing import Any, Dict, Optional, Tuple, Union
 from PIL import Image
 
 import numpy as np
@@ -86,3 +86,10 @@ class SSIMMetric(BaseImageQualityMetric):
             .float()
         )
         return float(self.ssim_metric(generated_image, ground_truth_image))
+
+    @weave.op()
+    async def __call__(
+        self, prompt: str, ground_truth_image: str, model_output: Dict[str, Any]
+    ) -> Union[float, Dict[str, float]]:
+        _ = "SSIMMetric"
+        return super().__call__(prompt, ground_truth_image, model_output)
