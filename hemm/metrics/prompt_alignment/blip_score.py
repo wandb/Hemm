@@ -20,7 +20,7 @@ class BLIPScoreMertric(BasePromptAlignmentMetric):
         self.blip_processor = BlipProcessor.from_pretrained(blip_model_name_or_path)
         self.blip_model = BlipForConditionalGeneration.from_pretrained(
             blip_model_name_or_path
-        ).to(self.device)
+        ).to(device)
         self.config = {"blip_model_name_or_path": blip_model_name_or_path}
 
     @weave.op()
