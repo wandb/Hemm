@@ -4,6 +4,8 @@ from typing import Any, Dict, Union
 from torch.nn import functional as F
 from transformers import BlipForConditionalGeneration, BlipProcessor
 
+import weave
+
 from .base import BasePromptAlignmentMetric
 
 
@@ -21,6 +23,7 @@ class BLIPScoreMertric(BasePromptAlignmentMetric):
         ).to(self.device)
         self.config = {"blip_model_name_or_path": blip_model_name_or_path}
 
+    @weave.op()
     def compute_metric(
         self, pil_image: Image, prompt: str
     ) -> Union[float, Dict[str, Any]]:

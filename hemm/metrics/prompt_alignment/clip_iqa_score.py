@@ -7,6 +7,8 @@ import torch
 from tqdm.auto import tqdm
 from torchmetrics.functional.multimodal import clip_image_quality_assessment
 
+import weave
+
 from .base import BasePromptAlignmentMetric
 
 
@@ -60,6 +62,7 @@ class CLIPImageQualityScoreMetric(BasePromptAlignmentMetric):
         ]
         self.config = {"clip_model_name_or_path": clip_model_name_or_path}
 
+    @weave.op()
     def compute_metric(
         self, pil_image: Image, prompt: str
     ) -> Union[float, Dict[str, float]]:

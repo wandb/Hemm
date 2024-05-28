@@ -6,6 +6,8 @@ import numpy as np
 import torch
 from torchmetrics.functional.image import structural_similarity_index_measure
 
+import weave
+
 from .base import BaseImageQualityMetric
 
 
@@ -58,6 +60,7 @@ class SSIMMetric(BaseImageQualityMetric):
             "ssim_k2": ssim_k2,
         }
 
+    @weave.op()
     def compute_metric(
         self,
         ground_truth_pil_image: Image.Image,

@@ -6,6 +6,8 @@ import numpy as np
 import torch
 from torchmetrics.functional.image import learned_perceptual_image_patch_similarity
 
+import weave
+
 from .base import BaseImageQualityMetric
 
 
@@ -36,6 +38,7 @@ class LPIPSMetric(BaseImageQualityMetric):
         )
         self.config = {"lpips_net_type": lpips_net_type}
 
+    @weave.op()
     def compute_metric(
         self, ground_truth_pil_image: Image, generated_pil_image: Image, prompt: str
     ) -> Union[float, Dict[str, float]]:

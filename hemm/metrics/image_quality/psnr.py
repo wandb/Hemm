@@ -6,6 +6,8 @@ import numpy as np
 import torch
 from torchmetrics.functional.image import peak_signal_noise_ratio
 
+import weave
+
 from .base import BaseImageQualityMetric
 
 
@@ -39,6 +41,7 @@ class PSNRMetric(BaseImageQualityMetric):
             "image_size": image_size,
         }
 
+    @weave.op()
     def compute_metric(
         self,
         ground_truth_pil_image: Image.Image,
