@@ -12,6 +12,20 @@ from ..utils import base64_encode_image
 
 
 class BaseEvaluationPipeline(ABC):
+    """Base class for evaluation pipelines.
+    
+    Args:
+        diffusion_model_name_or_path (str): Name or path of the pre-trained Stable Diffusion
+            variant model.
+        torch_dtype (torch.dtype): Override the default `torch.dtype` and load the model with
+            another dtype. If "auto" is passed, the dtype is automatically derived from the
+            model's weights.
+        enable_cpu_offfload (bool): Whether to enable CPU offloading for the model during
+            evaluation.
+        image_size (Optional[Union[int, Tuple[int, int]]]): Size of the generated image. If an
+            integer is passed, the image will be resized to a square image of that size.
+        seed (int): Seed value for the random number generator.
+    """
 
     def __init__(
         self,
@@ -20,7 +34,6 @@ class BaseEvaluationPipeline(ABC):
         enable_cpu_offfload: bool = False,
         image_size: Optional[Union[int, Tuple[int, int]]] = 512,
         seed: int = 42,
-        images_dir: str = "generated_images",
     ) -> None:
         super().__init__()
         self.diffusion_model_name_or_path = diffusion_model_name_or_path

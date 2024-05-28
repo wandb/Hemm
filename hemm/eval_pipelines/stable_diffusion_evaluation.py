@@ -75,7 +75,6 @@ class StableDiffusionEvaluationPipeline(BaseEvaluationPipeline):
         image_size (Optional[Union[int, Tuple[int, int]]]): Size of the generated image. If an
             integer is passed, the image will be resized to a square image of that size.
         seed (int): Seed value for the random number generator.
-        images_dir (str): Directory to save the generated images.
     """
 
     def __init__(
@@ -85,7 +84,6 @@ class StableDiffusionEvaluationPipeline(BaseEvaluationPipeline):
         enable_cpu_offfload: bool = False,
         image_size: Optional[Union[int, Tuple[int, int]]] = 512,
         seed: int = 42,
-        images_dir: str = "generated_images",
     ) -> None:
         super().__init__(
             diffusion_model_name_or_path,
@@ -93,7 +91,6 @@ class StableDiffusionEvaluationPipeline(BaseEvaluationPipeline):
             enable_cpu_offfload,
             image_size,
             seed,
-            images_dir,
         )
 
         self.pipeline = StableDiffusionPipeline.from_pretrained(
