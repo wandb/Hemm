@@ -1,5 +1,5 @@
 import asyncio
-from abc import ABC, abstractmethod
+from abc import ABC
 from typing import Callable, Dict, List, Optional, Tuple, Union
 
 import torch
@@ -96,7 +96,7 @@ class BaseEvaluationPipeline(ABC):
         )
         return {"image": base64_encode_image(image)}
 
-    def log_summary(self, init_params: Dict):
+    def log_summary(self, init_params: Dict, job_name: str):
         """Log the evaluation summary to the Weights & Biases dashboard.
 
         Args:
@@ -113,9 +113,9 @@ class BaseEvaluationPipeline(ABC):
             for metric_fn in self.metric_functions:
                 current_row.append(metric_fn.scores[row_idx])
             self.wandb_table.add_data(*current_row)
-        wandb.log({"Evalution": self.wandb_table})
+        wandb.log({f"Evalution/{job_name}": self.wandb_table})
 
-    def __call__(self, dataset: Union[Dict, str], init_params: Dict):
+    def __call__(self, dataset: Union[Dict, str], init_params: Dict, job_name: str):
         """Evaluate the Stable Diffusion model on the given dataset.
 
         Args:
@@ -133,4 +133,4 @@ class BaseEvaluationPipeline(ABC):
         )
         with weave.attributes(self.evaluation_configs):
             asyncio.run(evaluation.evaluate(self.infer))
-        self.log_summary(init_params)
+        self.log_summary(init_params, job_name)
