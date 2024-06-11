@@ -12,6 +12,15 @@ import wandb
 
 
 def chunk_all_prompts(prompt_list: List[str], chunk_size: int) -> List[str]:
+    """Chunk all prompts into smaller chunks of size `chunk_size`.
+
+    Args:
+        prompt_list (List[str]): List of prompts to chunk.
+        chunk_size (int): Size of each chunk.
+
+    Returns:
+        List[str]: List of chunked prompts.
+    """
     prompts = []
     for idx in range(0, len(prompt_list), chunk_size):
         chunk = prompt_list[idx : idx + chunk_size]
@@ -23,11 +32,26 @@ def chunk_all_prompts(prompt_list: List[str], chunk_size: int) -> List[str]:
 
 
 class SpatialPromptModel(Model):
+    """Model to predict structured output from spatial prompts.
+
+    Args:
+        openai_model (str): OpenAI model to use for prediction.
+        openai_seed (Optional[int], optional): Seed for OpenAI model. Defaults to None.
+    """
+
     openai_model: str
     openai_seed: Optional[int] = None
 
     @weave.op()
     def predict(self, prompt_chunk: str) -> str:
+        """Predict structured output from spatial prompts.
+
+        Args:
+            prompt_chunk (str): Chunk of spatial prompts.
+
+        Returns:
+            str: Predicted structured output.
+        """
         client = OpenAI()
         response = client.chat.completions.create(
             model=self.openai_model,
@@ -101,6 +125,28 @@ class SpatialPromptModel(Model):
 
 
 class SpatialPromptAnalyzer:
+    """Analyze spatial prompts from T2I Compbench using a model using an OpenAI text-generation model.
+
+    ??? example "Analyzing spatial prompts using OpenAI model"
+        ```python
+        import wandb
+        import weave
+        from hemm.metrics.spatial_relationship import SpatialPromptAnalyzer
+
+        wandb.init(project=project_name, job_type="analyze_spatial_prompts")
+        weave.init(project_name=project_name)
+        analyzer = SpatialPromptAnalyzer(
+            openai_model=openai_model, openai_seed=openai_seed, project_name=project_name
+        )
+        analyzer()
+        ```
+
+    Args:
+        openai_model (str, optional): OpenAI model to use for prediction.
+        openai_seed (Optional[int], optional): Seed for OpenAI model.
+        project_name (str, optional): Name of the project.
+        dump_dir (str, optional): Directory to dump the results.
+    """
 
     def __init__(
         self,
@@ -121,7 +167,7 @@ class SpatialPromptAnalyzer:
             columns=["analyzer_model", "prompt", "predicted_response"]
         )
 
-    def _fetch_spatial_prompts(self):
+    def _fetch_spatial_prompts(self) -> None:
         artifact = wandb.use_artifact(
             "geekyrakshit/diffusion_leaderboard/t2i-compbench:v0", type="dataset"
         )
@@ -133,7 +179,7 @@ class SpatialPromptAnalyzer:
             spatial_prompts = f.read().strip().split("\n")
         return spatial_prompts
 
-    def _save_prompt_analysis_result(self):
+    def _save_prompt_analysis_result(self) -> None:
         # Publish prompt analysis results as a weave dataset
         weave.publish(
             weave.Dataset(
@@ -187,7 +233,7 @@ class SpatialPromptAnalyzer:
             }
         return evaluation_responses
 
-    def __call__(self):
+    def __call__(self) -> None:
         os.makedirs(self.dump_dir, exist_ok=True)
         chunked_promts = chunk_all_prompts(self.spatial_prompts, chunk_size=50)
         chunked_prompt_dataset = Dataset(

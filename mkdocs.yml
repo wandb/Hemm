@@ -45,6 +45,7 @@ nav:
   - Metrics:
     - Image-Quality-Metrics: 'metrics/image_quality.md'
     - Prompt-Image-Alignment: 'metrics/prompt_image_alignment.md'
+    - Spatial-Relationship: 'metrics/spatial_relationship.md'
   - Utils: 'utils.md'
 
 repo_url: https://github.com/soumik12345/Hemm

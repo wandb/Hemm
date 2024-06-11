@@ -1,15 +1,14 @@
 from functools import partial
 from typing import Any, Dict, Literal, Optional, Tuple, Union
-from PIL import Image
 
 import numpy as np
 import torch
+import weave
+from PIL import Image
 from torchmetrics.functional.image import learned_perceptual_image_patch_similarity
 
-import weave
-
-from .base import BaseImageQualityMetric, ComputeMetricOutput
 from ...utils import base64_encode_image
+from .base import BaseImageQualityMetric, ComputeMetricOutput
 
 
 class LPIPSMetric(BaseImageQualityMetric):

@@ -1,8 +1,9 @@
-from abc import ABC, abstractmethod
 import base64
+from abc import ABC, abstractmethod
 from io import BytesIO
-from PIL import Image
 from typing import Any, Dict, Union
+
+from PIL import Image
 
 
 class BasePromptAlignmentMetric(ABC):

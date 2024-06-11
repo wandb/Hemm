@@ -1,10 +1,9 @@
-from PIL import Image
 from typing import Any, Dict, Union
 
+import weave
+from PIL import Image
 from torch.nn import functional as F
 from transformers import BlipForConditionalGeneration, BlipProcessor
-
-import weave
 
 from .base import BasePromptAlignmentMetric
 

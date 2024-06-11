@@ -1,5 +1,5 @@
-from abc import ABC, abstractmethod
 import base64
+from abc import ABC, abstractmethod
 from io import BytesIO
 from typing import Any, Dict, Union
 
