@@ -161,5 +161,7 @@ cython_debug/
 
 wandb/
 artifacts/
+dump/
+.vscode/
 **generated_images/
 .ruff_cache/

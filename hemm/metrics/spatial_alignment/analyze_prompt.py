@@ -3,6 +3,7 @@ import json
 import os
 from typing import Dict, List, Optional
 
+import jsonlines
 import weave
 from openai import OpenAI
 from weave import Dataset, Evaluation, Model
@@ -106,12 +107,16 @@ class SpatialPromptAnalyzer:
         openai_model: str = "gpt-3.5-turbo-0125",
         openai_seed: Optional[int] = None,
         project_name: str = "diffusion_leaderboard",
+        dump_dir: str = "./dump",
     ):
         self.model = SpatialPromptModel(
             openai_model=openai_model, openai_seed=openai_seed
         )
+        self.dump_dir = dump_dir
         self.project_name = project_name
         self.spatial_prompts = self._fetch_spatial_prompts()
+        self.spatial_weave_dataset = []
+        self.spatial_prompts_weave_dataset = []
         self.wandb_table = wandb.Table(
             columns=["analyzer_model", "prompt", "predicted_response"]
         )
@@ -128,6 +133,25 @@ class SpatialPromptAnalyzer:
             spatial_prompts = f.read().strip().split("\n")
         return spatial_prompts
 
+    def _save_prompt_analysis_result(self):
+        # Publish prompt analysis results as a weave dataset
+        weave.publish(
+            weave.Dataset(
+                name="t2i_compbench_spatial_prompts",
+                rows=self.spatial_prompts_weave_dataset,
+            )
+        )
+        # Publish prompt analysis results as a wandb dataset artifact
+        with jsonlines.open(
+            os.path.join(self.dump_dir, "spatial.jsonl"), mode="w"
+        ) as writer:
+            writer.write(self.spatial_prompts_weave_dataset)
+        artifact = wandb.Artifact(name="t2i_compbench_spatial_prompts", type="dataset")
+        artifact.add_file(local_path=os.path.join(self.dump_dir, "spatial.jsonl"))
+        wandb.log_artifact(artifact)
+        # Publish prompt analysis results as a wandb table
+        wandb.log({"analysis/spatial_prompts": self.wandb_table})
+
     @weave.op()
     async def evaluate_structured_prompt_chunk(
         self, prompt_chunk: str, model_output: Dict
@@ -140,6 +164,12 @@ class SpatialPromptAnalyzer:
                 self.model.openai_model,
                 prompt.split(":")[-1].strip(),
                 structured_respopse[str(chunk_idx)],
+            )
+            self.spatial_prompts_weave_dataset.append(
+                {
+                    "prompt": prompt.split(":")[-1].strip(),
+                    "response": structured_respopse[str(chunk_idx)],
+                }
             )
             evaluation_responses[str(chunk_idx)] = {
                 "prompt": prompt.split(":")[-1].strip(),
@@ -158,6 +188,7 @@ class SpatialPromptAnalyzer:
         return evaluation_responses
 
     def __call__(self):
+        os.makedirs(self.dump_dir, exist_ok=True)
         chunked_promts = chunk_all_prompts(self.spatial_prompts, chunk_size=50)
         chunked_prompt_dataset = Dataset(
             name="t2i_compbench_spatial_prompt_chunks", rows=chunked_promts
@@ -173,4 +204,4 @@ class SpatialPromptAnalyzer:
         }
         with weave.attributes(eval_trace_configs):
             asyncio.run(evaluation.evaluate(self.model.predict))
-        wandb.log({"analysis/spatial_prompts": self.wandb_table})
+        self._save_prompt_analysis_result()
