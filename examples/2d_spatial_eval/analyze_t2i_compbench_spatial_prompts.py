@@ -4,7 +4,7 @@ import fire
 import weave
 
 import wandb
-from hemm.metrics.spatial_alignment import SpatialPromptAnalyzer
+from hemm.metrics.spatial_relationship import SpatialPromptAnalyzer
 
 
 def main(
