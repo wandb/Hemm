@@ -28,14 +28,17 @@ class DETRSpatialRelationShipJudge(weave.Model):
         results = self.feature_extractor.post_process_object_detection(
             outputs, target_sizes=target_sizes, threshold=0.9
         )[0]
-        bboxes = [
-            {
-                "score": score.item(),
-                "label": self.object_detection_model.config.id2label[label.item()],
-                "box": [round(i, 2) for i in box.tolist()],
-            }
-            for score, label, box in zip(
-                results["scores"], results["labels"], results["boxes"]
+        bboxes = []
+        for score, label, box in zip(
+            results["scores"], results["labels"], results["boxes"]
+        ):
+            xmin, ymin, xmax, ymax = box.tolist()
+            bboxes.append(
+                {
+                    "score": score.item(),
+                    "label": self.object_detection_model.config.id2label[label.item()],
+                    "box": {"xmin": xmin, "ymin": ymin, "xmax": xmax, "ymax": ymax},
+                    "box_center": {"x": (xmin + xmax) / 2, "y": (ymin + ymax) / 2},
+                }
             )
-        ]
         return bboxes
