@@ -1,3 +1,3 @@
-from .detr import DetrForObjectDetection
+from .detr import DETRSpatialRelationShipJudge
 
-__all__ = ["DetrForObjectDetection"]
+__all__ = ["DETRSpatialRelationShipJudge"]

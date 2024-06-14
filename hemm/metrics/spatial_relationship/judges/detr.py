@@ -1,10 +1,13 @@
 import base64
 from io import BytesIO
+from typing import List
 
 import torch
 from transformers import DetrImageProcessor, DetrForObjectDetection
 
 import weave
+
+from .commons import BoundingBox, CartesianCoordinate2D
 
 
 class DETRSpatialRelationShipJudge(weave.Model):
@@ -20,7 +23,7 @@ class DETRSpatialRelationShipJudge(weave.Model):
         )
 
     @weave.op()
-    def predict(self, image: str):
+    def predict(self, image: str) -> List[BoundingBox]:
         pil_image = BytesIO(base64.b64decode(image.split(";base64,")[-1]))
         encoding = self.feature_extractor(pil_image, return_tensors="pt")
         outputs = self.object_detection_model(**encoding)
@@ -34,11 +37,14 @@ class DETRSpatialRelationShipJudge(weave.Model):
         ):
             xmin, ymin, xmax, ymax = box.tolist()
             bboxes.append(
-                {
-                    "score": score.item(),
-                    "label": self.object_detection_model.config.id2label[label.item()],
-                    "box": {"xmin": xmin, "ymin": ymin, "xmax": xmax, "ymax": ymax},
-                    "box_center": {"x": (xmin + xmax) / 2, "y": (ymin + ymax) / 2},
-                }
+                BoundingBox(
+                    box_coordinates_min=CartesianCoordinate2D(x=xmin, y=ymin),
+                    box_coordinates_max=CartesianCoordinate2D(x=xmax, y=ymax),
+                    box_coordinates_center=CartesianCoordinate2D(
+                        x=(xmin + xmax) / 2, y=(ymin + ymax) / 2
+                    ),
+                    label=self.object_detection_model.config.id2label[label.item()],
+                    score=score.item(),
+                )
             )
         return bboxes
