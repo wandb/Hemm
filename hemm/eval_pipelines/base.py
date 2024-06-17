@@ -127,7 +127,7 @@ class BaseEvaluationPipeline(ABC):
                 to [official docs](https://docs.wandb.ai/ref/python/init) for more documentation
                 on the initialization params.
         """
-        weave.init(project_name="t2i_eval")
+        weave.init(project_name=init_params["project"])
         dataset = weave.ref(dataset).get() if isinstance(dataset, str) else dataset
         evaluation = Evaluation(
             dataset=dataset,
