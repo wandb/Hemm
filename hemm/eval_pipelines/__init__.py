@@ -1,3 +1,4 @@
-from .stable_diffusion_evaluation import StableDiffusionEvaluationPipeline
+from .eval_pipeline import EvaluationPipeline
+from .model import BaseWeaveModel
 
-__all__ = ["StableDiffusionEvaluationPipeline"]
+__all__ = ["BaseWeaveModel", "EvaluationPipeline"]
