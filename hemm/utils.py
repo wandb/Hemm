@@ -1,9 +1,12 @@
 import base64
 import io
+import os
 from PIL import Image
 from pathlib import Path
 from typing import Callable, Dict, List, Optional, Union
 
+import jsonlines
+import wandb
 import weave
 from datasets import load_dataset
 from tqdm.auto import tqdm
@@ -42,6 +45,22 @@ def base64_encode_image(
     return str(encoded_string)
 
 
+def save_weave_dataset_rows_to_artifacts(
+    dataset_rows: List[Dict], dump_dir: str
+) -> None:
+    """Saves the dataset rows to W&B artifacts.
+
+    Args:
+        dataset_rows (List[Dict]): List of dataset rows.
+        dump_dir (str): Directory to dump the results.
+    """
+    with jsonlines.open(os.path.join(dump_dir, "spatial.jsonl"), mode="w") as writer:
+        writer.write(dataset_rows)
+    artifact = wandb.Artifact(name="t2i_compbench_spatial_prompts", type="dataset")
+    artifact.add_file(local_path=os.path.join(dump_dir, "spatial.jsonl"))
+    wandb.log_artifact(artifact)
+
+
 def publish_dataset_to_weave(
     dataset_path,
     dataset_name: Optional[str] = None,
@@ -52,6 +71,7 @@ def publish_dataset_to_weave(
     get_weave_dataset_reference: bool = True,
     dataset_transforms: Optional[List[Callable]] = None,
     column_transforms: Optional[Dict[str, Callable]] = None,
+    dump_dir: Optional[str] = "./dump",
     *args,
     **kwargs,
 ) -> Union[ObjectRef, None]:
@@ -87,15 +107,17 @@ def publish_dataset_to_weave(
         get_weave_dataset_reference (bool, optional): Whether to return the Weave dataset reference.
         dataset_transforms (Optional[List[Callable]], optional): List of dataset transforms.
         column_transforms (Optional[Dict[str, Callable]], optional): Column specific transforms.
+        dump_dir (Optional[str], optional): Directory to dump the results.
 
     Returns:
         Union[ObjectRef, None]: Weave dataset reference if get_weave_dataset_reference is True.
     """
+    os.makedirs(dump_dir, exist_ok=True)
     dataset_name = dataset_name or Path(dataset_path).stem
     dataset_dict = load_dataset(dataset_path, *args, **kwargs)
     dataset_dict = dataset_dict[split] if split else dataset_dict["train"]
     dataset_dict = (
-        dataset_dict.take(data_limit)
+        dataset_dict.select(range(data_limit))
         if data_limit is not None and data_limit < len(dataset_dict)
         else dataset_dict
     )
@@ -123,6 +145,10 @@ def publish_dataset_to_weave(
             if column_transforms and key in column_transforms:
                 data_item[key] = column_transforms[key](data_item[key])
         weave_dataset_rows.append(data_item)
+
+    if wandb.run:
+        save_weave_dataset_rows_to_artifacts(weave_dataset_rows, dump_dir)
+
     weave_dataset = weave.Dataset(name=dataset_name, rows=weave_dataset_rows)
     weave.publish(weave_dataset)
     return weave.ref(dataset_name).get() if get_weave_dataset_reference else None
