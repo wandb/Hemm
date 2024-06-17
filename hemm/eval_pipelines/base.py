@@ -11,6 +11,10 @@ from weave import Evaluation
 from ..utils import base64_encode_image
 
 
+class HemmEvaluation(Evaluation):
+    pass    
+
+
 class BaseEvaluationPipeline(ABC):
     """Base class for evaluation pipelines.
 
@@ -129,7 +133,7 @@ class BaseEvaluationPipeline(ABC):
         """
         weave.init(project_name=init_params["project"])
         dataset = weave.ref(dataset).get() if isinstance(dataset, str) else dataset
-        evaluation = Evaluation(
+        evaluation = HemmEvaluation(
             dataset=dataset,
             scorers=[metric_fn.__call__ for metric_fn in self.metric_functions],
         )

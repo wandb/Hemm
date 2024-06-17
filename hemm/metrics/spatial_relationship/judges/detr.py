@@ -12,26 +12,41 @@ from .commons import BoundingBox, CartesianCoordinate2D
 
 
 class DETRSpatialRelationShipJudge(weave.Model):
+    """DETR spatial relationship judge model for 2D images.
+
+    Args:
+        model_address (str, optional): The address of the model to use.
+        revision (str, optional): The revision of the model to use.
+    """
+
     model_address: str = "facebook/detr-resnet-50"
     revision: str = "no_timm"
-    feature_extractor: DetrImageProcessor = None
-    object_detection_model: DetrForObjectDetection = None
+    _feature_extractor: DetrImageProcessor = None
+    _object_detection_model: DetrForObjectDetection = None
 
     def _initialize_models(self):
-        self.feature_extractor = DetrImageProcessor.from_pretrained(
+        self._feature_extractor = DetrImageProcessor.from_pretrained(
             self.model_address, revision=self.revision
         )
-        self.object_detection_model = DetrForObjectDetection.from_pretrained(
+        self._object_detection_model = DetrForObjectDetection.from_pretrained(
             self.model_address, revision=self.revision
         )
 
     @weave.op()
     def predict(self, image: str) -> List[BoundingBox]:
+        """Predict the bounding boxes from the input image.
+
+        Args:
+            image (str): The base64 encoded image.
+
+        Returns:
+            List[BoundingBox]: The predicted bounding boxes.
+        """
         pil_image = Image.open(BytesIO(base64.b64decode(image.split(";base64,")[-1])))
-        encoding = self.feature_extractor(pil_image, return_tensors="pt")
-        outputs = self.object_detection_model(**encoding)
+        encoding = self._feature_extractor(pil_image, return_tensors="pt")
+        outputs = self._object_detection_model(**encoding)
         target_sizes = torch.tensor([pil_image.size[::-1]])
-        results = self.feature_extractor.post_process_object_detection(
+        results = self._feature_extractor.post_process_object_detection(
             outputs, target_sizes=target_sizes, threshold=0.9
         )[0]
         bboxes = []
@@ -46,7 +61,7 @@ class DETRSpatialRelationShipJudge(weave.Model):
                     box_coordinates_center=CartesianCoordinate2D(
                         x=(xmin + xmax) / 2, y=(ymin + ymax) / 2
                     ),
-                    label=self.object_detection_model.config.id2label[label.item()],
+                    label=self._object_detection_model.config.id2label[label.item()],
                     score=score.item(),
                 )
             )

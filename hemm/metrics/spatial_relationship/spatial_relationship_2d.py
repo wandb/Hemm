@@ -64,7 +64,9 @@ class SpatialRelationshipMetric2D:
         self.scores = []
         self.config = judge.model_dump()
 
-    def compose_judgement(self, response: Dict[str, Any], boxes: List[BoundingBox]):
+    def _compose_judgement(
+        self, response: Dict[str, Any], boxes: List[BoundingBox]
+    ) -> Dict[str, Any]:
         # Determine presence of entities in the judgement
         judgement = {
             "entity_1_present": False,
@@ -155,6 +157,8 @@ class SpatialRelationshipMetric2D:
                         score = self.iou_threshold / iou
             judgement["score"] = score
 
+        return judgement
+
     @weave.op()
     async def __call__(
         self, prompt: str, response: Dict[str, Any], model_output: Dict[str, Any]
@@ -173,6 +177,6 @@ class SpatialRelationshipMetric2D:
 
         image = model_output["image"]
         boxes: List[BoundingBox] = self.judge.predict(image)
-        judgement = self.compose_judgement(response, boxes)
+        judgement = self._compose_judgement(response, boxes)
         self.scores.append(judgement)
         return judgement
