@@ -1,10 +1,9 @@
-from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
+from typing import Any, Dict, List, Optional, Union
 
 import weave
 
-if TYPE_CHECKING:
-    from .judges import DETRSpatialRelationShipJudge
-    from .judges.commons import BoundingBox
+from .judges import DETRSpatialRelationShipJudge
+from .judges.commons import BoundingBox
 
 
 def get_iou(entity_1: BoundingBox, entity_2: BoundingBox) -> float:
@@ -29,12 +28,12 @@ def get_iou(entity_1: BoundingBox, entity_2: BoundingBox) -> float:
     return intersection / union
 
 
-class SpatialRelationshipMetric:
+class SpatialRelationshipMetric2D:
     def __init__(
         self,
         judge: Union[weave.Model, DETRSpatialRelationShipJudge],
-        iou_threshold: float,
-        distance_threshold: float,
+        iou_threshold: Optional[float] = 0.1,
+        distance_threshold: Optional[float] = 150,
         name: Optional[str] = "spatial_relationship_score",
     ) -> None:
         self.judge = judge
@@ -46,10 +45,14 @@ class SpatialRelationshipMetric:
 
     @weave.op()
     async def __call__(
-        self, response: Dict[str, Any], model_output: Dict[str, Any]
+        self, prompt: str, response: Dict[str, Any], model_output: Dict[str, Any]
     ) -> Dict[str, Union[bool, float, int]]:
+        _ = prompt
+
         image = model_output["image"][0]
         boxes: List[BoundingBox] = self.judge.predict(image)
+
+        # Determine presence of entities in the judgement
         judgement = {
             "enity_1_present": False,
             "entity_2_present": False,
@@ -64,6 +67,8 @@ class SpatialRelationshipMetric:
                 judgement["entity_2_present"] = True
                 entity_boxes[1] = box
 
+        # assign score based on the spatial relationship inferred
+        # from the judgement
         center_distance_x = abs(
             entity_boxes[0].box_coordinates_center.x
             - entity_boxes[1].box_coordinates_center.x

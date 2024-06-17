@@ -115,12 +115,14 @@ class BaseEvaluationPipeline(ABC):
             self.wandb_table.add_data(*current_row)
         wandb.log({f"Evalution/{job_name}": self.wandb_table})
 
-    def __call__(self, dataset: Union[Dict, str], init_params: Dict, job_name: str):
+    def __call__(
+        self, dataset: Union[List[Dict], str], init_params: Dict, job_name: str
+    ):
         """Evaluate the Stable Diffusion model on the given dataset.
 
         Args:
-            dataset (Union[Dict, str]): Dataset to evaluate the model on. If a string is passed,
-                it is assumed to be a Weave dataset reference.
+            dataset (Union[List[Dict], str]): Dataset to evaluate the model on. If a string is
+                passed, it is assumed to be a Weave dataset reference.
             init_params (Dict): Initialization parameters for the Weights & Biases run. Refer
                 to [official docs](https://docs.wandb.ai/ref/python/init) for more documentation
                 on the initialization params.
