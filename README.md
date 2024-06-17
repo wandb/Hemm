@@ -18,7 +18,6 @@ First let's publish a small subset of the MSCOCO validation set as a [Weave Data
 import weave
 from hemm.utils import publish_dataset_to_weave
 
-
 weave.init(project_name="t2i_eval")
 
 dataset_reference = publish_dataset_to_weave(
@@ -46,25 +45,29 @@ import weave
 from hemm.eval_pipelines import BaseWeaveModel, EvaluationPipeline
 from hemm.metrics.image_quality import LPIPSMetric, PSNRMetric, SSIMMetric
 
-
+# Initialize Weave and WandB
 wandb.init(project="image-quality-leaderboard", job_type="evaluation")
 weave.init(project_name="image-quality-leaderboard")
 
+# Initialize the diffusion model to be evaluated as a `weave.Model` using `BaseWeaveModel`
 model = BaseWeaveModel(diffusion_model_name_or_path="CompVis/stable-diffusion-v1-4")
+
+# Add the model to the evaluation pipeline
 evaluation_pipeline = EvaluationPipeline(model=model)
 
-# Add PSNR Metric
+# Add PSNR Metric to the evaluation pipeline
 psnr_metric = PSNRMetric(image_size=evaluation_pipeline.image_size)
 evaluation_pipeline.add_metric(psnr_metric)
 
-# Add SSIM Metric
+# Add SSIM Metric to the evaluation pipeline
 ssim_metric = SSIMMetric(image_size=evaluation_pipeline.image_size)
 evaluation_pipeline.add_metric(ssim_metric)
 
-# Add LPIPS Metric
+# Add LPIPS Metric to the evaluation pipeline
 lpips_metric = LPIPSMetric(image_size=evaluation_pipeline.image_size)
 evaluation_pipeline.add_metric(lpips_metric)
 
+# Evaluate!
 diffuion_evaluation_pipeline(dataset="COCO:v0")
 ```
 

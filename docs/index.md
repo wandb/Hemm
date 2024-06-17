@@ -18,7 +18,6 @@ First let's publish a small subset of the MSCOCO validation set as a [Weave Data
 import weave
 from hemm.utils import publish_dataset_to_weave
 
-
 weave.init(project_name="t2i_eval")
 
 dataset_reference = publish_dataset_to_weave(
