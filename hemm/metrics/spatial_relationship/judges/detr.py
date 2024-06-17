@@ -3,6 +3,7 @@ from io import BytesIO
 from typing import List
 
 import torch
+from PIL import Image
 from transformers import DetrImageProcessor, DetrForObjectDetection
 
 import weave
@@ -13,6 +14,8 @@ from .commons import BoundingBox, CartesianCoordinate2D
 class DETRSpatialRelationShipJudge(weave.Model):
     model_address: str = "facebook/detr-resnet-50"
     revision: str = "no_timm"
+    feature_extractor: DetrImageProcessor = None
+    object_detection_model: DetrForObjectDetection = None
 
     def _initialize_models(self):
         self.feature_extractor = DetrImageProcessor.from_pretrained(
@@ -24,10 +27,10 @@ class DETRSpatialRelationShipJudge(weave.Model):
 
     @weave.op()
     def predict(self, image: str) -> List[BoundingBox]:
-        pil_image = BytesIO(base64.b64decode(image.split(";base64,")[-1]))
+        pil_image = Image.open(BytesIO(base64.b64decode(image.split(";base64,")[-1])))
         encoding = self.feature_extractor(pil_image, return_tensors="pt")
         outputs = self.object_detection_model(**encoding)
-        target_sizes = torch.tensor([image.size[::-1]])
+        target_sizes = torch.tensor([pil_image.size[::-1]])
         results = self.feature_extractor.post_process_object_detection(
             outputs, target_sizes=target_sizes, threshold=0.9
         )[0]

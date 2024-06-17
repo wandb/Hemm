@@ -37,6 +37,7 @@ class SpatialRelationshipMetric2D:
         name: Optional[str] = "spatial_relationship_score",
     ) -> None:
         self.judge = judge
+        self.judge._initialize_models()
         self.iou_threshold = iou_threshold
         self.distance_threshold = distance_threshold
         self.name = name
@@ -49,7 +50,7 @@ class SpatialRelationshipMetric2D:
     ) -> Dict[str, Union[bool, float, int]]:
         _ = prompt
 
-        image = model_output["image"][0]
+        image = model_output["image"]
         boxes: List[BoundingBox] = self.judge.predict(image)
 
         # Determine presence of entities in the judgement
