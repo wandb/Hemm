@@ -9,6 +9,7 @@ from transformers import DetrImageProcessor, DetrForObjectDetection
 import weave
 
 from .commons import BoundingBox, CartesianCoordinate2D
+from ....utils import base64_decode_image
 
 
 class DETRSpatialRelationShipJudge(weave.Model):
@@ -42,7 +43,7 @@ class DETRSpatialRelationShipJudge(weave.Model):
         Returns:
             List[BoundingBox]: The predicted bounding boxes.
         """
-        pil_image = Image.open(BytesIO(base64.b64decode(image.split(";base64,")[-1])))
+        pil_image = base64_decode_image(image)
         encoding = self._feature_extractor(pil_image, return_tensors="pt")
         outputs = self._object_detection_model(**encoding)
         target_sizes = torch.tensor([pil_image.size[::-1]])

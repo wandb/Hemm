@@ -45,6 +45,18 @@ def base64_encode_image(
     return str(encoded_string)
 
 
+def base64_decode_image(image: str) -> Image.Image:
+    """Decodes a base64 encoded image string encoded using the function `hemm.utils.base64_encode_image`.
+
+    Args:
+        image (str): Base64 encoded image string encoded using the function `hemm.utils.base64_encode_image`.
+
+    Returns:
+        Image.Image: PIL Image object.
+    """
+    return Image.open(io.BytesIO(base64.b64decode(image.split(";base64,")[-1])))
+
+
 def save_weave_dataset_rows_to_artifacts(
     dataset_rows: List[Dict], dump_dir: str
 ) -> None:

@@ -1,40 +1,13 @@
 from typing import Any, Dict, List, Optional, Union
 
+import wandb
 import weave
+from PIL import Image
 
 from .judges import DETRSpatialRelationShipJudge
 from .judges.commons import BoundingBox
-
-
-def get_iou(entity_1: BoundingBox, entity_2: BoundingBox) -> float:
-    """Calculate the Intersection over Union (IoU) between two bounding boxes.
-
-    Args:
-        entity_1 (BoundingBox): The first bounding box.
-        entity_2 (BoundingBox): The second bounding box.
-
-    Returns:
-        float: The IoU score between the two bounding boxes.
-    """
-    x_overlap = max(
-        0,
-        min(entity_1.box_coordinates_max.x, entity_2.box_coordinates_max.x)
-        - max(entity_1.box_coordinates_min.x, entity_2.box_coordinates_min.x),
-    )
-    y_overlap = max(
-        0,
-        min(entity_1.box_coordinates_max.y, entity_2.box_coordinates_max.y)
-        - max(entity_1.box_coordinates_min.y, entity_2.box_coordinates_min.y),
-    )
-    intersection = x_overlap * y_overlap
-    box_1_area = (entity_1.box_coordinates_max.x - entity_1.box_coordinates_min.x) * (
-        entity_1.box_coordinates_max.y - entity_1.box_coordinates_min.y
-    )
-    box_1_area = (entity_2.box_coordinates_max.x - entity_2.box_coordinates_min.x) * (
-        entity_2.box_coordinates_max.y - entity_2.box_coordinates_min.y
-    )
-    union = box_1_area + box_1_area - intersection
-    return intersection / union
+from .utils import annotate_with_bounding_box, get_iou
+from ...utils import base64_decode_image, base64_encode_image
 
 
 class SpatialRelationshipMetric2D:
@@ -64,9 +37,20 @@ class SpatialRelationshipMetric2D:
         self.scores = []
         self.config = judge.model_dump()
 
-    def _compose_judgement(
-        self, response: Dict[str, Any], boxes: List[BoundingBox]
+    @weave.op()
+    def compose_judgement(
+        self, image: str, response: Dict[str, Any], boxes: List[BoundingBox]
     ) -> Dict[str, Any]:
+        """Compose the judgement based on the response and the predicted bounding boxes.
+
+        Args:
+            image (str): The base64 encoded image.
+            response (Dict[str, Any]): The response from the model.
+            boxes (List[BoundingBox]): The predicted bounding boxes.
+
+        Returns:
+            Dict[str, Any]: The comprehensive spatial relationship judgement.
+        """
         # Determine presence of entities in the judgement
         judgement = {
             "entity_1_present": False,
@@ -74,6 +58,7 @@ class SpatialRelationshipMetric2D:
         }
         entities = [entity["name"] for entity in response["entities"]]
         entity_boxes: List[BoundingBox] = [None, None]
+        annotated_image = image
         for box in boxes:
             if box.label == entities[0]:
                 judgement["entity_1_present"] = True
@@ -81,6 +66,7 @@ class SpatialRelationshipMetric2D:
             elif box.label == entities[1]:
                 judgement["entity_2_present"] = True
                 entity_boxes[1] = box
+            annotated_image = annotate_with_bounding_box(annotated_image, box)
 
         judgement["score"] = 0.0
         # assign score based on the spatial relationship inferred from the judgement
@@ -157,7 +143,28 @@ class SpatialRelationshipMetric2D:
                         score = self.iou_threshold / iou
             judgement["score"] = score
 
-        return judgement
+        self.scores.append(
+            {
+                **judgement,
+                **{
+                    "judge_annotated_image": wandb.Image(
+                        base64_decode_image(annotated_image)
+                        if isinstance(annotated_image, str)
+                        else annotated_image
+                    )
+                },
+            }
+        )
+        return {
+            **judgement,
+            **{
+                "judge_annotated_image": (
+                    base64_encode_image(annotated_image)
+                    if isinstance(annotated_image, Image.Image)
+                    else annotated_image
+                )
+            },
+        }
 
     @weave.op()
     async def __call__(
@@ -177,6 +184,5 @@ class SpatialRelationshipMetric2D:
 
         image = model_output["image"]
         boxes: List[BoundingBox] = self.judge.predict(image)
-        judgement = self._compose_judgement(response, boxes)
-        self.scores.append(judgement)
+        judgement = self.compose_judgement(image, response, boxes)
         return judgement
