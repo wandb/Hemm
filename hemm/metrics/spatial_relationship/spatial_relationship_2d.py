@@ -39,7 +39,7 @@ class SpatialRelationshipMetric2D:
 
     @weave.op()
     def compose_judgement(
-        self, image: str, response: Dict[str, Any], boxes: List[BoundingBox]
+        self, image: str, entity_1: str, entity_2: str, relationship: str, boxes: List[BoundingBox]
     ) -> Dict[str, Any]:
         """Compose the judgement based on the response and the predicted bounding boxes.
 
@@ -56,32 +56,32 @@ class SpatialRelationshipMetric2D:
             "entity_1_present": False,
             "entity_2_present": False,
         }
-        entities = [entity["name"] for entity in response["entities"]]
-        entity_boxes: List[BoundingBox] = [None, None]
+        entity_1_box: BoundingBox = None
+        entity_2_box: BoundingBox = None
         annotated_image = image
         for box in boxes:
-            if box.label == entities[0]:
+            if box.label == entity_1:
                 judgement["entity_1_present"] = True
-                entity_boxes[0] = box
-            elif box.label == entities[1]:
+                entity_1_box = box
+            elif box.label == entity_2:
                 judgement["entity_2_present"] = True
-                entity_boxes[1] = box
+                entity_2_box = box
             annotated_image = annotate_with_bounding_box(annotated_image, box)
 
         judgement["score"] = 0.0
         # assign score based on the spatial relationship inferred from the judgement
         if judgement["entity_1_present"] and judgement["entity_2_present"]:
             center_distance_x = abs(
-                entity_boxes[0].box_coordinates_center.x
-                - entity_boxes[1].box_coordinates_center.x
+                entity_1_box.box_coordinates_center.x
+                - entity_2_box.box_coordinates_center.x
             )
             center_distance_y = abs(
-                entity_boxes[0].box_coordinates_center.y
-                - entity_boxes[1].box_coordinates_center.y
+                entity_1_box.box_coordinates_center.y
+                - entity_2_box.box_coordinates_center.y
             )
-            iou = get_iou(entity_boxes[0], entity_boxes[1])
+            iou = get_iou(entity_1_box, entity_2_box)
             score = 0.0
-            if response["relation"] in ["near", "next to", "on side of", "side of"]:
+            if relationship in ["near", "next to", "on side of", "side of"]:
                 if (
                     abs(center_distance_x) < self.distance_threshold
                     or abs(center_distance_y) < self.distance_threshold
@@ -91,7 +91,7 @@ class SpatialRelationshipMetric2D:
                     score = self.distance_threshold / max(
                         abs(center_distance_x), abs(center_distance_y)
                     )
-            elif response["relation"] == "on the right of":
+            elif relationship == "on the right of":
                 if center_distance_x < 0:
                     if (
                         abs(center_distance_x) > abs(center_distance_y)
@@ -103,7 +103,7 @@ class SpatialRelationshipMetric2D:
                         and iou >= self.iou_threshold
                     ):
                         score = self.iou_threshold / iou
-            elif response["relation"] == "on the left of":
+            elif relationship == "on the left of":
                 if center_distance_x > 0:
                     if (
                         abs(center_distance_x) > abs(center_distance_y)
@@ -117,7 +117,7 @@ class SpatialRelationshipMetric2D:
                         score = self.iou_threshold / iou
                 else:
                     score = 0.0
-            elif response["relation"] == "on the bottom of":
+            elif relationship == "on the bottom of":
                 if center_distance_y < 0:
                     if (
                         abs(center_distance_y) > abs(center_distance_x)
@@ -129,7 +129,7 @@ class SpatialRelationshipMetric2D:
                         and iou >= self.iou_threshold
                     ):
                         score = self.iou_threshold / iou
-            elif response["relation"] == "on the top of":
+            elif relationship == "on the top of":
                 if center_distance_y > 0:
                     if (
                         abs(center_distance_y) > abs(center_distance_x)
@@ -168,13 +168,15 @@ class SpatialRelationshipMetric2D:
 
     @weave.op()
     async def __call__(
-        self, prompt: str, response: Dict[str, Any], model_output: Dict[str, Any]
+        self, prompt: str, entity_1: str, entity_2: str, relationship: str, model_output: Dict[str, Any]
     ) -> Dict[str, Union[bool, float, int]]:
         """Calculate the spatial relationship score for the given prompt and model output.
 
         Args:
             prompt (str): The prompt for the model.
-            response (Dict[str, Any]): The response from the model.
+            entity_1 (str): The first entity in the spatial relationship.
+            entity_2 (str): The second entity in the spatial relationship.
+            relationship (str): The spatial relationship between the two entities.
             model_output (Dict[str, Any]): The output from the model.
 
         Returns:
@@ -184,5 +186,5 @@ class SpatialRelationshipMetric2D:
 
         image = model_output["image"]
         boxes: List[BoundingBox] = self.judge.predict(image)
-        judgement = self.compose_judgement(image, response, boxes)
+        judgement = self.compose_judgement(image, entity_1, entity_2, relationship, boxes)
         return judgement

@@ -14,8 +14,8 @@ from hemm.metrics.spatial_relationship.judges import DETRSpatialRelationShipJudg
 def main(
     project="2d-spatial-relationship",
     entity="hemm-eval",
-    dataset_artifact: str = "hemm-eval/2d-spatial-relationship/t2i_compbench_spatial_prompts:v0",
-    dataset_ref: Optional[str] = "t2i_compbench_spatial_prompts:v0",
+    dataset_artifact: str = "hemm-eval/2d-spatial-relationship/2d-spatial-prompts-mscoco:v0",
+    dataset_ref: Optional[str] = "2d-spatial-prompts-mscoco:v0",
     dataset_limit: Optional[int] = None,
     diffusion_model_address: str = "stabilityai/stable-diffusion-2-1",
     diffusion_model_enable_cpu_offfload: bool = False,
@@ -29,7 +29,7 @@ def main(
     artifact_dir = artifact.download()
 
     if dataset_limit:
-        spatial_prompt_file = os.path.join(artifact_dir, "spatial.jsonl")
+        spatial_prompt_file = os.path.join(artifact_dir, "dataset.jsonl")
         with jsonlines.open(spatial_prompt_file) as reader:
             for obj in reader:
                 dataset = obj[:dataset_limit]
