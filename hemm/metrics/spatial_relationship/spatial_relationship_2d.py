@@ -39,7 +39,12 @@ class SpatialRelationshipMetric2D:
 
     @weave.op()
     def compose_judgement(
-        self, image: str, entity_1: str, entity_2: str, relationship: str, boxes: List[BoundingBox]
+        self,
+        image: str,
+        entity_1: str,
+        entity_2: str,
+        relationship: str,
+        boxes: List[BoundingBox],
     ) -> Dict[str, Any]:
         """Compose the judgement based on the response and the predicted bounding boxes.
 
@@ -168,7 +173,12 @@ class SpatialRelationshipMetric2D:
 
     @weave.op()
     async def __call__(
-        self, prompt: str, entity_1: str, entity_2: str, relationship: str, model_output: Dict[str, Any]
+        self,
+        prompt: str,
+        entity_1: str,
+        entity_2: str,
+        relationship: str,
+        model_output: Dict[str, Any],
     ) -> Dict[str, Union[bool, float, int]]:
         """Calculate the spatial relationship score for the given prompt and model output.
 
@@ -186,5 +196,7 @@ class SpatialRelationshipMetric2D:
 
         image = model_output["image"]
         boxes: List[BoundingBox] = self.judge.predict(image)
-        judgement = self.compose_judgement(image, entity_1, entity_2, relationship, boxes)
+        judgement = self.compose_judgement(
+            image, entity_1, entity_2, relationship, boxes
+        )
         return judgement
