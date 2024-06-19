@@ -4,7 +4,6 @@ import fire
 import weave
 
 import wandb
-from hemm.eval_pipelines import StableDiffusionEvaluationPipeline
 from hemm.metrics.spatial_relationship import SpatialPromptAnalyzer
 
 
