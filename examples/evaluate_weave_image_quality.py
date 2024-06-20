@@ -2,7 +2,7 @@ import fire
 import wandb
 import weave
 
-from hemm.eval_pipelines import BaseWeaveModel, EvaluationPipeline
+from hemm.eval_pipelines import BaseDiffusionModel, EvaluationPipeline
 from hemm.metrics.image_quality import LPIPSMetric, PSNRMetric, SSIMMetric
 
 
@@ -14,7 +14,9 @@ def main(
     wandb.init(project=project_name, job_type="evaluation")
     weave.init(project_name=project_name)
 
-    model = BaseWeaveModel(diffusion_model_name_or_path=diffusion_model_name_or_path)
+    model = BaseDiffusionModel(
+        diffusion_model_name_or_path=diffusion_model_name_or_path
+    )
     evaluation_pipeline = EvaluationPipeline(model=model)
 
     # Add PSNR Metric

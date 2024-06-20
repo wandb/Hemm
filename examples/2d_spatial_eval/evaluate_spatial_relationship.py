@@ -6,7 +6,7 @@ import jsonlines
 import wandb
 import weave
 
-from hemm.eval_pipelines import BaseWeaveModel, EvaluationPipeline
+from hemm.eval_pipelines import BaseDiffusionModel, EvaluationPipeline
 from hemm.metrics.spatial_relationship import SpatialRelationshipMetric2D
 from hemm.metrics.spatial_relationship.judges import DETRSpatialRelationShipJudge
 
@@ -36,7 +36,7 @@ def main(
     else:
         dataset = weave.ref(dataset_ref).get()
 
-    diffusion_model = BaseWeaveModel(
+    diffusion_model = BaseDiffusionModel(
         diffusion_model_name_or_path=diffusion_model_address,
         enable_cpu_offfload=diffusion_model_enable_cpu_offfload,
         image_height=image_size[0],

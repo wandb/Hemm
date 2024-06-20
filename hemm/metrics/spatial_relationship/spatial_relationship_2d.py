@@ -58,7 +58,7 @@ class SpatialRelationshipMetric2D:
             Dict[str, Any]: The comprehensive spatial relationship judgement.
         """
         _ = prompt
-        
+
         # Determine presence of entities in the judgement
         judgement = {
             "entity_1_present": False,

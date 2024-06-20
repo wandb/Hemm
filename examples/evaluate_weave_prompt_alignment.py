@@ -2,7 +2,7 @@ import fire
 import wandb
 import weave
 
-from hemm.eval_pipelines import BaseWeaveModel, EvaluationPipeline
+from hemm.eval_pipelines import BaseDiffusionModel, EvaluationPipeline
 from hemm.metrics.prompt_alignment import CLIPScoreMetric, CLIPImageQualityScoreMetric
 
 
@@ -17,7 +17,7 @@ def main(
     wandb.init(project=project, job_type="evaluation")
     weave.init(project_name=project)
 
-    model = BaseWeaveModel(
+    model = BaseDiffusionModel(
         diffusion_model_name_or_path=diffusion_model_name_or_path,
         enable_cpu_offfload=diffusion_model_enable_cpu_offfload,
     )
