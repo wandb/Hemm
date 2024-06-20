@@ -68,7 +68,7 @@ lpips_metric = LPIPSMetric(image_size=evaluation_pipeline.image_size)
 evaluation_pipeline.add_metric(lpips_metric)
 
 # Evaluate!
-diffuion_evaluation_pipeline(dataset="COCO:v0")
+evaluation_pipeline(dataset="COCO:v0")
 ```
 
 | ![](./docs/assets/weave_leaderboard.gif) | 
