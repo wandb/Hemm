@@ -43,11 +43,11 @@ def annotate_with_bounding_box(
     image: Union[str, Image.Image], entity: BoundingBox
 ) -> Image.Image:
     """Annotate an image with a bounding box and label.
-    
+
     Args:
         image (Union[str, Image.Image]): The image to annotate.
         entity (BoundingBox): The bounding box to annotate.
-    
+
     Returns:
         Image.Image: The annotated image.
     """
