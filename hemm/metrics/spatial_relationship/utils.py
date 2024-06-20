@@ -42,6 +42,15 @@ def get_iou(entity_1: BoundingBox, entity_2: BoundingBox) -> float:
 def annotate_with_bounding_box(
     image: Union[str, Image.Image], entity: BoundingBox
 ) -> Image.Image:
+    """Annotate an image with a bounding box and label.
+    
+    Args:
+        image (Union[str, Image.Image]): The image to annotate.
+        entity (BoundingBox): The bounding box to annotate.
+    
+    Returns:
+        Image.Image: The annotated image.
+    """
     image = base64_decode_image(image) if isinstance(image, str) else image
     image = np.array(image)
     cv2.rectangle(

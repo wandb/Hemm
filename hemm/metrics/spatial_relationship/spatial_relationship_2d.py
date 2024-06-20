@@ -50,8 +50,11 @@ class SpatialRelationshipMetric2D:
         """Compose the judgement based on the response and the predicted bounding boxes.
 
         Args:
+            prompt (str): The prompt using which the image was generated.
             image (str): The base64 encoded image.
-            response (Dict[str, Any]): The response from the model.
+            entity_1 (str): First entity.
+            entity_2 (str): Second entity.
+            relationship (str): Relationship between the entities.
             boxes (List[BoundingBox]): The predicted bounding boxes.
 
         Returns:
