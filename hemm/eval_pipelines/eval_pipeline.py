@@ -16,7 +16,7 @@ class EvaluationPipeline(ABC):
     """Evaluation pipeline to evaluate the a multi-modal generative model.
 
     Args:
-        model (BaseWeaveModel): The model to evaluate.
+        model (BaseDiffusionModel): The model to evaluate.
         seed (int): Seed value for the random number generator.
     """
 

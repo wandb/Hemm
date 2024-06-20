@@ -8,8 +8,8 @@ from diffusers import DiffusionPipeline
 from ..utils import base64_encode_image
 
 
-class BaseWeaveModel(weave.Model):
-    """Base Weave Model for Diffusion Models.
+class BaseDiffusionModel(weave.Model):
+    """Base `weave.Model` wrapping `diffusers.DiffusionPipeline`.
 
     Args:
         diffusion_model_name_or_path (str): The name or path of the diffusion model.
