@@ -12,10 +12,6 @@ from weave import Evaluation
 from .model import BaseWeaveModel
 
 
-class HemmEvaluation(Evaluation):
-    pass
-
-
 class EvaluationPipeline(ABC):
     """Evaluation pipeline to evaluate the a multi-modal generative model.
 
@@ -109,7 +105,7 @@ class EvaluationPipeline(ABC):
                 passed, it is assumed to be a Weave dataset reference.
         """
         dataset = weave.ref(dataset).get() if isinstance(dataset, str) else dataset
-        evaluation = HemmEvaluation(
+        evaluation = Evaluation(
             dataset=dataset,
             scorers=[metric_fn.__call__ for metric_fn in self.metric_functions],
         )

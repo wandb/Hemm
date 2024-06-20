@@ -40,6 +40,7 @@ class SpatialRelationshipMetric2D:
     @weave.op()
     def compose_judgement(
         self,
+        prompt: str,
         image: str,
         entity_1: str,
         entity_2: str,
@@ -56,6 +57,8 @@ class SpatialRelationshipMetric2D:
         Returns:
             Dict[str, Any]: The comprehensive spatial relationship judgement.
         """
+        _ = prompt
+        
         # Determine presence of entities in the judgement
         judgement = {
             "entity_1_present": False,
@@ -197,6 +200,6 @@ class SpatialRelationshipMetric2D:
         image = model_output["image"]
         boxes: List[BoundingBox] = self.judge.predict(image)
         judgement = self.compose_judgement(
-            image, entity_1, entity_2, relationship, boxes
+            prompt, image, entity_1, entity_2, relationship, boxes
         )
-        return judgement
+        return {self.name: judgement["score"]}
