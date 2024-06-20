@@ -26,6 +26,7 @@ jupyter = "^1.0.0"
 black = "^24.4.2"
 torcheval = "^0.0.7"
 ruff = "^0.4.5"
+openai = "^1.33.0"
 
 [tool.poetry.extras]
 core = [

@@ -18,20 +18,18 @@ First let's publish a small subset of the MSCOCO validation set as a [Weave Data
 import weave
 from hemm.utils import publish_dataset_to_weave
 
+weave.init(project_name="t2i_eval")
 
-if __name__ == "__main__":
-    weave.init(project_name="t2i_eval")
-
-    dataset_reference = publish_dataset_to_weave(
-        dataset_path="HuggingFaceM4/COCO",
-        prompt_column="sentences",
-        ground_truth_image_column="image",
-        split="validation",
-        dataset_transforms=[
-            lambda item: {**item, "sentences": item["sentences"]["raw"]}
-        ],
-        data_limit=5,
-    )
+dataset_reference = publish_dataset_to_weave(
+    dataset_path="HuggingFaceM4/COCO",
+    prompt_column="sentences",
+    ground_truth_image_column="image",
+    split="validation",
+    dataset_transforms=[
+        lambda item: {**item, "sentences": item["sentences"]["raw"]}
+    ],
+    data_limit=5,
+)
 ```
 
 | ![](./assets/weave_dataset.gif) | 
@@ -41,31 +39,36 @@ if __name__ == "__main__":
 Next, you can evaluate Stable Diffusion 1.4 on image quality metrics as shown in the following code snippet:
 
 ```python
-from hemm.eval_pipelines import StableDiffusionEvaluationPipeline
+import wandb
+import weave
+
+from hemm.eval_pipelines import BaseWeaveModel, EvaluationPipeline
 from hemm.metrics.image_quality import LPIPSMetric, PSNRMetric, SSIMMetric
 
+# Initialize Weave and WandB
+wandb.init(project="image-quality-leaderboard", job_type="evaluation")
+weave.init(project_name="image-quality-leaderboard")
 
-if __name__ == "__main__":
-    diffuion_evaluation_pipeline = StableDiffusionEvaluationPipeline(
-        "CompVis/stable-diffusion-v1-4"
-    )
+# Initialize the diffusion model to be evaluated as a `weave.Model` using `BaseWeaveModel`
+model = BaseWeaveModel(diffusion_model_name_or_path="CompVis/stable-diffusion-v1-4")
 
-    # Add PSNR Metric
-    psnr_metric = PSNRMetric(image_size=diffuion_evaluation_pipeline.image_size)
-    diffuion_evaluation_pipeline.add_metric(psnr_metric)
+# Add the model to the evaluation pipeline
+evaluation_pipeline = EvaluationPipeline(model=model)
 
-    # Add SSIM Metric
-    ssim_metric = SSIMMetric(image_size=diffuion_evaluation_pipeline.image_size)
-    diffuion_evaluation_pipeline.add_metric(ssim_metric)
-    
-    # Add LPIPS Metric
-    lpips_metric = LPIPSMetric(image_size=diffuion_evaluation_pipeline.image_size)
-    diffuion_evaluation_pipeline.add_metric(lpips_metric)
+# Add PSNR Metric to the evaluation pipeline
+psnr_metric = PSNRMetric(image_size=evaluation_pipeline.image_size)
+evaluation_pipeline.add_metric(psnr_metric)
 
-    diffuion_evaluation_pipeline(
-        dataset="COCO:v1",
-        init_params=dict(project="t2i_eval", entity="geekyrakshit"),
-    )
+# Add SSIM Metric to the evaluation pipeline
+ssim_metric = SSIMMetric(image_size=evaluation_pipeline.image_size)
+evaluation_pipeline.add_metric(ssim_metric)
+
+# Add LPIPS Metric to the evaluation pipeline
+lpips_metric = LPIPSMetric(image_size=evaluation_pipeline.image_size)
+evaluation_pipeline.add_metric(lpips_metric)
+
+# Evaluate!
+evaluation_pipeline(dataset="COCO:v0")
 ```
 
 | ![](./assets/weave_leaderboard.gif) | 

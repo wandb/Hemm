@@ -1,13 +1,12 @@
 from functools import partial
-from PIL import Image
 from typing import Any, Dict, Union
 
 import numpy as np
 import torch
-from tqdm.auto import tqdm
-from torchmetrics.functional.multimodal import clip_image_quality_assessment
-
 import weave
+from PIL import Image
+from torchmetrics.functional.multimodal import clip_image_quality_assessment
+from tqdm.auto import tqdm
 
 from .base import BasePromptAlignmentMetric
 
