@@ -1,10 +1,12 @@
 import base64
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from io import BytesIO
 from typing import Any, Dict, Union
 
 from PIL import Image
 from pydantic import BaseModel
+
+from ..base import BaseMetric
 
 
 class ComputeMetricOutput(BaseModel):
@@ -14,7 +16,7 @@ class ComputeMetricOutput(BaseModel):
     ground_truth_image: str
 
 
-class BaseImageQualityMetric(ABC):
+class BaseImageQualityMetric(BaseMetric):
 
     def __init__(self, name: str) -> None:
         """Base class for Image Quality Metrics.
@@ -47,9 +49,9 @@ class BaseImageQualityMetric(ABC):
         """
         pass
 
-    def __call__(
+    def evaluate(
         self, prompt: str, ground_truth_image: str, model_output: Dict[str, Any]
-    ) -> Union[float, Dict[str, float]]:
+    ) -> Dict[str, float]:
         """Compute the metric for the given images. This method is used as the scorer
         function for `weave.Evaluation` in the evaluation pipelines.
 

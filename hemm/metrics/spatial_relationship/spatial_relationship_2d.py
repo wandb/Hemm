@@ -9,8 +9,10 @@ from .judges.commons import BoundingBox
 from .utils import annotate_with_bounding_box, get_iou
 from ...utils import base64_decode_image, base64_encode_image
 
+from ..base import BaseMetric
 
-class SpatialRelationshipMetric2D:
+
+class SpatialRelationshipMetric2D(BaseMetric):
     """Spatial relationship metric for 2D images as proposed by Section 4.2 from the paper
     [T2I-CompBench: A Comprehensive Benchmark for Open-world Compositional Text-to-image Generation](https://arxiv.org/pdf/2307.06350).
 
@@ -60,6 +62,7 @@ class SpatialRelationshipMetric2D:
         distance_threshold: Optional[float] = 150,
         name: Optional[str] = "spatial_relationship_score",
     ) -> None:
+        super().__init__()
         self.judge = judge
         self.judge._initialize_models()
         self.judge_config = self.judge.model_dump(mode="json")
@@ -212,7 +215,7 @@ class SpatialRelationshipMetric2D:
         }
 
     @weave.op()
-    async def __call__(
+    async def evaluate(
         self,
         prompt: str,
         entity_1: str,
