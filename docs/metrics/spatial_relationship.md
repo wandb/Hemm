@@ -41,7 +41,7 @@ This module aims to implement the Spatial relationship metric described in secti
         model_address=detr_model_address, revision=detr_revision
     )
 
-    # Add PSNR Metric to the evaluation pipeline
+    # Add 2d spatial relationship Metric to the evaluation pipeline
     metric = SpatialRelationshipMetric2D(judge=judge, name="2d_spatial_relationship_score")
     evaluation_pipeline.add_metric(metric)
 
