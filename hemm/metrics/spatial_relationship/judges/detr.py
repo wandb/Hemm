@@ -18,10 +18,12 @@ class DETRSpatialRelationShipJudge(weave.Model):
     Args:
         model_address (str, optional): The address of the model to use.
         revision (str, optional): The revision of the model to use.
+        name (str, optional): The name of the judge model
     """
 
     model_address: str = "facebook/detr-resnet-50"
     revision: str = "no_timm"
+    name: str = "detr_spatial_relationship_judge"
     _feature_extractor: DetrImageProcessor = None
     _object_detection_model: DetrForObjectDetection = None
 

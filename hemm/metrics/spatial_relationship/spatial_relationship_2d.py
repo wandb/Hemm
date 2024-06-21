@@ -62,6 +62,7 @@ class SpatialRelationshipMetric2D:
     ) -> None:
         self.judge = judge
         self.judge._initialize_models()
+        self.judge_config = self.judge.model_dump(mode="json")
         self.iou_threshold = iou_threshold
         self.distance_threshold = distance_threshold
         self.name = name
@@ -193,7 +194,8 @@ class SpatialRelationshipMetric2D:
                         base64_decode_image(annotated_image)
                         if isinstance(annotated_image, str)
                         else annotated_image
-                    )
+                    ),
+                    "judge_config": self.judge_config,
                 },
             }
         )
@@ -206,6 +208,7 @@ class SpatialRelationshipMetric2D:
                     else annotated_image
                 )
             },
+            "judge_config": self.judge_config,
         }
 
     @weave.op()
