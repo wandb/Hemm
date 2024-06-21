@@ -11,7 +11,14 @@ This module aims to implement the Spatial relationship metric described in secti
 | Weave gives us a holistic view of the evaluations to drill into individual ouputs and scores. |
 
 
-??? example
+!!! example
+    ## Step 1: Generate evaluation dataset
+    
+    Generate an evaluation dataset using the MSCOCO object vocabulary and publish it as a Weave Dataset.
+    You can follow [this notebook](./notebooks/generate_spatial_relationship_dataset.ipynb) to learn about the porocess.
+
+    ## Step 2: Evaluate
+
     ```python
     import wandb
     import weave
@@ -34,7 +41,7 @@ This module aims to implement the Spatial relationship metric described in secti
         model_address=detr_model_address, revision=detr_revision
     )
 
-    # Add PSNR Metric to the evaluation pipeline
+    # Add 2d spatial relationship Metric to the evaluation pipeline
     metric = SpatialRelationshipMetric2D(judge=judge, name="2d_spatial_relationship_score")
     evaluation_pipeline.add_metric(metric)
 
@@ -42,7 +49,10 @@ This module aims to implement the Spatial relationship metric described in secti
     evaluation_pipeline(dataset="t2i_compbench_spatial_prompts:v0")
     ```
 
+## Metrics
 
 :::hemm.metrics.spatial_relationship.spatial_relationship_2d
+
+## Judges
 
 :::hemm.metrics.spatial_relationship.judges

@@ -9,10 +9,43 @@ from .judges.commons import BoundingBox
 from .utils import annotate_with_bounding_box, get_iou
 from ...utils import base64_decode_image, base64_encode_image
 
+from ..base import BaseMetric
 
-class SpatialRelationshipMetric2D:
+
+class SpatialRelationshipMetric2D(BaseMetric):
     """Spatial relationship metric for 2D images as proposed by Section 4.2 from the paper
     [T2I-CompBench: A Comprehensive Benchmark for Open-world Compositional Text-to-image Generation](https://arxiv.org/pdf/2307.06350).
+
+    ??? example "Sample usage"
+        ```python
+        import wandb
+        import weave
+
+        from hemm.eval_pipelines import BaseDiffusionModel, EvaluationPipeline
+        from hemm.metrics.image_quality import LPIPSMetric, PSNRMetric, SSIMMetric
+
+        # Initialize Weave and WandB
+        wandb.init(project="image-quality-leaderboard", job_type="evaluation")
+        weave.init(project_name="image-quality-leaderboard")
+
+        # Initialize the diffusion model to be evaluated as a `weave.Model` using `BaseWeaveModel`
+        model = BaseDiffusionModel(diffusion_model_name_or_path="CompVis/stable-diffusion-v1-4")
+
+        # Add the model to the evaluation pipeline
+        evaluation_pipeline = EvaluationPipeline(model=model)
+
+        # Define the judge model for 2d spatial relationship metric
+        judge = DETRSpatialRelationShipJudge(
+            model_address=detr_model_address, revision=detr_revision
+        )
+
+        # Add 2d spatial relationship Metric to the evaluation pipeline
+        metric = SpatialRelationshipMetric2D(judge=judge, name="2d_spatial_relationship_score")
+        evaluation_pipeline.add_metric(metric)
+
+        # Evaluate!
+        evaluation_pipeline(dataset="t2i_compbench_spatial_prompts:v0")
+        ```
 
     Args:
         judge (Union[weave.Model, DETRSpatialRelationShipJudge]): The judge model to predict
@@ -29,8 +62,10 @@ class SpatialRelationshipMetric2D:
         distance_threshold: Optional[float] = 150,
         name: Optional[str] = "spatial_relationship_score",
     ) -> None:
+        super().__init__()
         self.judge = judge
         self.judge._initialize_models()
+        self.judge_config = self.judge.model_dump(mode="json")
         self.iou_threshold = iou_threshold
         self.distance_threshold = distance_threshold
         self.name = name
@@ -162,7 +197,8 @@ class SpatialRelationshipMetric2D:
                         base64_decode_image(annotated_image)
                         if isinstance(annotated_image, str)
                         else annotated_image
-                    )
+                    ),
+                    "judge_config": self.judge_config,
                 },
             }
         )
@@ -175,10 +211,11 @@ class SpatialRelationshipMetric2D:
                     else annotated_image
                 )
             },
+            "judge_config": self.judge_config,
         }
 
     @weave.op()
-    async def __call__(
+    async def evaluate(
         self,
         prompt: str,
         entity_1: str,

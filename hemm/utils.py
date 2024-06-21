@@ -66,7 +66,7 @@ def save_weave_dataset_rows_to_artifacts(
         dataset_rows (List[Dict]): List of dataset rows.
         dump_dir (str): Directory to dump the results.
     """
-    with jsonlines.open(os.path.join(dump_dir, "spatial.jsonl"), mode="w") as writer:
+    with jsonlines.open(os.path.join(dump_dir, "data.jsonl"), mode="w") as writer:
         writer.write(dataset_rows)
     artifact = wandb.Artifact(name="t2i_compbench_spatial_prompts", type="dataset")
     artifact.add_file(local_path=os.path.join(dump_dir, "data.jsonl"))

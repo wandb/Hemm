@@ -1,12 +1,14 @@
 import base64
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from io import BytesIO
 from typing import Any, Dict, Union
 
 from PIL import Image
 
+from ..base import BaseMetric
 
-class BasePromptAlignmentMetric(ABC):
+
+class BasePromptAlignmentMetric(BaseMetric):
     """Base class for Prompt Alignment Metrics.
 
     Args:
@@ -35,7 +37,7 @@ class BasePromptAlignmentMetric(ABC):
         """
         pass
 
-    def __call__(self, prompt: str, model_output: Dict[str, Any]) -> Dict[str, float]:
+    def evaluate(self, prompt: str, model_output: Dict[str, Any]) -> Dict[str, float]:
         """Compute the metric for the given image. This method is used as the scorer
         function for `weave.Evaluation` in the evaluation pipelines.
 

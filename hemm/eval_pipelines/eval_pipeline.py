@@ -10,6 +10,7 @@ from PIL import Image
 from weave import Evaluation
 
 from .model import BaseDiffusionModel
+from ..metrics.base import BaseMetric
 
 
 class EvaluationPipeline(ABC):
@@ -32,7 +33,7 @@ class EvaluationPipeline(ABC):
         self.table_columns = ["model", "prompt", "generated_image"]
         self.table_rows: List = []
         self.wandb_table: wandb.Table = None
-        self.metric_functions: List[Callable] = []
+        self.metric_functions: List[BaseMetric] = []
 
         self.evaluation_configs = {
             "pretrained_model_name_or_path": self.model.diffusion_model_name_or_path,
@@ -46,11 +47,11 @@ class EvaluationPipeline(ABC):
             "diffusion_pipeline": dict(self.model._pipeline.config),
         }
 
-    def add_metric(self, metric_fn: Callable):
+    def add_metric(self, metric_fn: BaseMetric):
         """Add a metric function to the evaluation pipeline.
 
         Args:
-            metric_fn (Callable): Metric function to evaluate the generated images.
+            metric_fn (BaseMetric): Metric function to evaluate the generated images.
         """
         self.table_columns.append(metric_fn.__class__.__name__)
         self.evaluation_configs.update(metric_fn.config)
@@ -107,7 +108,7 @@ class EvaluationPipeline(ABC):
         dataset = weave.ref(dataset).get() if isinstance(dataset, str) else dataset
         evaluation = Evaluation(
             dataset=dataset,
-            scorers=[metric_fn.__call__ for metric_fn in self.metric_functions],
+            scorers=[metric_fn.evaluate for metric_fn in self.metric_functions],
         )
         with weave.attributes(self.evaluation_configs):
             asyncio.run(evaluation.evaluate(self.infer))
