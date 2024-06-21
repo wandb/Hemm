@@ -27,17 +27,21 @@ black = "^24.4.2"
 torcheval = "^0.0.7"
 ruff = "^0.4.5"
 openai = "^1.33.0"
+transformers = "^4.41.2"
+jsonlines = "^4.0.0"
 
 [tool.poetry.extras]
 core = [
     "diffusers",
+    "transformers",
     "accelerate",
     "wandb",
     "weave",
     "poetry",
     "huggingface-hub",
     "datasets",
-    "fire"
+    "fire",
+    "jsonlines"
 ]
 docs = [
     "mkdocs",
