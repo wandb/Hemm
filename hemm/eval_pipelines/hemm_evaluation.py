@@ -1,4 +1,3 @@
-import time
 import traceback
 from typing import Callable, Optional, Union, cast
 
@@ -14,19 +13,28 @@ from weave.trace.env import get_weave_parallelism
 from weave.trace.op import Op
 
 
+def replace_backslash_dot(d):
+    if isinstance(d, dict):
+        new_dict = {}
+        for k, v in d.items():
+            new_key = k.replace("\\.", ".")
+            new_dict[new_key] = replace_backslash_dot(v)
+        return new_dict
+    elif isinstance(d, list):
+        return [replace_backslash_dot(i) for i in d]
+    else:
+        return d
+
+
 class HemmEvaluation(weave.Evaluation):
     dataset: Union[Dataset, list]
     scorers: Optional[list[Union[Callable, Op, Scorer]]] = None
     preprocess_model_input: Optional[Callable] = None
     trials: int = 1
-    wandb_summary_table_name: str = None
-    wandb_summary_table: wandb.Table = wandb.Table(columns=["summary"])
 
     @weave.op()
     async def evaluate(self, model: Union[Callable, Model]) -> dict:
         eval_rows = []
-
-        start_time = time.time()
 
         async def eval_example(example: dict) -> dict:
             try:
@@ -43,7 +51,7 @@ class HemmEvaluation(weave.Evaluation):
         dataset = cast(Dataset, self.dataset)
         _rows = dataset.rows
         trial_rows = list(_rows) * self.trials
-        async for example, eval_row in async_foreach(
+        async for _, eval_row in async_foreach(
             trial_rows, eval_example, get_weave_parallelism()
         ):
             n_complete += 1
@@ -59,5 +67,6 @@ class HemmEvaluation(weave.Evaluation):
             eval_rows.append(eval_row)
 
         summary = await self.summarize(eval_rows)
+        wandb.log(replace_backslash_dot(summary))
         rich.print("Evaluation summary", summary)
         return summary

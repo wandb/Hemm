@@ -103,7 +103,6 @@ class EvaluationPipeline(ABC):
         evaluation = HemmEvaluation(
             dataset=dataset,
             scorers=[metric_fn.evaluate for metric_fn in self.metric_functions],
-            wandb_summary_table_name=f"Evalution/summary/{self.model.diffusion_model_name_or_path}",
         )
         with weave.attributes(self.evaluation_configs):
             asyncio.run(evaluation.evaluate(self.infer))
