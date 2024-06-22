@@ -10,3 +10,7 @@ class BaseMetric(ABC):
     @abstractmethod
     def evaluate(self) -> Dict[str, Any]:
         pass
+
+    @abstractmethod
+    def evaluate_async(self) -> Dict[str, Any]:
+        pass

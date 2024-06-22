@@ -243,3 +243,14 @@ class SpatialRelationshipMetric2D(BaseMetric):
             prompt, image, entity_1, entity_2, relationship, boxes
         )
         return {self.name: judgement["score"]}
+
+    @weave.op()
+    async def evaluate_async(
+        self,
+        prompt: str,
+        entity_1: str,
+        entity_2: str,
+        relationship: str,
+        model_output: Dict[str, Any],
+    ) -> Dict[str, Union[bool, float, int]]:
+        return self.evaluate(prompt, entity_1, entity_2, relationship, model_output)

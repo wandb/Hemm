@@ -48,6 +48,13 @@ class BLIPScoreMertric(BasePromptAlignmentMetric):
         )
 
     @weave.op()
-    def __call__(self, prompt: str, model_output: Dict[str, Any]) -> Dict[str, float]:
+    def evaluate(self, prompt: str, model_output: Dict[str, Any]) -> Dict[str, float]:
         _ = "BLIPScoreMertric"
-        return super().__call__(prompt, model_output)
+        return super().evaluate(prompt, model_output)
+
+    @weave.op()
+    async def evaluate_async(
+        self, prompt: str, model_output: Dict[str, Any]
+    ) -> Dict[str, float]:
+        _ = "BLIPScoreMertric"
+        return self.evaluate(prompt, model_output)
