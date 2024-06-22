@@ -1,12 +1,9 @@
 import asyncio
-import base64
 from abc import ABC
-from io import BytesIO
 from typing import Dict, List, Union
 
 import wandb
 import weave
-from PIL import Image
 
 from .hemm_evaluation import HemmEvaluation
 from .model import BaseDiffusionModel
