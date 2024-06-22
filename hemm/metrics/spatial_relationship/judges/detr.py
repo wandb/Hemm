@@ -3,13 +3,12 @@ from io import BytesIO
 from typing import List
 
 import torch
-from PIL import Image
-from transformers import DetrImageProcessor, DetrForObjectDetection
-
 import weave
+from PIL import Image
+from transformers import DetrForObjectDetection, DetrImageProcessor
 
-from .commons import BoundingBox, CartesianCoordinate2D
 from ....utils import base64_decode_image
+from .commons import BoundingBox, CartesianCoordinate2D
 
 
 class DETRSpatialRelationShipJudge(weave.Model):

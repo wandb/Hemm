@@ -1,15 +1,15 @@
 from typing import Any, Dict, List, Optional, Union
 
-import wandb
 import weave
 from PIL import Image
 
+import wandb
+
+from ...utils import base64_decode_image, base64_encode_image
+from ..base import BaseMetric
 from .judges import DETRSpatialRelationShipJudge
 from .judges.commons import BoundingBox
 from .utils import annotate_with_bounding_box, get_iou
-from ...utils import base64_decode_image, base64_encode_image
-
-from ..base import BaseMetric
 
 
 class SpatialRelationshipMetric2D(BaseMetric):

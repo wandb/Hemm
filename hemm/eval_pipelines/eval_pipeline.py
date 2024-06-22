@@ -1,14 +1,15 @@
-from abc import ABC
 import asyncio
+from abc import ABC
 from typing import Dict, List, Union
 
-import wandb
 import weave
 
-from .hemm_evaluation import AsyncHemmEvaluation, SyncHemmEvaluation
-from .model import BaseDiffusionModel
+import wandb
+
 from ..metrics.base import BaseMetric
 from ..utils import base64_decode_image
+from .hemm_evaluation import AsyncHemmEvaluation, SyncHemmEvaluation
+from .model import BaseDiffusionModel
 
 
 class EvaluationPipeline(ABC):

@@ -6,16 +6,17 @@ from typing import Any, Callable, Dict, List, Optional, Union, cast
 
 import numpy as np
 import rich
-import wandb
 import weave
 from tqdm.auto import tqdm
 from weave.flow.dataset import Dataset
 from weave.flow.model import Model, get_infer_method
 from weave.flow.scorer import Scorer, auto_summarize, get_scorer_attributes
 from weave.flow.util import async_foreach
-from weave.trace.errors import OpCallError
 from weave.trace.env import get_weave_parallelism
-from weave.trace.op import Op, BoundOp
+from weave.trace.errors import OpCallError
+from weave.trace.op import BoundOp, Op
+
+import wandb
 
 
 def replace_backslash_dot(d):

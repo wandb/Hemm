@@ -1,9 +1,9 @@
 import fire
-import wandb
 import weave
 
+import wandb
 from hemm.eval_pipelines import BaseDiffusionModel, EvaluationPipeline
-from hemm.metrics.prompt_alignment import CLIPScoreMetric, CLIPImageQualityScoreMetric
+from hemm.metrics.prompt_alignment import CLIPImageQualityScoreMetric, CLIPScoreMetric
 
 
 def main(
