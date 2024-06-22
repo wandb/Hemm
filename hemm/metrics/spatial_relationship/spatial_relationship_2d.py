@@ -215,7 +215,7 @@ class SpatialRelationshipMetric2D(BaseMetric):
         }
 
     @weave.op()
-    async def evaluate(
+    def evaluate(
         self,
         prompt: str,
         entity_1: str,

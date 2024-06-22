@@ -70,7 +70,7 @@ class LPIPSMetric(BaseImageQualityMetric):
         )
 
     @weave.op()
-    async def __call__(
+    def __call__(
         self, prompt: str, ground_truth_image: str, model_output: Dict[str, Any]
     ) -> Union[float, Dict[str, float]]:
         _ = "LPIPSMetric"
