@@ -1,11 +1,10 @@
-import asyncio
 from abc import ABC
 from typing import Dict, List, Union
 
 import wandb
 import weave
 
-from .hemm_evaluation import HemmEvaluation
+from .hemm_evaluation import SyncHemmEvaluation
 from .model import BaseDiffusionModel
 from ..metrics.base import BaseMetric
 from ..utils import base64_decode_image
@@ -56,7 +55,7 @@ class EvaluationPipeline(ABC):
         self.metric_functions.append(metric_fn)
 
     @weave.op()
-    async def infer(self, prompt: str) -> Dict[str, str]:
+    def infer(self, prompt: str) -> Dict[str, str]:
         """Inference function to generate images for the given prompt.
 
         Args:
@@ -100,10 +99,10 @@ class EvaluationPipeline(ABC):
                 passed, it is assumed to be a Weave dataset reference.
         """
         dataset = weave.ref(dataset).get() if isinstance(dataset, str) else dataset
-        evaluation = HemmEvaluation(
+        evaluation = SyncHemmEvaluation(
             dataset=dataset,
             scorers=[metric_fn.evaluate for metric_fn in self.metric_functions],
         )
         with weave.attributes(self.evaluation_configs):
-            asyncio.run(evaluation.evaluate(self.infer))
+            evaluation.evaluate(self.infer)
         self.log_summary()
