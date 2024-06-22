@@ -2,15 +2,16 @@ import asyncio
 import base64
 from abc import ABC
 from io import BytesIO
-from typing import Callable, Dict, List, Union
+from typing import Dict, List, Union
 
 import wandb
 import weave
 from PIL import Image
-from weave import Evaluation
 
+from .hemm_evaluation import HemmEvaluation
 from .model import BaseDiffusionModel
 from ..metrics.base import BaseMetric
+from ..utils import base64_decode_image
 
 
 class EvaluationPipeline(ABC):
@@ -76,11 +77,7 @@ class EvaluationPipeline(ABC):
             [
                 self.model.diffusion_model_name_or_path,
                 prompt,
-                wandb.Image(
-                    Image.open(
-                        BytesIO(base64.b64decode(output["image"].split(";base64,")[-1]))
-                    )
-                ),
+                wandb.Image(base64_decode_image(output["image"])),
             ]
         )
         return output
@@ -106,9 +103,10 @@ class EvaluationPipeline(ABC):
                 passed, it is assumed to be a Weave dataset reference.
         """
         dataset = weave.ref(dataset).get() if isinstance(dataset, str) else dataset
-        evaluation = Evaluation(
+        evaluation = HemmEvaluation(
             dataset=dataset,
             scorers=[metric_fn.evaluate for metric_fn in self.metric_functions],
+            wandb_summary_table_name=f"Evalution/summary/{self.model.diffusion_model_name_or_path}",
         )
         with weave.attributes(self.evaluation_configs):
             asyncio.run(evaluation.evaluate(self.infer))
