@@ -8,7 +8,7 @@ import wandb
 
 from ..metrics.base import BaseMetric
 from ..utils import base64_decode_image
-from .hemm_evaluation import AsyncHemmEvaluation, SyncHemmEvaluation
+from .hemm_evaluation import AsyncHemmEvaluation, HemmEvaluation
 from .model import BaseDiffusionModel
 
 
@@ -127,7 +127,7 @@ class EvaluationPipeline(ABC):
             with weave.attributes(self.evaluation_configs):
                 asyncio.run(evaluation.evaluate(self.infer_async))
         else:
-            evaluation = SyncHemmEvaluation(
+            evaluation = HemmEvaluation(
                 dataset=dataset,
                 scorers=[metric_fn.evaluate for metric_fn in self.metric_functions],
             )
