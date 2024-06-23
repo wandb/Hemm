@@ -78,7 +78,7 @@ class AsyncHemmEvaluation(weave.Evaluation):
         return summary
 
 
-class SyncHemmEvaluation(weave.Evaluation):
+class HemmEvaluation(weave.Evaluation):
     dataset: Union[Dataset, List[Dict]]
     scorers: Optional[list[Union[Callable, Op, Scorer]]] = None
     preprocess_model_input: Optional[Callable] = None
