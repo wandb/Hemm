@@ -2,13 +2,14 @@ import asyncio
 from abc import ABC
 from typing import Dict, List, Union
 
-import wandb
 import weave
 
-from .hemm_evaluation import HemmEvaluation
-from .model import BaseDiffusionModel
+import wandb
+
 from ..metrics.base import BaseMetric
 from ..utils import base64_decode_image
+from .hemm_evaluation import AsyncHemmEvaluation, HemmEvaluation
+from .model import BaseDiffusionModel
 
 
 class EvaluationPipeline(ABC):
@@ -56,7 +57,7 @@ class EvaluationPipeline(ABC):
         self.metric_functions.append(metric_fn)
 
     @weave.op()
-    async def infer(self, prompt: str) -> Dict[str, str]:
+    def infer(self, prompt: str) -> Dict[str, str]:
         """Inference function to generate images for the given prompt.
 
         Args:
@@ -79,6 +80,19 @@ class EvaluationPipeline(ABC):
         )
         return output
 
+    @weave.op()
+    async def infer_async(self, prompt: str) -> Dict[str, str]:
+        """Async inference function to generate images for the given prompt.
+
+        Args:
+            prompt (str): Prompt to generate the image.
+
+        Returns:
+            Dict[str, str]: Dictionary containing base64 encoded image to be logged as
+                a Weave object.
+        """
+        return self.infer(prompt)
+
     def log_summary(self):
         """Log the evaluation summary to the Weights & Biases dashboard."""
         config = wandb.config
@@ -92,18 +106,31 @@ class EvaluationPipeline(ABC):
             {f"Evalution/{self.model.diffusion_model_name_or_path}": self.wandb_table}
         )
 
-    def __call__(self, dataset: Union[List[Dict], str]) -> None:
+    def __call__(
+        self, dataset: Union[List[Dict], str], async_evaluation: bool = False
+    ) -> None:
         """Evaluate the Stable Diffusion model on the given dataset.
 
         Args:
             dataset (Union[List[Dict], str]): Dataset to evaluate the model on. If a string is
                 passed, it is assumed to be a Weave dataset reference.
+            async_evaluation (bool): Flag to enable asynchronous evaluation.
         """
         dataset = weave.ref(dataset).get() if isinstance(dataset, str) else dataset
-        evaluation = HemmEvaluation(
-            dataset=dataset,
-            scorers=[metric_fn.evaluate for metric_fn in self.metric_functions],
-        )
-        with weave.attributes(self.evaluation_configs):
-            asyncio.run(evaluation.evaluate(self.infer))
+        if async_evaluation:
+            evaluation = AsyncHemmEvaluation(
+                dataset=dataset,
+                scorers=[
+                    metric_fn.evaluate_async for metric_fn in self.metric_functions
+                ],
+            )
+            with weave.attributes(self.evaluation_configs):
+                asyncio.run(evaluation.evaluate(self.infer_async))
+        else:
+            evaluation = HemmEvaluation(
+                dataset=dataset,
+                scorers=[metric_fn.evaluate for metric_fn in self.metric_functions],
+            )
+            with weave.attributes(self.evaluation_configs):
+                evaluation.evaluate(self.infer)
         self.log_summary()

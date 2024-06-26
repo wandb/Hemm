@@ -80,8 +80,13 @@ class CLIPImageQualityScoreMetric(BasePromptAlignmentMetric):
         return score_dict
 
     @weave.op()
-    async def __call__(
+    def evaluate(self, prompt: str, model_output: Dict[str, Any]) -> Dict[str, float]:
+        _ = "CLIPImageQualityScoreMetric"
+        return super().evaluate(prompt, model_output)
+
+    @weave.op()
+    async def evaluate_async(
         self, prompt: str, model_output: Dict[str, Any]
     ) -> Dict[str, float]:
         _ = "CLIPImageQualityScoreMetric"
-        return super().__call__(prompt, model_output)
+        return self.evaluate(prompt, model_output)

@@ -1,7 +1,7 @@
 import fire
-import wandb
 import weave
 
+import wandb
 from hemm.eval_pipelines import BaseDiffusionModel, EvaluationPipeline
 from hemm.metrics.image_quality import LPIPSMetric, PSNRMetric, SSIMMetric
 

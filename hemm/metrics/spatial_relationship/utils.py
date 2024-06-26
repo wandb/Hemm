@@ -4,8 +4,8 @@ import cv2
 import numpy as np
 from PIL import Image
 
-from .judges.commons import BoundingBox
 from ...utils import base64_decode_image
+from .judges.commons import BoundingBox
 
 
 def get_iou(entity_1: BoundingBox, entity_2: BoundingBox) -> float:

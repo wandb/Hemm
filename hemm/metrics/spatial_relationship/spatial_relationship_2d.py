@@ -1,15 +1,15 @@
 from typing import Any, Dict, List, Optional, Union
 
-import wandb
 import weave
 from PIL import Image
 
+import wandb
+
+from ...utils import base64_decode_image, base64_encode_image
+from ..base import BaseMetric
 from .judges import DETRSpatialRelationShipJudge
 from .judges.commons import BoundingBox
 from .utils import annotate_with_bounding_box, get_iou
-from ...utils import base64_decode_image, base64_encode_image
-
-from ..base import BaseMetric
 
 
 class SpatialRelationshipMetric2D(BaseMetric):
@@ -215,7 +215,7 @@ class SpatialRelationshipMetric2D(BaseMetric):
         }
 
     @weave.op()
-    async def evaluate(
+    def evaluate(
         self,
         prompt: str,
         entity_1: str,
@@ -243,3 +243,14 @@ class SpatialRelationshipMetric2D(BaseMetric):
             prompt, image, entity_1, entity_2, relationship, boxes
         )
         return {self.name: judgement["score"]}
+
+    @weave.op()
+    async def evaluate_async(
+        self,
+        prompt: str,
+        entity_1: str,
+        entity_2: str,
+        relationship: str,
+        model_output: Dict[str, Any],
+    ) -> Dict[str, Union[bool, float, int]]:
+        return self.evaluate(prompt, entity_1, entity_2, relationship, model_output)
