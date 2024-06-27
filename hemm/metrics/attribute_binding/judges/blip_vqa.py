@@ -3,7 +3,7 @@ from typing import Dict, List
 import torch
 import torch.nn.functional as F
 import weave
-from transformers import BlipProcessor, BlipForQuestionAnswering
+from transformers import BlipForQuestionAnswering, BlipProcessor
 
 from ....utils import base64_decode_image
 

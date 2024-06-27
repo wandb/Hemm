@@ -1,6 +1,7 @@
 from typing import Any, Dict, Optional, Union
 
 import weave
+
 from ..base import BaseMetric
 from .judges import BlipVQAJudge
 
