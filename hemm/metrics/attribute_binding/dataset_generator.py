@@ -46,6 +46,7 @@ class AttributeBindingDatasetGenerator:
             openai_model=openai_model,
             num_prompts=num_prompts_in_single_call,
         )
+        self.model_configs = self.attribute_binding_model.model_dump()
         self.attribute_binding_model._initialize()
         self.num_prompts_in_single_call = num_prompts_in_single_call
         self.num_api_calls = num_api_calls
@@ -106,11 +107,16 @@ class AttributeBindingDatasetGenerator:
         return eval_response.model_dump()
 
     def __call__(self, dump_dir: Optional[str] = "./dump") -> None:
-        wandb.init(project=self.project_name, job_type="attribute_binding_dataset")
+        wandb.init(
+            project=self.project_name,
+            job_type="attribute_binding_dataset",
+            config=self.model_configs,
+        )
         weave.init(project_name=self.project_name)
         evaluation = AttributeBindingEvaluation(
             dataset=[{"prompt": "", "seed": seed} for seed in self.openai_seeds],
             scorers=[self.evaluate_generated_response],
         )
-        asyncio.run(evaluation.evaluate(self.attribute_binding_model.predict))
+        with weave.attributes(self.model_configs):
+            asyncio.run(evaluation.evaluate(self.attribute_binding_model.predict))
         self.publish_dataset(dump_dir)
