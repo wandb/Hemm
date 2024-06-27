@@ -1,8 +1,9 @@
 import base64
 import io
+import json
 import os
 from pathlib import Path
-from typing import Callable, Dict, List, Optional, Union
+from typing import Callable, Dict, List, Optional, Tuple, Union
 
 import jsonlines
 import weave
@@ -164,3 +165,12 @@ def publish_dataset_to_weave(
     weave_dataset = weave.Dataset(name=dataset_name, rows=weave_dataset_rows)
     weave.publish(weave_dataset)
     return weave.ref(dataset_name).get() if get_weave_dataset_reference else None
+
+
+def str_to_json(json_str: str) -> Union[None, Dict]:
+    structured_response: Dict = None
+    try:
+        structured_response = json.loads(json_str)
+    except ValueError as e:
+        return None
+    return structured_response
