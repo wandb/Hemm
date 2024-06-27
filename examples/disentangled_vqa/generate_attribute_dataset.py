@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional, Union
 
 import fire
 from hemm.metrics.attribute_binding import AttributeBindingDatasetGenerator
@@ -6,7 +6,7 @@ from hemm.metrics.attribute_binding import AttributeBindingDatasetGenerator
 
 def main(
     openai_model: Optional[str] = "gpt-3.5-turbo",
-    openai_seed: Optional[int] = 42,
+    openai_seed: Optional[Union[int, List[int]]] = None,
     num_prompts_in_single_call: Optional[int] = 20,
     num_api_calls: Optional[int] = 50,
     project_name: Optional[str] = "diffusion_leaderboard",

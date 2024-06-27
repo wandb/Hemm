@@ -2,6 +2,7 @@ import base64
 import io
 import json
 import os
+import random
 from pathlib import Path
 from typing import Callable, Dict, List, Optional, Tuple, Union
 
@@ -174,3 +175,11 @@ def str_to_json(json_str: str) -> Union[None, Dict]:
     except ValueError as e:
         return None
     return structured_response
+
+
+def autogenerate_seed() -> int:
+    max_seed = int(1024 * 1024 * 1024)
+    seed = random.randint(1, max_seed)
+    seed = -seed if seed < 0 else seed
+    seed = seed % max_seed
+    return seed

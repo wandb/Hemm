@@ -1,6 +1,6 @@
 import asyncio
 import os
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
 import jsonlines
 import weave
@@ -9,7 +9,7 @@ from pydantic import BaseModel
 import wandb
 
 from ...eval_pipelines.hemm_evaluation import AsyncHemmEvaluation
-from ...utils import str_to_json
+from ...utils import autogenerate_seed, str_to_json
 from .attribute_binding_model import AttributeBindingModel
 
 
@@ -29,14 +29,21 @@ class AttributeBindingDatasetGenerator:
     def __init__(
         self,
         openai_model: Optional[str] = "gpt-3.5-turbo",
-        openai_seed: Optional[int] = None,
+        openai_seed: Optional[Union[int, List[int]]] = None,
         num_prompts_in_single_call: Optional[int] = 20,
         num_api_calls: Optional[int] = 50,
         project_name: Optional[str] = "diffusion_leaderboard",
     ) -> None:
+        if not openai_seed:
+            self.openai_seeds = [autogenerate_seed() for _ in range(num_api_calls)]
+        elif isinstance(openai_seed, int):
+            self.openai_seeds = [openai_seed] * num_api_calls
+        elif isinstance(openai_seed, list) and len(openai_seed) != num_api_calls:
+            raise ValueError(
+                "Length of `openai_seed` should be equal to `num_api_calls`"
+            )
         self.attribute_binding_model = AttributeBindingModel(
             openai_model=openai_model,
-            openai_seed=openai_seed,
             num_prompts=num_prompts_in_single_call,
         )
         self.attribute_binding_model._initialize()
@@ -102,7 +109,7 @@ class AttributeBindingDatasetGenerator:
         wandb.init(project=self.project_name, job_type="attribute_binding_dataset")
         weave.init(project_name=self.project_name)
         evaluation = AttributeBindingEvaluation(
-            dataset=[{"prompt": ""}] * self.num_api_calls,
+            dataset=[{"prompt": "", "seed": seed} for seed in self.openai_seeds],
             scorers=[self.evaluate_generated_response],
         )
         asyncio.run(evaluation.evaluate(self.attribute_binding_model.predict))

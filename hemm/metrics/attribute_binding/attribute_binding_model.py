@@ -6,7 +6,6 @@ from openai import OpenAI
 
 class AttributeBindingModel(weave.Model):
     openai_model: Optional[str] = "gpt-3.5-turbo"
-    openai_seed: Optional[int] = None
     num_prompts: Optional[int] = 20
     _openai_client: Optional[OpenAI] = None
     _system_prompt: Optional[str] = None
@@ -65,12 +64,12 @@ class AttributeBindingModel(weave.Model):
         self._openai_client = OpenAI()
 
     @weave.op()
-    def predict(self) -> Dict[str, str]:
+    def predict(self, seed: int) -> Dict[str, str]:
         return {
             "response": self._openai_client.chat.completions.create(
                 model=self.openai_model,
                 response_format={"type": "json_object"},
-                seed=self.openai_seed,
+                seed=seed,
                 messages=[
                     {
                         "role": "system",
