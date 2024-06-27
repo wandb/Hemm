@@ -5,7 +5,7 @@ from ..base import BaseMetric
 from .judges import BlipVQAJudge
 
 
-class DisentangledVLMMetric(BaseMetric):
+class DisentangledVQAMetric(BaseMetric):
 
     def __init__(
         self,
