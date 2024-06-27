@@ -9,7 +9,7 @@ def main(
     openai_seed: Optional[Union[int, List[int]]] = None,
     num_prompts_in_single_call: Optional[int] = 20,
     num_api_calls: Optional[int] = 50,
-    project_name: Optional[str] = "diffusion_leaderboard",
+    project_name: Optional[str] = "disentangled_vqa",
     dump_dir: Optional[str] = "./dump",
 ):
     AttributeBindingDatasetGenerator(
