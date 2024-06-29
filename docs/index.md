@@ -3,9 +3,13 @@
 Hemm is a library for performing comprehensive benchmark of text-to-image diffusion models on image quality and prompt comprehension integrated with [Weights & Biases](https://wandb.ai/site) and [Weave](https://wandb.github.io/weave/). 
 
 Hemm is highly inspired by the following projects:
+
 - [Holistic Evaluation of Text-To-Image Models](https://crfm.stanford.edu/helm/heim/v1.0.0/)
+
 - [T2I-CompBench: A Comprehensive Benchmark for Open-world Compositional Text-to-image Generation](https://karine-h.github.io/T2I-CompBench/)
+
 - [T2I-CompBench++: An Enhanced and Comprehensive Benchmark for Compositional Text-to-image Generation](https://karine-h.github.io/T2I-CompBench-new/)
+
 - [GenEval: An Object-Focused Framework for Evaluating Text-to-Image Alignment](https://arxiv.org/abs/2310.11513)
 
 !!! warning
