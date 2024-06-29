@@ -38,7 +38,7 @@ class DisentangledVQAMetric(BaseMetric):
         return judgement
 
     @weave.op()
-    async def evaluate(
+    async def evaluate_async(
         self,
         prompt: str,
         adj_1: str,
