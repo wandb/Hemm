@@ -13,7 +13,7 @@ from .utils import annotate_with_bounding_box, get_iou
 
 
 class SpatialRelationshipMetric2D(BaseMetric):
-    """Spatial relationship metric for 2D images as proposed by Section 4.2 from the paper
+    """Spatial relationship metric for image generation as proposed in Section 4.2 from the paper
     [T2I-CompBench: A Comprehensive Benchmark for Open-world Compositional Text-to-image Generation](https://arxiv.org/pdf/2307.06350).
 
     ??? example "Sample usage"
