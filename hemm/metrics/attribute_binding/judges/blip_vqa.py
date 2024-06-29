@@ -9,6 +9,14 @@ from ....utils import base64_decode_image
 
 
 class BlipVQAJudge(weave.Model):
+    """Weave Model to judge the presence of entities in an image using the
+    [Blip-VQA model](https://huggingface.co/Salesforce/blip-vqa-base).
+
+    Args:
+        blip_processor_address (str): The address of the BlipProcessor model.
+        blip_vqa_address (str): The address of the BlipForQuestionAnswering model.
+        device (str): The device to use for inference
+    """
 
     blip_processor_address: str = "Salesforce/blip-vqa-base"
     blip_vqa_address: str = "Salesforce/blip-vqa-base"
@@ -57,6 +65,18 @@ class BlipVQAJudge(weave.Model):
     def predict(
         self, adj_1: str, noun_1: str, adj_2: str, noun_2: str, image: str
     ) -> Dict:
+        """Predict the probabilities presence of entities in an image using the Blip-VQA model.
+
+        Args:
+            adj_1 (str): The adjective of the first entity.
+            noun_1 (str): The noun of the first entity.
+            adj_2 (str): The adjective of the second entity.
+            noun_2 (str): The noun of the second entity.
+            image (str): The base64 encoded image.
+
+        Returns:
+            Dict: The probabilities of the presence of the entities.
+        """
         question_1 = f"is {adj_1} {noun_1} present in the picture?"
         question_2 = f"is {adj_2} {noun_2} present in the picture?"
         return {
