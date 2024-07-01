@@ -15,6 +15,9 @@ class DisentangledVQAMetric(BaseMetric):
         ```python
         import wandb
         import weave
+        from hemm.eval_pipelines import BaseDiffusionModel, EvaluationPipeline
+        from hemm.metrics.vqa import DisentangledVQAMetric
+        from hemm.metrics.vqa.judges import BlipVQAJudge
 
         wandb.init(project=project, entity=entity, job_type="evaluation")
         weave.init(project_name=project)

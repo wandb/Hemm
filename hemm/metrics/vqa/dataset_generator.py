@@ -130,7 +130,7 @@ class AttributeBindingDatasetGenerator:
 
     ??? example "Sample usage"
         ```python
-        from hemm.metrics.attribute_binding import AttributeBindingDatasetGenerator
+        from hemm.metrics.vqa import AttributeBindingDatasetGenerator
 
         dataset_generator = AttributeBindingDatasetGenerator(
             openai_model="gpt-4o",
