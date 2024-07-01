@@ -9,8 +9,8 @@ from pydantic import BaseModel
 
 import wandb
 
-from ...eval_pipelines.hemm_evaluation import AsyncHemmEvaluation
-from ...utils import autogenerate_seed, str_to_json
+from ....eval_pipelines.hemm_evaluation import AsyncHemmEvaluation
+from ....utils import autogenerate_seed, str_to_json
 
 
 class AttributeBindingEvaluation(AsyncHemmEvaluation):
