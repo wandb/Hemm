@@ -1,10 +1,7 @@
-import base64
-from io import BytesIO
 from typing import List
 
 import torch
 import weave
-from PIL import Image
 from transformers import DetrForObjectDetection, DetrImageProcessor
 
 from ....utils import base64_decode_image
