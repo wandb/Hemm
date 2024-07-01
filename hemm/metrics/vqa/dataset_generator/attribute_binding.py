@@ -9,8 +9,8 @@ from pydantic import BaseModel
 
 import wandb
 
-from ...eval_pipelines.hemm_evaluation import AsyncHemmEvaluation
-from ...utils import autogenerate_seed, str_to_json
+from ....eval_pipelines.hemm_evaluation import AsyncHemmEvaluation
+from ....utils import autogenerate_seed, str_to_json
 
 
 class AttributeBindingEvaluation(AsyncHemmEvaluation):
@@ -130,7 +130,7 @@ class AttributeBindingDatasetGenerator:
 
     ??? example "Sample usage"
         ```python
-        from hemm.metrics.attribute_binding import AttributeBindingDatasetGenerator
+        from hemm.metrics.vqa import AttributeBindingDatasetGenerator
 
         dataset_generator = AttributeBindingDatasetGenerator(
             openai_model="gpt-4o",

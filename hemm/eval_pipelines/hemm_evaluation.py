@@ -47,7 +47,7 @@ class AsyncHemmEvaluation(weave.Evaluation):
                 eval_row = await self.predict_and_score(model, example)
             except OpCallError as e:
                 raise e
-            except Exception as e:
+            except Exception:
                 rich.print("Predict and score failed")
                 traceback.print_exc()
                 return {"model_output": None, "scores": {}}
@@ -62,9 +62,9 @@ class AsyncHemmEvaluation(weave.Evaluation):
         ):
             n_complete += 1
             rich.print(f"Evaluated {n_complete} of {len(trial_rows)} examples")
-            if eval_row == None:
+            if eval_row is None:
                 eval_row = {"model_output": None, "scores": {}}
-            if eval_row["scores"] == None:
+            if eval_row["scores"] is None:
                 eval_row["scores"] = {}
             for scorer in self.scorers or []:
                 scorer_name, _, _ = get_scorer_attributes(scorer)
@@ -88,7 +88,7 @@ class HemmEvaluation(weave.Evaluation):
     def predict_and_score(
         self, model: Union[Callable, Model], example: dict
     ) -> Dict[str, Any]:
-        if self.preprocess_model_input == None:
+        if self.preprocess_model_input is None:
             model_input = example
         else:
             model_input = self.preprocess_model_input(example)  # type: ignore
@@ -153,7 +153,7 @@ class HemmEvaluation(weave.Evaluation):
                 """
             )
             raise OpCallError(message)
-        except Exception as e:
+        except Exception:
             rich.print("model_output failed")
             traceback.print_exc()
             model_output = None
@@ -256,7 +256,7 @@ class HemmEvaluation(weave.Evaluation):
                 eval_row = self.predict_and_score(model, example)
             except OpCallError as e:
                 raise e
-            except Exception as e:
+            except Exception:
                 rich.print("Predict and score failed")
                 traceback.print_exc()
                 return {"model_output": None, "scores": {}}
@@ -265,9 +265,9 @@ class HemmEvaluation(weave.Evaluation):
         for example in tqdm(trial_rows, desc="Evaluating", leave=False):
             eval_row = eval_example(example)
             n_complete += 1
-            if eval_row == None:
+            if eval_row is None:
                 eval_row = {"model_output": None, "scores": {}}
-            if eval_row["scores"] == None:
+            if eval_row["scores"] is None:
                 eval_row["scores"] = {}
             for scorer in self.scorers or []:
                 scorer_name, _, _ = get_scorer_attributes(scorer)

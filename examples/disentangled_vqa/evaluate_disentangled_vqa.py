@@ -7,8 +7,8 @@ import weave
 
 import wandb
 from hemm.eval_pipelines import BaseDiffusionModel, EvaluationPipeline
-from hemm.metrics.attribute_binding import DisentangledVQAMetric
-from hemm.metrics.attribute_binding.judges import BlipVQAJudge
+from hemm.metrics.vqa import DisentangledVQAMetric
+from hemm.metrics.vqa.judges import BlipVQAJudge
 
 
 def main(

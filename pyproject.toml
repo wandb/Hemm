@@ -29,6 +29,7 @@ ruff = "^0.4.5"
 openai = "^1.33.0"
 transformers = "^4.41.2"
 jsonlines = "^4.0.0"
+spacy = "^3.7.5"
 
 [tool.poetry.extras]
 core = [
@@ -41,7 +42,8 @@ core = [
     "huggingface-hub",
     "datasets",
     "fire",
-    "jsonlines"
+    "jsonlines",
+    "spacy"
 ]
 docs = [
     "mkdocs",
