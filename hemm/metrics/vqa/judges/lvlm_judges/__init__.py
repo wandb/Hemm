@@ -1,3 +1,15 @@
-from .openai_judge import OpenAIJudge
+from .openai_judge import (
+    OpenAIJudge,
+    OpenAIActionJudge,
+    OpenAIComplexJudge,
+    OpenAINumeracyJudge,
+    OpenAISpatialRelationshipJudge,
+)
 
-__all__ = ["OpenAIJudge"]
+__all__ = [
+    "OpenAIJudge",
+    "OpenAIActionJudge",
+    "OpenAIComplexJudge",
+    "OpenAINumeracyJudge",
+    "OpenAISpatialRelationshipJudge",
+]

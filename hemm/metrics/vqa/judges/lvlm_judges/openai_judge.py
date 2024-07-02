@@ -1,10 +1,8 @@
-from enum import Enum
 from typing import Any, Dict, List, Optional
 
 import spacy
 import weave
 from openai import OpenAI
-from pydantic import BaseModel
 
 from .commons import PromptCategory, TaggedPromptParts
 from .....utils import str_to_json
@@ -22,7 +20,8 @@ class OpenAIJudge(weave.Model):
         self._nlp_pipeline = spacy.load(self.prompt_pipeline)
         self._openai_client = OpenAI()
         self.system_prompt = f"""
-    You are a helpful assistant meant to identify any objects and their {self.prompt_property.name} in the given image.
+    You are a helpful assistant meant to identify any objects and their {self.prompt_property.name}
+    in the given image.
         """
 
     @weave.op()
@@ -99,17 +98,93 @@ class OpenAISpatialRelationshipJudge(OpenAIJudge):
             PromptCategory.spatial_3d,
         ]
         super()._initialize()
+        self.system_prompt = """
+    You are a helpful assistant meant to identify objects and their spatial layout in the image.
+        """
 
     def frame_question(self, prompt: str) -> List[str]:
         question = f"""
-            You are my assistant to identify objects and their spatial layout in the image.
-            According to the image, evaluate if the text \"{prompt}\" is correctly portrayed in the image.
+    According to the image, evaluate if the text \"{prompt}\" is correctly portrayed in the image.
+    Give a score from 0 to 100, according the criteria:
+    5: correct spatial layout in the image for all objects mentioned in the text.
+    4: basically, spatial layout of objects matches the text.
+    3: spatial layout not aligned properly with the text.
+    2: image not aligned properly with the text.
+    1: image almost irrelevant to the text.
+    Provide your analysis and explanation in JSON format with the following keys: score (e.g., 2),
+    explanation (within 20 words).
+        """
+        return [question]
+
+
+class OpenAIActionJudge(OpenAIJudge):
+
+    def _initialize(self):
+        assert self.prompt_property == PromptCategory.action
+        super()._initialize()
+        self.system_prompt = """
+    You are a helpful assistant meant to identify the actions, events, objects and their relationships in the image.
+        """
+
+    def frame_question(self, prompt: str) -> List[str]:
+        question = f"""
+    According to the image, evaluate if the text \"{prompt}\" is correctly portrayed in the image.
+    Give a score from 0 to 100, according the criteria:
+    5: the image accurately portrayed the actions, events and relationships between objects described in the text.
+    4: the image portrayed most of the actions, events and relationships but with minor discrepancies.
+    3: the image depicted some elements, but action relationships between objects are not correct.
+    2: the image failed to convey the full scope of the text.
+    1: the image did not depict any actions or events that match the text.
+    Provide your analysis and explanation in JSON format with the following keys: score (e.g., 2),
+    explanation (within 20 words).
+        """
+        return [question]
+
+
+class OpenAINumeracyJudge(OpenAIJudge):
+
+    def _initialize(self):
+        assert self.prompt_property == PromptCategory.numeracy
+        super()._initialize()
+        self.system_prompt = """
+    You are a helpful assistant meant to identify objects and their quantities in the image.
+        """
+
+    def frame_question(self, prompt: str) -> List[str]:
+        question = f"""
+    According to the image and your previous answer, evaluate how well the image aligns with the text prompt: \"{prompt}\"
+    Give a score from 0 to 100, according the criteria:
+    5: correct numerical content in the image for all objects mentioned in the text
+    4: basically, numerical content of objects matches the text
+    3: numerical content not aligned properly with the text
+    2: image not aligned properly with the text
+    1: image almost irrelevant to the text
+    Provide your analysis and explanation in JSON format with the following keys: score (e.g., 2),
+    explanation (within 20 words)."
+        """
+        return [question]
+
+
+class OpenAIComplexJudge(OpenAIJudge):
+
+    def _initialize(self):
+        assert self.prompt_property == PromptCategory.complex
+        super()._initialize()
+        self.system_prompt = """
+    You are a helpful assistant meant to evaluate the correspondence of the image to a given text prompt.
+    focus on the objects in the image and their attributes (such as color, shape, texture),
+    spatial layout and action relationships.
+        """
+
+    def frame_question(self, prompt: str) -> List[str]:
+        question = f"""
+            According to the image and your previous answer, evaluate how well the image aligns with the text prompt: \"{prompt}\"
             Give a score from 0 to 100, according the criteria:
-            5: correct spatial layout in the image for all objects mentioned in the text.
-            4: basically, spatial layout of objects matches the text.
-            3: spatial layout not aligned properly with the text.
-            2: image not aligned properly with the text.
-            1: image almost irrelevant to the text.
+            5: the image perfectly matches the content of the text prompt, with no discrepancies.
+            4: the image portrayed most of the actions, events and relationships but with minor discrepancies.
+            3: the image depicted some elements in the text prompt, but ignored some key parts or details.
+            2: the image did not depict any actions or events that match the text.
+            1: the image failed to convey the full scope in the text prompt.
             Provide your analysis and explanation in JSON format with the following keys: score (e.g., 2),
             explanation (within 20 words).
         """
