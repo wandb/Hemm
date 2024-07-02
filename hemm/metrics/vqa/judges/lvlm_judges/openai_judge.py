@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Any, Dict, List, Optional
 
 import spacy
@@ -5,18 +6,13 @@ import weave
 from openai import OpenAI
 from pydantic import BaseModel
 
+from .commons import PromptCategory, TaggedPromptParts
 from .....utils import str_to_json
-
-
-class TaggedPromptParts(BaseModel):
-    entity: str
-    noun: str
-    adjective: str
 
 
 class OpenAIJudge(weave.Model):
     prompt_pipeline: str = "en_core_web_sm"
-    object_property: str = "color"
+    prompt_property: PromptCategory = PromptCategory.color
     openai_model: str = "gpt-4o"
     system_prompt: Optional[str] = None
     _nlp_pipeline: spacy.Language = None
@@ -26,7 +22,7 @@ class OpenAIJudge(weave.Model):
         self._nlp_pipeline = spacy.load(self.prompt_pipeline)
         self._openai_client = OpenAI()
         self.system_prompt = f"""
-    You are a helpful assistant meant to identify any objects and their {self.object_property} in the given image.
+    You are a helpful assistant meant to identify any objects and their {self.prompt_property.name} in the given image.
         """
 
     @weave.op()
@@ -49,15 +45,16 @@ class OpenAIJudge(weave.Model):
         return tagged_prompt_parts
 
     @weave.op()
-    def frame_question(self, tagged_prompt_parts: List[TaggedPromptParts]) -> List[str]:
+    def frame_question(self, prompt: str) -> List[str]:
+        tagged_prompt_parts = self.extract_prompt_parts(prompt)
         questions: List[str] = []
         for tagged_prompt_part in tagged_prompt_parts:
             questions.append(
                 f"""
             According to the image, evaluate if there is a {tagged_prompt_part.entity} in the image.
             Give a score from 0 to 100, according the criteria:
-            4: there is {tagged_prompt_part.noun}, and {self.object_property} is {tagged_prompt_part.adjective}.
-            3: there is {tagged_prompt_part.noun}, {self.object_property} is mostly {tagged_prompt_part.adjective}.
+            4: there is {tagged_prompt_part.noun}, and {self.prompt_property.name} is {tagged_prompt_part.adjective}.
+            3: there is {tagged_prompt_part.noun}, {self.prompt_property.name} is mostly {tagged_prompt_part.adjective}.
             2: there is {tagged_prompt_part.noun}, but it is not {tagged_prompt_part.adjective}.
             1: no {tagged_prompt_part.noun} in the image.\n\
             Provide your analysis and explanation in JSON format with the following keys: score (e.g., 1), \
@@ -68,8 +65,7 @@ class OpenAIJudge(weave.Model):
 
     @weave.op()
     def predict(self, prompt: str, image: str) -> List[Dict[str, Any]]:
-        tagged_prompt_parts = self.extract_prompt_parts(prompt)
-        questions = self.frame_question(tagged_prompt_parts)
+        questions = self.frame_question(prompt)
         answers = []
         for question in questions:
             response = (
@@ -93,3 +89,28 @@ class OpenAIJudge(weave.Model):
             structured_response = str_to_json(response)
             answers.append(structured_response)
         return answers
+
+
+class OpenAISpatialRelationshipJudge(OpenAIJudge):
+
+    def _initialize(self):
+        assert self.prompt_property in [
+            PromptCategory.spatial,
+            PromptCategory.spatial_3d,
+        ]
+        super()._initialize()
+
+    def frame_question(self, prompt: str) -> List[str]:
+        question = f"""
+            You are my assistant to identify objects and their spatial layout in the image.
+            According to the image, evaluate if the text \"{prompt}\" is correctly portrayed in the image.
+            Give a score from 0 to 100, according the criteria:
+            5: correct spatial layout in the image for all objects mentioned in the text.
+            4: basically, spatial layout of objects matches the text.
+            3: spatial layout not aligned properly with the text.
+            2: image not aligned properly with the text.
+            1: image almost irrelevant to the text.
+            Provide your analysis and explanation in JSON format with the following keys: score (e.g., 2),
+            explanation (within 20 words).
+        """
+        return [question]
