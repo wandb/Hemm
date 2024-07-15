@@ -1,5 +1,5 @@
 import os
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 
 import instructor
 import spacy
@@ -7,11 +7,11 @@ import weave
 from openai import OpenAI
 from pydantic import BaseModel
 
-from .....utils import str_to_json
 from .commons import PromptCategory, TaggedPromptParts, get_system_prompt
 
 
 class OpenAIJudgeMent(BaseModel):
+    question: str
     score: int
     explanation: str
 
