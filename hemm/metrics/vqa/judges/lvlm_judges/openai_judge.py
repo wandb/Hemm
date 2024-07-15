@@ -126,7 +126,7 @@ class OpenAIJudge(weave.Model):
         return questions
 
     @weave.op()
-    def predict(self, prompt: str, image: str) -> List[Dict[str, Any]]:
+    def predict(self, prompt: str, image: str) -> List[OpenAIJudgeMent]:
         questions = self.frame_question(prompt)
         answers = []
         for question in questions:
@@ -148,6 +148,5 @@ class OpenAIJudge(weave.Model):
                 .choices[0]
                 .message.content
             )
-            structured_response = str_to_json(response)
-            answers.append(structured_response)
+            answers.append(response)
         return answers

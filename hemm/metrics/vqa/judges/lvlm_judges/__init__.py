@@ -1,15 +1,3 @@
-from .openai_judge import (
-    OpenAIActionJudge,
-    OpenAIComplexJudge,
-    OpenAIJudge,
-    OpenAINumeracyJudge,
-    OpenAISpatialRelationshipJudge,
-)
+from .openai_judge import OpenAIJudge, PromptCategory
 
-__all__ = [
-    "OpenAIJudge",
-    "OpenAIActionJudge",
-    "OpenAIComplexJudge",
-    "OpenAINumeracyJudge",
-    "OpenAISpatialRelationshipJudge",
-]
+__all__ = ["OpenAIJudge", "PromptCategory"]
