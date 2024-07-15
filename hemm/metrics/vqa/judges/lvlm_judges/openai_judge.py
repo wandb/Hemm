@@ -1,11 +1,19 @@
+import os
 from typing import Any, Dict, List, Optional
 
+import instructor
 import spacy
 import weave
 from openai import OpenAI
+from pydantic import BaseModel
 
-from .commons import PromptCategory, TaggedPromptParts
 from .....utils import str_to_json
+from .commons import PromptCategory, TaggedPromptParts
+
+
+class OpenAIJudgeMent(BaseModel):
+    score: int
+    explanation: str
 
 
 class OpenAIJudge(weave.Model):
@@ -18,10 +26,12 @@ class OpenAIJudge(weave.Model):
 
     def _initialize(self):
         self._nlp_pipeline = spacy.load(self.prompt_pipeline)
-        self._openai_client = OpenAI()
+        self._openai_client = instructor.from_openai(
+            OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+        )
         self.system_prompt = f"""
     You are a helpful assistant meant to identify any objects and their {self.prompt_property.name}
-    in the given image.
+    in the given image. You have to extract the score and the explanation from the user's response.
         """
 
     @weave.op()
@@ -70,7 +80,7 @@ class OpenAIJudge(weave.Model):
             response = (
                 self._openai_client.chat.completions.create(
                     model=self.openai_model,
-                    response_format={"type": "json_object"},
+                    response_model=OpenAIJudgeMent,
                     messages=[
                         {"role": "system", "content": self.system_prompt},
                         {
@@ -100,6 +110,7 @@ class OpenAISpatialRelationshipJudge(OpenAIJudge):
         super()._initialize()
         self.system_prompt = """
     You are a helpful assistant meant to identify objects and their spatial layout in the image.
+    You have to extract the score and the explanation from the user's response.
         """
 
     def frame_question(self, prompt: str) -> List[str]:
@@ -124,6 +135,7 @@ class OpenAIActionJudge(OpenAIJudge):
         super()._initialize()
         self.system_prompt = """
     You are a helpful assistant meant to identify the actions, events, objects and their relationships in the image.
+    You have to extract the score and the explanation from the user's response.
         """
 
     def frame_question(self, prompt: str) -> List[str]:
@@ -148,6 +160,7 @@ class OpenAINumeracyJudge(OpenAIJudge):
         super()._initialize()
         self.system_prompt = """
     You are a helpful assistant meant to identify objects and their quantities in the image.
+    You have to extract the score and the explanation from the user's response.
         """
 
     def frame_question(self, prompt: str) -> List[str]:
@@ -173,7 +186,8 @@ class OpenAIComplexJudge(OpenAIJudge):
         self.system_prompt = """
     You are a helpful assistant meant to evaluate the correspondence of the image to a given text prompt.
     focus on the objects in the image and their attributes (such as color, shape, texture),
-    spatial layout and action relationships.
+    spatial layout and action relationships. You have to extract the score and the explanation from the
+    user's response.
         """
 
     def frame_question(self, prompt: str) -> List[str]:
