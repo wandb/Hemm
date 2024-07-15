@@ -1,7 +1,7 @@
 from .openai_judge import (
-    OpenAIJudge,
     OpenAIActionJudge,
     OpenAIComplexJudge,
+    OpenAIJudge,
     OpenAINumeracyJudge,
     OpenAISpatialRelationshipJudge,
 )
