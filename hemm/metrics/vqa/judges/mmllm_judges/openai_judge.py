@@ -19,10 +19,12 @@ class OpenAIJudgeMent(BaseModel):
 class OpenAIJudge(weave.Model):
     prompt_pipeline: str = "en_core_web_sm"
     prompt_property: PromptCategory = PromptCategory.color
-    openai_model: str = "gpt-4"
+    openai_model: str = "gpt-4-turbo"
+    max_retries: int = 5
     system_prompt: Optional[str] = None
     _nlp_pipeline: spacy.Language = None
     _openai_client: OpenAI = None
+    _total_score: int = 4
 
     def _initialize(self):
         self._nlp_pipeline = spacy.load(self.prompt_pipeline)
@@ -53,59 +55,67 @@ class OpenAIJudge(weave.Model):
     @weave.op()
     def frame_question(self, prompt: str) -> List[str]:
         if self.prompt_property in [PromptCategory.spatial, PromptCategory.spatial_3d]:
+            self._total_score = 5
             return [
                 f"""
         According to the image, evaluate if the text \"{prompt}\" is correctly portrayed in the image.
-        Give a score from 0 to 100, according the criteria:
+        Give a score from 1 to 5, according to the following criteria:
+
         5: correct spatial layout in the image for all objects mentioned in the text.
         4: basically, spatial layout of objects matches the text.
         3: spatial layout not aligned properly with the text.
         2: image not aligned properly with the text.
         1: image almost irrelevant to the text.
-        Provide your analysis and explanation in JSON format with the following keys: score (e.g., 2),
-        explanation (within 20 words).
+        
+        Provide your analysis and explanation to justify the score within 20 words.
             """
             ]
         elif self.prompt_property == PromptCategory.action:
+            self._total_score = 5
             return [
                 f"""
         According to the image, evaluate if the text \"{prompt}\" is correctly portrayed in the image.
-        Give a score from 0 to 100, according the criteria:
+        Give a score from 1 to 5, according to the following criteria:
+
         5: the image accurately portrayed the actions, events and relationships between objects described in the text.
         4: the image portrayed most of the actions, events and relationships but with minor discrepancies.
         3: the image depicted some elements, but action relationships between objects are not correct.
         2: the image failed to convey the full scope of the text.
         1: the image did not depict any actions or events that match the text.
-        Provide your analysis and explanation in JSON format with the following keys: score (e.g., 2),
-        explanation (within 20 words).
+        
+        Provide your analysis and explanation to justify the score within 20 words.
             """
             ]
         elif self.prompt_property == PromptCategory.numeracy:
+            self._total_score = 5
             return [
                 f"""
         According to the image and your previous answer, evaluate how well the image aligns with the text prompt: \"{prompt}\"
-        Give a score from 0 to 100, according the criteria:
+        Give a score from 1 to 5, according to the following criteria:
+
         5: correct numerical content in the image for all objects mentioned in the text
         4: basically, numerical content of objects matches the text
         3: numerical content not aligned properly with the text
         2: image not aligned properly with the text
         1: image almost irrelevant to the text
-        Provide your analysis and explanation in JSON format with the following keys: score (e.g., 2),
-        explanation (within 20 words)."
+        
+        Provide your analysis and explanation to justify the score within 20 words.
             """
             ]
         elif self.prompt_property == PromptCategory.complex:
+            self._total_score = 5
             return [
                 f"""
         According to the image and your previous answer, evaluate how well the image aligns with the text prompt: \"{prompt}\"
-        Give a score from 0 to 100, according the criteria:
+        Give a score from 1 to 5, according to the following criteria:
+
         5: the image perfectly matches the content of the text prompt, with no discrepancies.
         4: the image portrayed most of the actions, events and relationships but with minor discrepancies.
         3: the image depicted some elements in the text prompt, but ignored some key parts or details.
         2: the image did not depict any actions or events that match the text.
         1: the image failed to convey the full scope in the text prompt.
-        Provide your analysis and explanation in JSON format with the following keys: score (e.g., 2),
-        explanation (within 20 words).
+        
+        Provide your analysis and explanation to justify the score within 20 words.
             """
             ]
         tagged_prompt_parts = self.extract_prompt_parts(prompt)
@@ -114,13 +124,13 @@ class OpenAIJudge(weave.Model):
             questions.append(
                 f"""
             According to the image, evaluate if there is a {tagged_prompt_part.entity} in the image.
-            Give a score from 0 to 100, according the criteria:
+            Give a score from 1 to 5, according to the following criteria:
             4: there is {tagged_prompt_part.noun}, and {self.prompt_property.name} is {tagged_prompt_part.adjective}.
             3: there is {tagged_prompt_part.noun}, {self.prompt_property.name} is mostly {tagged_prompt_part.adjective}.
             2: there is {tagged_prompt_part.noun}, but it is not {tagged_prompt_part.adjective}.
-            1: no {tagged_prompt_part.noun} in the image.\n\
-            Provide your analysis and explanation in JSON format with the following keys: score (e.g., 1), \
-            explanation (within 20 words).
+            1: no {tagged_prompt_part.noun} in the image.
+
+            Provide your analysis and explanation to justify the score within 20 words.
                 """
             )
         return questions
@@ -130,23 +140,24 @@ class OpenAIJudge(weave.Model):
         questions = self.frame_question(prompt)
         answers = []
         for question in questions:
-            response = (
-                self._openai_client.chat.completions.create(
-                    model=self.openai_model,
-                    response_model=OpenAIJudgeMent,
-                    messages=[
-                        {"role": "system", "content": self.system_prompt},
-                        {
-                            "role": "user",
-                            "content": [
-                                {"type": "text", "text": question},
-                                {"type": "image_url", "image_url": {"url": image}},
-                            ],
-                        },
-                    ],
-                )
-                .choices[0]
-                .message.content
+            response = self._openai_client.chat.completions.create(
+                model=self.openai_model,
+                response_model=OpenAIJudgeMent,
+                max_retries=self.max_retries,
+                messages=[
+                    {"role": "system", "content": self.system_prompt},
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": question},
+                            {"type": "image_url", "image_url": {"url": image}},
+                        ],
+                    },
+                ],
+            )
+            response.explanation = (
+                f"The score is {response.score}/{self._total_score}. "
+                + response.explanation
             )
             answers.append(response)
         return answers
