@@ -94,4 +94,4 @@ class DisentangledVQAMetric(BaseMetric):
         noun_2: str,
         model_output: Dict[str, Any],
     ) -> Dict[str, Any]:
-        return super().evaluate(prompt, adj_1, noun_1, adj_2, noun_2, model_output)
+        return self.evaluate(prompt, adj_1, noun_1, adj_2, noun_2, model_output)

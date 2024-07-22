@@ -3,7 +3,7 @@ from typing import Any, Dict, Optional, Union
 import weave
 
 from ..base import BaseMetric
-from .judges.lvlm_judges import OpenAIJudge, PromptCategory
+from .judges.mmllm_judges import OpenAIJudge, PromptCategory
 
 
 class MultiModalLLMEvaluationMetric(BaseMetric):

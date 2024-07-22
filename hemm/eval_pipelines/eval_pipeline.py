@@ -7,7 +7,6 @@ import weave
 
 from ..metrics.base import BaseMetric
 from ..utils import base64_decode_image
-from .hemm_evaluation import AsyncHemmEvaluation, HemmEvaluation
 from .model import BaseDiffusionModel
 
 
@@ -30,7 +29,7 @@ class EvaluationPipeline(ABC):
         self.inference_counter = 1
         self.table_columns = ["model", "prompt", "generated_image"]
         self.table_rows: List = []
-        self.wandb_table: wandb.Table = None
+        self.evaluation_table: wandb.Table = None
         self.metric_functions: List[BaseMetric] = []
 
         self.evaluation_configs = {
@@ -67,7 +66,7 @@ class EvaluationPipeline(ABC):
                 a Weave object.
         """
         if self.inference_counter == 1:
-            self.wandb_table = wandb.Table(columns=self.table_columns)
+            self.evaluation_table = wandb.Table(columns=self.table_columns)
         self.inference_counter += 1
         output = self.model.predict(prompt, seed=self.seed)
         self.table_rows.append(
@@ -92,7 +91,7 @@ class EvaluationPipeline(ABC):
         """
         return self.infer(prompt)
 
-    def log_summary(self):
+    def log_summary(self, summary: Dict[str, float]) -> None:
         """Log the evaluation summary to the Weights & Biases dashboard."""
         config = wandb.config
         config.update(self.evaluation_configs)
@@ -100,14 +99,18 @@ class EvaluationPipeline(ABC):
             current_row = row
             for metric_fn in self.metric_functions:
                 current_row.append(metric_fn.scores[row_idx])
-            self.wandb_table.add_data(*current_row)
+            self.evaluation_table.add_data(*current_row)
+        summary_table = wandb.Table(columns=["summary"], data=[[summary]])
         wandb.log(
-            {f"Evalution/{self.model.diffusion_model_name_or_path}": self.wandb_table}
+            {
+                f"evalution/{self.model.diffusion_model_name_or_path}": self.evaluation_table,
+                f"summary/{self.model.diffusion_model_name_or_path}": summary_table,
+            }
         )
 
     def __call__(
-        self, dataset: Union[List[Dict], str], async_evaluation: bool = False
-    ) -> None:
+        self, dataset: Union[List[Dict], str], async_evaluation: bool = True
+    ) -> Dict[str, float]:
         """Evaluate the Stable Diffusion model on the given dataset.
 
         Args:
@@ -116,20 +119,18 @@ class EvaluationPipeline(ABC):
             async_evaluation (bool): Flag to enable asynchronous evaluation.
         """
         dataset = weave.ref(dataset).get() if isinstance(dataset, str) else dataset
-        if async_evaluation:
-            evaluation = AsyncHemmEvaluation(
-                dataset=dataset,
-                scorers=[
-                    metric_fn.evaluate_async for metric_fn in self.metric_functions
-                ],
-            )
-            with weave.attributes(self.evaluation_configs):
+        evaluation = weave.Evaluation(
+            dataset=dataset,
+            scorers=[
+                metric_fn.evaluate_async if async_evaluation else metric_fn.evaluate
+                for metric_fn in self.metric_functions
+            ],
+        )
+        with weave.attributes(self.evaluation_configs):
+            summary = (
                 asyncio.run(evaluation.evaluate(self.infer_async))
-        else:
-            evaluation = HemmEvaluation(
-                dataset=dataset,
-                scorers=[metric_fn.evaluate for metric_fn in self.metric_functions],
+                if async_evaluation
+                else evaluation.evaluate(self.infer)
             )
-            with weave.attributes(self.evaluation_configs):
-                evaluation.evaluate(self.infer)
-        self.log_summary()
+        self.log_summary(summary)
+        return summary
