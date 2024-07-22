@@ -7,13 +7,12 @@ from pathlib import Path
 from typing import Callable, Dict, List, Optional, Union
 
 import jsonlines
+import wandb
 import weave
 from datasets import load_dataset
 from PIL import Image
 from tqdm.auto import tqdm
 from weave.trace.refs import ObjectRef
-
-import wandb
 
 EXT_TO_MIMETYPE = {
     ".jpg": "image/jpeg",

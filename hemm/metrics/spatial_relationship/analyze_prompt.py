@@ -4,11 +4,10 @@ import os
 from typing import Dict, List, Optional
 
 import jsonlines
+import wandb
 import weave
 from openai import OpenAI
 from weave import Dataset, Evaluation, Model
-
-import wandb
 
 
 def chunk_all_prompts(prompt_list: List[str], chunk_size: int) -> List[str]:

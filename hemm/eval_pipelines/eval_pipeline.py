@@ -2,9 +2,8 @@ import asyncio
 from abc import ABC
 from typing import Dict, List, Union
 
-import weave
-
 import wandb
+import weave
 
 from ..metrics.base import BaseMetric
 from ..utils import base64_decode_image

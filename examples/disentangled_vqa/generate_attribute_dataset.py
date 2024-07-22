@@ -1,6 +1,7 @@
 from typing import List, Optional, Union
 
 import fire
+
 from hemm.metrics.vqa import AttributeBindingDatasetGenerator
 
 

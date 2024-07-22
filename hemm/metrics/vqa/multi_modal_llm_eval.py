@@ -6,7 +6,7 @@ from ..base import BaseMetric
 from .judges.lvlm_judges import OpenAIJudge, PromptCategory
 
 
-class VLMEvaluationMetric(BaseMetric):
+class MultiModalLLMEvaluationMetric(BaseMetric):
 
     def __init__(
         self,

@@ -3,11 +3,10 @@ import os
 from typing import Dict, List, Optional, Union
 
 import jsonlines
+import wandb
 import weave
 from openai import OpenAI
 from pydantic import BaseModel
-
-import wandb
 
 from ....eval_pipelines.hemm_evaluation import AsyncHemmEvaluation
 from ....utils import autogenerate_seed, str_to_json

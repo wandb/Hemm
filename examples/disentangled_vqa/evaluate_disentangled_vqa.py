@@ -3,9 +3,9 @@ from typing import Optional, Tuple
 
 import fire
 import jsonlines
+import wandb
 import weave
 
-import wandb
 from hemm.eval_pipelines import BaseDiffusionModel, EvaluationPipeline
 from hemm.metrics.vqa import DisentangledVQAMetric
 from hemm.metrics.vqa.judges import BlipVQAJudge

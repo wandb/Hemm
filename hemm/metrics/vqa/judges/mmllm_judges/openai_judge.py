@@ -19,7 +19,7 @@ class OpenAIJudgeMent(BaseModel):
 class OpenAIJudge(weave.Model):
     prompt_pipeline: str = "en_core_web_sm"
     prompt_property: PromptCategory = PromptCategory.color
-    openai_model: str = "gpt-4o"
+    openai_model: str = "gpt-4"
     system_prompt: Optional[str] = None
     _nlp_pipeline: spacy.Language = None
     _openai_client: OpenAI = None
