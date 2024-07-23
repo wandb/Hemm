@@ -9,7 +9,7 @@ from .judges.mmllm_judges.openai_judge import OpenAIJudgeMent
 
 class MultiModalLLMEvaluationMetric(BaseMetric):
     """Multi-modal LLM-based evaluation metric for an image-generation model.
-    
+
     Args:
         judge (Union[weave.Model, OpenAIJudge]): The judge LLM model to evaluate the generated images.
         name (Optional[str]): Name of the evaluation.
@@ -31,7 +31,7 @@ class MultiModalLLMEvaluationMetric(BaseMetric):
     @weave.op()
     def evaluate(self, prompt: str, model_output: Dict[str, Any]) -> Dict[str, Any]:
         """Evaluate the generated image using the judge LLM model.
-        
+
         Args:
             prompt (str): The prompt for the model.
             model_output (Dict[str, Any]): The model output.

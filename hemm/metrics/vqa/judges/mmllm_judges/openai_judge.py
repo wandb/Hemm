@@ -1,5 +1,5 @@
 import os
-from typing import List, Optional
+from typing import List
 
 import instructor
 import spacy
@@ -28,7 +28,7 @@ class OpenAIJudge(weave.Model):
     [T2I-CompBench++: An Enhanced and Comprehensive Benchmark for Compositional Text-to-image Generation](https://karine-h.github.io/T2I-CompBench-new/)
     and Section 4.4 of the paper
     [T2I-CompBench: A Comprehensive Benchmark for Open-world Compositional Text-to-image Generation](https://arxiv.org/abs/2307.06350).
-    
+
     Args:
         prompt_pipeline (str): The Spacy pipeline to use for extracting the prompt parts.
         prompt_property (PromptCategory): The property of the prompt to evaluate.
@@ -37,6 +37,7 @@ class OpenAIJudge(weave.Model):
         seed (int): Seed value for the random number generator.
         system_prompt (Optional[str]): The system prompt for the OpenAI model
     """
+
     prompt_pipeline: str = "en_core_web_sm"
     prompt_property: PromptCategory = PromptCategory.color
     openai_model: str = "gpt-4-turbo"
@@ -57,10 +58,10 @@ class OpenAIJudge(weave.Model):
     @weave.op()
     def extract_prompt_parts(self, prompt: str) -> List[TaggedPromptParts]:
         """Extract the prompt parts from the given prompt.
-        
+
         Args:
             prompt (str): The prompt to extract the parts from.
-        
+
         Returns:
             List[TaggedPromptParts]: List of tagged prompt objects.
         """
@@ -85,11 +86,11 @@ class OpenAIJudge(weave.Model):
     def frame_question(self, prompt: str, image: str) -> List[JudgeQuestion]:
         """Frame the question corresponding to the given prompt and image for
         the chain-of-thought system of judgement.
-        
+
         Args:
             prompt (str): The prompt to frame the question for.
             image (str): The image to frame the question for.
-        
+
         Returns:
             List[JudgeQuestion]: List of questions to ask for the given prompt.
         """
@@ -273,7 +274,7 @@ Provide your analysis and explanation to justify the score.
     @weave.op()
     def predict(self, prompt: str, image: str) -> List[OpenAIJudgeMent]:
         """Predict the score for the given prompt and image.
-        
+
         Args:
             prompt (str): The prompt to evaluate.
             image (str): The image to evaluate.
