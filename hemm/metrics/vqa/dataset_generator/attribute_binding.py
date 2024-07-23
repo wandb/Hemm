@@ -3,18 +3,12 @@ import os
 from typing import Dict, List, Optional, Union
 
 import jsonlines
+import wandb
 import weave
 from openai import OpenAI
 from pydantic import BaseModel
 
-import wandb
-
-from ...eval_pipelines.hemm_evaluation import AsyncHemmEvaluation
-from ...utils import autogenerate_seed, str_to_json
-
-
-class AttributeBindingEvaluation(AsyncHemmEvaluation):
-    pass
+from ....utils import autogenerate_seed, str_to_json
 
 
 class AttributeBindingEvaluationResponse(BaseModel):
@@ -130,7 +124,7 @@ class AttributeBindingDatasetGenerator:
 
     ??? example "Sample usage"
         ```python
-        from hemm.metrics.attribute_binding import AttributeBindingDatasetGenerator
+        from hemm.metrics.vqa import AttributeBindingDatasetGenerator
 
         dataset_generator = AttributeBindingDatasetGenerator(
             openai_model="gpt-4o",
@@ -244,7 +238,7 @@ class AttributeBindingDatasetGenerator:
             config=self.model_configs,
         )
         weave.init(project_name=self.project_name)
-        evaluation = AttributeBindingEvaluation(
+        evaluation = weave.Evaluation(
             dataset=[{"prompt": "", "seed": seed} for seed in self.openai_seeds],
             scorers=[self.evaluate_generated_response],
         )

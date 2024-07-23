@@ -1,12 +1,12 @@
-# Disentangled VQA Metrics
+# Disentangled VQA
 
-This module aims to implement the Spatial relationship metric described in Section 4.1 from the paper [T2I-CompBench: A Comprehensive Benchmark for Open-world Compositional Text-to-image Generation](https://arxiv.org/pdf/2307.06350).
+This module aims to implement the Disentangled VQA metric inspired by Section 4.1 from the paper [T2I-CompBench: A Comprehensive Benchmark for Open-world Compositional Text-to-image Generation](https://arxiv.org/pdf/2307.06350).
 
-| ![](../assets/disentangled_blip_vqa.png) | 
+| ![](../../assets/disentangled_blip_vqa.png) | 
 |:--:| 
 | Using the disentangled BLIP-VQA model for attribute-binding evaluation as proposed in [T2I-CompBench](https://arxiv.org/pdf/2307.06350.pdf) |
 
-| ![](../assets/disentangled_blip_vqa_dashboard.png) | 
+| ![](../../assets/disentangled_blip_vqa_dashboard.png) | 
 |:--:| 
 | Weave gives us a holistic view of the evaluations to drill into individual ouputs and scores. |
 
@@ -56,12 +56,12 @@ This module aims to implement the Spatial relationship metric described in Secti
 
 ## Metrics
 
-:::hemm.metrics.attribute_binding.disentangled_vqa
+:::hemm.metrics.vqa.disentangled_vqa
 
 ## Judges
 
-:::hemm.metrics.attribute_binding.judges
+:::hemm.metrics.vqa.judges.blip_vqa
 
 ## Dataset Generation
 
-:::hemm.metrics.attribute_binding.dataset_generator
+:::hemm.metrics.vqa.dataset_generator.attribute_binding

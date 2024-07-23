@@ -1,9 +1,8 @@
 from typing import Any, Dict, List, Optional, Union
 
+import wandb
 import weave
 from PIL import Image
-
-import wandb
 
 from ...utils import base64_decode_image, base64_encode_image
 from ..base import BaseMetric

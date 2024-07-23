@@ -51,7 +51,9 @@ nav:
     - Image-Quality-Metrics: 'metrics/image_quality.md'
     - Prompt-Image-Alignment: 'metrics/prompt_image_alignment.md'
     - Spatial-Relationship: 'metrics/spatial_relationship.md'
-    - Disentangled-VQA: 'metrics/disentangled_vqa.md'
+    - Visual-Question-Answering:
+      - Disentangled-VQA: 'metrics/vqa/disentangled_vqa'
+      - Multi-Modal-LLM-Judge: 'metrics/vqa/multi_modal_llm'
   - Utils: 'utils.md'
 
 repo_url: https://github.com/wandb/Hemm

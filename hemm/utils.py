@@ -4,16 +4,15 @@ import json
 import os
 import random
 from pathlib import Path
-from typing import Callable, Dict, List, Optional, Tuple, Union
+from typing import Callable, Dict, List, Optional, Union
 
 import jsonlines
+import wandb
 import weave
 from datasets import load_dataset
 from PIL import Image
 from tqdm.auto import tqdm
 from weave.trace.refs import ObjectRef
-
-import wandb
 
 EXT_TO_MIMETYPE = {
     ".jpg": "image/jpeg",
@@ -172,7 +171,7 @@ def str_to_json(json_str: str) -> Union[None, Dict]:
     structured_response: Dict = None
     try:
         structured_response = json.loads(json_str)
-    except ValueError as e:
+    except ValueError:
         return None
     return structured_response
 
