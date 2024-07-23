@@ -1,9 +1,10 @@
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import weave
 
 from ..base import BaseMetric
 from .judges.mmllm_judges import OpenAIJudge
+from .judges.mmllm_judges.openai_judge import OpenAIJudgeMent
 
 
 class MultiModalLLMEvaluationMetric(BaseMetric):
@@ -23,10 +24,15 @@ class MultiModalLLMEvaluationMetric(BaseMetric):
 
     @weave.op()
     def evaluate(self, prompt: str, model_output: Dict[str, Any]) -> Dict[str, Any]:
-        judgements = self.judge.predict(prompt=prompt, image=model_output["image"])
-        score = sum([judgement.score for judgement in judgements]) / len(judgements)
-        fractional_score = score / self.judge._total_score
-        evaluation_dict = {"score": score, "fractional_score": fractional_score}
+        judgements: List[OpenAIJudgeMent] = self.judge.predict(
+            prompt=prompt, image=model_output["image"]
+        )
+        score = sum([judgement.judgement.score for judgement in judgements])
+        fractional_score = sum([judgement.fractional_score for judgement in judgements])
+        evaluation_dict = {
+            "score": score / len(judgements),
+            "fractional_score": fractional_score / len(judgements),
+        }
         self.scores.append(evaluation_dict)
         return evaluation_dict
 
