@@ -1237,6 +1237,23 @@ paramiko = ["paramiko"]
 pgp = ["gpg"]
 
 [[package]]
+name = "emoji"
+version = "2.12.1"
+description = "Emoji for Python"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "emoji-2.12.1-py3-none-any.whl", hash = "sha256:a00d62173bdadc2510967a381810101624a2f0986145b8da0cffa42e29430235"},
+    {file = "emoji-2.12.1.tar.gz", hash = "sha256:4aa0488817691aa58d83764b6c209f8a27c0b3ab3f89d1b8dceca1a62e4973eb"},
+]
+
+[package.dependencies]
+typing-extensions = ">=4.7.0"
+
+[package.extras]
+dev = ["coverage", "pytest (>=7.4.4)"]
+
+[[package]]
 name = "exceptiongroup"
 version = "1.2.1"
 description = "Backport of PEP 654 (exception groups)"
@@ -3503,6 +3520,7 @@ description = "Nvidia JIT LTO Library"
 optional = false
 python-versions = ">=3"
 files = [
+    {file = "nvidia_nvjitlink_cu12-12.4.127-py3-none-manylinux2014_aarch64.whl", hash = "sha256:4abe7fef64914ccfa909bc2ba39739670ecc9e820c83ccc7a6ed414122599b83"},
     {file = "nvidia_nvjitlink_cu12-12.4.127-py3-none-manylinux2014_x86_64.whl", hash = "sha256:06b3b9b25bf3f8af351d664978ca26a16d2c5127dbd53c0497e28d1fb9611d57"},
     {file = "nvidia_nvjitlink_cu12-12.4.127-py3-none-win_amd64.whl", hash = "sha256:fd9020c501d27d135f983c6d3e244b197a7ccad769e34df53a42e276b0e25fa1"},
 ]
@@ -6354,13 +6372,13 @@ wasabi = ">=0.9.1,<1.2.0"
 
 [[package]]
 name = "weave"
-version = "0.50.2"
+version = "0.50.9"
 description = "A toolkit for building composable interactive data driven applications."
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "weave-0.50.2-py3-none-any.whl", hash = "sha256:b21e91f41466b45bf53867710d3508243692e01fd673a1a6eaad57a022c51804"},
-    {file = "weave-0.50.2.tar.gz", hash = "sha256:fc2b4d05fb2395e2bf76de81f2acc3a83b587e64920bc692f5243e9546f15d3d"},
+    {file = "weave-0.50.9-py3-none-any.whl", hash = "sha256:f429571c4bc3a992dd0eb0fb43f48644de9a586d03c0dcadfa79d97842b2e68e"},
+    {file = "weave-0.50.9.tar.gz", hash = "sha256:31635aed22d387e329e416003640335b5fd582ba020a27dedd0983b2eb02cc77"},
 ]
 
 [package.dependencies]
@@ -6368,25 +6386,27 @@ aiofiles = ">=22.1.0"
 aiohttp = ">=3.8.3"
 aioprocessing = ">=2.0.1"
 analytics-python = ">=1.2.9"
+emoji = ">=2.12.1"
 gql = {version = ">=3.4.1", extras = ["requests"]}
 graphql-core = ">3"
 janus = ">=1.0.0"
-numpy = ">=1.21"
+numpy = ">=1.21,<2.0.0"
 openai = ">=1.0.0"
 packaging = ">=21.0"
 pyarrow = ">=14.0.1"
 pydantic = ">=2.0.0"
 python-json-logger = ">=2.0.4"
 rich = ">=13.7.0"
+tenacity = ">=8.3.0,<8.4.0 || >8.4.0"
 tiktoken = ">=0.4.0"
 typing-extensions = ">=4.0.0"
 wandb = ">=0.16.4"
-Werkzeug = ">=2.0.0"
+Werkzeug = ">=3.0.3"
 
 [package.extras]
 datadog = ["datadog (==0.44.0)", "ddtrace (==1.7.5)"]
 ecosystem = ["bertviz (>=1.4.0)", "datasets (>=2.9.0)", "faiss-cpu (>=1.7.4)", "h5py (>=3.8.0)", "hdbscan (>=0.8.27)", "langchain (>=0.0.132)", "matplotlib (>3,!=3.5)", "openai (>=1.0.0)", "pillow (>=10.0.1)", "plotly (>=5.13.0)", "replicate (>=0.4.0)", "shap (>=0.41.0)", "spacy (>=3.0.0,<4.0.0)", "sqlalchemy (>=2.0.1)", "tiktoken (>=0.4.0)", "torch (>=1.13.1)", "torchvision (>=0.14.1)", "transformers (<4.21)", "xgboost (>=1.7.3)"]
-engine = ["black (>=22.3.0)", "faiss-cpu", "flask (>=2.1)", "flask-cors (>=3.0.10)", "ipynbname (>=2021.3.2)", "ipython (>=7.34)", "notebook (>=6.4.8)", "objgraph (>=3.6.0)", "pandas (>=1.5.3)", "pillow (>=10.0.1)", "pytest-asyncio (<=0.21.1)", "scikit-learn (>=1.2.1)", "sentry-sdk (<1.29.0)", "tabulate", "typeguard (>=4.1.3)", "umap-learn (>=0.5.3)"]
+engine = ["black (>=22.3.0)", "faiss-cpu", "flask (>=2.1)", "flask-cors (>=3.0.10)", "ipynbname (>=2021.3.2)", "ipython (>=7.34)", "notebook (>=6.4.8)", "objgraph (>=3.6.0)", "pandas (>=1.5.3)", "pillow (>=10.0.1)", "scikit-learn (>=1.2.1)", "sentry-sdk (<1.29.0)", "tabulate", "typeguard (>=4.1.3)", "umap-learn (>=0.5.3)"]
 examples = ["bertviz (>=1.4.0)", "datasets (>=2.9.0)", "faiss-cpu (>=1.7.4)", "h5py (>=3.8.0)", "hdbscan (>=0.8.27)", "langchain (>=0.0.132)", "matplotlib (>3,!=3.5)", "openai (>=1.0.0)", "pillow (>=10.0.1)", "plotly (>=5.13.0)", "replicate (>=0.4.0)", "shap (>=0.41.0)", "spacy (>=3.0.0,<4.0.0)", "sqlalchemy (>=2.0.1)", "tiktoken (>=0.4.0)", "torch (>=1.13.1)", "torchvision (>=0.14.1)", "transformers (<4.21)", "xgboost (>=1.7.3)"]
 modal = ["modal", "python-dotenv"]
 
@@ -6848,10 +6868,10 @@ docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.link
 testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-ignore-flaky", "pytest-mypy", "pytest-ruff (>=0.2.1)"]
 
 [extras]
-core = ["accelerate", "datasets", "diffusers", "fire", "huggingface-hub", "jsonlines", "poetry", "spacy", "transformers", "wandb", "weave"]
+core = ["accelerate", "datasets", "diffusers", "fire", "huggingface-hub", "instructor", "jsonlines", "poetry", "spacy", "transformers", "wandb", "weave"]
 docs = ["jupyter", "mkdocs", "mkdocs-glightbox", "mkdocs-jupyter", "mkdocs-material", "mkdocs-minify-plugin", "mkdocstrings"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "6504912c41590593ce1fd21c7fdd33051b151555080655287a7cf8182493c165"
+content-hash = "658a41efd4aa4d2d38492b9fbcecc6e9bedfa70dc644b2272d5f56f052f44eee"
