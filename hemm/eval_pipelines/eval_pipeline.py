@@ -1,7 +1,7 @@
 import asyncio
 from abc import ABC
 from functools import partial
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import wandb
 import weave
@@ -9,15 +9,6 @@ import weave
 from ..metrics.base import BaseMetric
 from ..utils import base64_decode_image
 from .model import BaseDiffusionModel
-
-
-def evaluation_wrapper(name: str) -> Callable[[Callable], Callable]:
-    def wrapper(fn: Callable) -> Callable:
-        op = weave.op()(fn)
-        op.name = name  # type: ignore
-        return op
-
-    return wrapper
 
 
 class EvaluationPipeline(ABC):
@@ -125,8 +116,8 @@ class EvaluationPipeline(ABC):
             }
         )
 
-    @evaluation_wrapper("evaluate")
-    def __call__(
+    @weave.op()
+    def evaluate(
         self, dataset: Union[List[Dict], str], name: Optional[str] = None
     ) -> Dict[str, float]:
         """Evaluate the Stable Diffusion model on the given dataset.
