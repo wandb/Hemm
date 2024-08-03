@@ -14,7 +14,6 @@ from hemm.metrics.spatial_relationship.judges import DETRSpatialRelationShipJudg
 def main(
     project="2d-spatial-relationship",
     entity="hemm-eval",
-    dataset_artifact: str = "hemm-eval/2d-spatial-relationship/2d-spatial-prompts-mscoco:v0",
     dataset_ref: Optional[str] = "2d-spatial-prompts-mscoco:v0",
     dataset_limit: Optional[int] = None,
     diffusion_model_address: str = "stabilityai/stable-diffusion-2-1",
@@ -25,16 +24,9 @@ def main(
 ):
     wandb.init(project=project, entity=entity, job_type="evaluation")
     weave.init(project_name=project)
-    artifact = wandb.use_artifact(dataset_artifact, type="dataset")
-    artifact_dir = artifact.download()
 
-    if dataset_limit:
-        spatial_prompt_file = os.path.join(artifact_dir, "dataset.jsonl")
-        with jsonlines.open(spatial_prompt_file) as reader:
-            for obj in reader:
-                dataset = obj[:dataset_limit]
-    else:
-        dataset = weave.ref(dataset_ref).get()
+    dataset = weave.ref(dataset_ref).get()
+    dataset = dataset.rows[:dataset_limit] if dataset_limit else dataset
 
     diffusion_model = BaseDiffusionModel(
         diffusion_model_name_or_path=diffusion_model_address,

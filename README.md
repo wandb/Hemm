@@ -51,15 +51,15 @@ Next, you can evaluate Stable Diffusion 1.4 on image quality metrics as shown in
 import wandb
 import weave
 
-from hemm.eval_pipelines import BaseWeaveModel, EvaluationPipeline
-from hemm.metrics.image_quality import LPIPSMetric, PSNRMetric, SSIMMetric
+from hemm.eval_pipelines import BaseDiffusionModel, EvaluationPipeline
+from hemm.metrics.prompt_alignment import CLIPImageQualityScoreMetric, CLIPScoreMetric
 
 # Initialize Weave and WandB
 wandb.init(project="image-quality-leaderboard", job_type="evaluation")
 weave.init(project_name="image-quality-leaderboard")
 
 # Initialize the diffusion model to be evaluated as a `weave.Model` using `BaseWeaveModel`
-model = BaseWeaveModel(diffusion_model_name_or_path="CompVis/stable-diffusion-v1-4")
+model = BaseDiffusionModel(diffusion_model_name_or_path="CompVis/stable-diffusion-v1-4")
 
 # Add the model to the evaluation pipeline
 evaluation_pipeline = EvaluationPipeline(model=model)

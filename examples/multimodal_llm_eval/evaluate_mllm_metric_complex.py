@@ -13,21 +13,23 @@ def main(
     project="mllm-eval",
     entity="hemm-eval",
     dataset_ref: Optional[str] = "attribute_binding_dataset:v1",
+    dataset_limit: Optional[int] = None,
     diffusion_model_address: str = "stabilityai/stable-diffusion-2-1",
     diffusion_model_enable_cpu_offfload: bool = False,
     image_size: Tuple[int, int] = (512, 512),
-    debug: bool = False,
 ):
     wandb.init(project=project, entity=entity, job_type="evaluation")
     weave.init(project_name=project)
 
+    # dataset = weave.ref(dataset_ref).get()
+    # dataset = dataset.rows[:dataset_limit] if dataset_limit else dataset
     dataset = (
         [
             {"prompt": "The black chair is on the right of the wooden table."},
             {"prompt": "The round clock was mounted on the white wall."},
             {"prompt": "The fluffy pillow was on the left of the striped blanket."},
         ]
-        if debug
+        if dataset_limit
         else weave.ref(dataset_ref).get()
     )
 
