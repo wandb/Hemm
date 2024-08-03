@@ -21,17 +21,8 @@ def main(
     wandb.init(project=project, entity=entity, job_type="evaluation")
     weave.init(project_name=project)
 
-    # dataset = weave.ref(dataset_ref).get()
-    # dataset = dataset.rows[:dataset_limit] if dataset_limit else dataset
-    dataset = (
-        [
-            {"prompt": "The black chair is on the right of the wooden table."},
-            {"prompt": "The round clock was mounted on the white wall."},
-            {"prompt": "The fluffy pillow was on the left of the striped blanket."},
-        ]
-        if dataset_limit
-        else weave.ref(dataset_ref).get()
-    )
+    dataset = weave.ref(dataset_ref).get()
+    dataset = dataset.rows[:dataset_limit] if dataset_limit else dataset
 
     diffusion_model = BaseDiffusionModel(
         diffusion_model_name_or_path=diffusion_model_address,
