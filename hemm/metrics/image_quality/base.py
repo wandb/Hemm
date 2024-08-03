@@ -3,6 +3,7 @@ from abc import abstractmethod
 from io import BytesIO
 from typing import Any, Dict, Union
 
+import weave
 from PIL import Image
 from pydantic import BaseModel
 
@@ -50,7 +51,11 @@ class BaseImageQualityMetric(BaseMetric):
         pass
 
     def evaluate(
-        self, prompt: str, ground_truth_image: str, model_output: Dict[str, Any]
+        self,
+        prompt: str,
+        ground_truth_image: str,
+        model_output: Dict[str, Any],
+        metadata: weave.Model,
     ) -> Dict[str, float]:
         """Compute the metric for the given images. This method is used as the scorer
         function for `weave.Evaluation` in the evaluation pipelines.

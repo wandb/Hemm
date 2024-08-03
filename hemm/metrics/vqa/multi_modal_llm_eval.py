@@ -29,7 +29,9 @@ class MultiModalLLMEvaluationMetric(BaseMetric):
         self.name = name
 
     @weave.op()
-    def evaluate(self, prompt: str, model_output: Dict[str, Any]) -> Dict[str, Any]:
+    def evaluate(
+        self, prompt: str, model_output: Dict[str, Any], metadata: weave.Model
+    ) -> Dict[str, Any]:
         """Evaluate the generated image using the judge LLM model.
 
         Args:
@@ -50,6 +52,6 @@ class MultiModalLLMEvaluationMetric(BaseMetric):
 
     @weave.op()
     async def evaluate_async(
-        self, prompt: str, model_output: Dict[str, Any]
+        self, prompt: str, model_output: Dict[str, Any], metadata: weave.Model
     ) -> Dict[str, Any]:
-        return self.evaluate(prompt, model_output)
+        return self.evaluate(prompt, model_output, metadata)

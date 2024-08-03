@@ -1,6 +1,7 @@
 import asyncio
 from abc import ABC
-from typing import Dict, List, Union
+from functools import partial
+from typing import Any, Dict, List, Optional, Union
 
 import wandb
 import weave
@@ -18,7 +19,12 @@ class EvaluationPipeline(ABC):
         seed (int): Seed value for the random number generator.
     """
 
-    def __init__(self, model: BaseDiffusionModel, seed: int = 42) -> None:
+    def __init__(
+        self,
+        model: BaseDiffusionModel,
+        seed: int = 42,
+        configs: Optional[Dict[str, Any]] = None,
+    ) -> None:
         super().__init__()
         self.model = model
         self.model.initialize()
@@ -42,6 +48,7 @@ class EvaluationPipeline(ABC):
             },
             "seed": seed,
             "diffusion_pipeline": dict(self.model._pipeline.config),
+            **configs,
         }
 
     def add_metric(self, metric_fn: BaseMetric):
@@ -105,10 +112,14 @@ class EvaluationPipeline(ABC):
             {
                 f"evalution/{self.model.diffusion_model_name_or_path}": self.evaluation_table,
                 f"summary/{self.model.diffusion_model_name_or_path}": summary_table,
+                "summary": summary,
             }
         )
 
-    def __call__(self, dataset: Union[List[Dict], str]) -> Dict[str, float]:
+    @weave.op()
+    def evaluate(
+        self, dataset: Union[List[Dict], str], name: Optional[str] = None
+    ) -> Dict[str, float]:
         """Evaluate the Stable Diffusion model on the given dataset.
 
         Args:
@@ -117,10 +128,16 @@ class EvaluationPipeline(ABC):
         """
         dataset = weave.ref(dataset).get() if isinstance(dataset, str) else dataset
         evaluation = weave.Evaluation(
+            name=name,
             dataset=dataset,
-            scorers=[metric_fn.evaluate_async for metric_fn in self.metric_functions],
+            scorers=[
+                partial(
+                    metric_fn.evaluate_async,
+                    metadata=weave.Model.model_validate(self.evaluation_configs),
+                )
+                for metric_fn in self.metric_functions
+            ],
         )
-        with weave.attributes(self.evaluation_configs):
-            summary = asyncio.run(evaluation.evaluate(self.infer_async))
+        summary = asyncio.run(evaluation.evaluate(self.infer_async))
         self.log_summary(summary)
         return summary

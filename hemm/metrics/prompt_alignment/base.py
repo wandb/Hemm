@@ -3,6 +3,7 @@ from abc import abstractmethod
 from io import BytesIO
 from typing import Any, Dict, Union
 
+import weave
 from PIL import Image
 
 from ..base import BaseMetric
@@ -37,7 +38,9 @@ class BasePromptAlignmentMetric(BaseMetric):
         """
         pass
 
-    def evaluate(self, prompt: str, model_output: Dict[str, Any]) -> Dict[str, float]:
+    def evaluate(
+        self, prompt: str, model_output: Dict[str, Any], metadata: weave.Model
+    ) -> Dict[str, float]:
         """Compute the metric for the given image. This method is used as the scorer
         function for `weave.Evaluation` in the evaluation pipelines.
 
