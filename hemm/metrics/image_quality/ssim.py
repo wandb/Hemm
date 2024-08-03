@@ -92,14 +92,22 @@ class SSIMMetric(BaseImageQualityMetric):
 
     @weave.op()
     def evaluate(
-        self, prompt: str, ground_truth_image: str, model_output: Dict[str, Any]
+        self,
+        prompt: str,
+        ground_truth_image: str,
+        model_output: Dict[str, Any],
+        metadata: weave.Model,
     ) -> Union[float, Dict[str, float]]:
         _ = "SSIMMetric"
-        return super().evaluate(prompt, ground_truth_image, model_output)
+        return super().evaluate(prompt, ground_truth_image, model_output, metadata)
 
     @weave.op()
     async def evaluate_async(
-        self, prompt: str, ground_truth_image: str, model_output: Dict[str, Any]
+        self,
+        prompt: str,
+        ground_truth_image: str,
+        model_output: Dict[str, Any],
+        metadata: weave.Model,
     ) -> Union[float, Dict[str, float]]:
         _ = "SSIMMetric"
-        return self.evaluate(prompt, ground_truth_image, model_output)
+        return self.evaluate(prompt, ground_truth_image, model_output, metadata)

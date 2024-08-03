@@ -221,6 +221,7 @@ class SpatialRelationshipMetric2D(BaseMetric):
         entity_2: str,
         relationship: str,
         model_output: Dict[str, Any],
+        metadata: weave.Model,
     ) -> Dict[str, Union[bool, float, int]]:
         """Calculate the spatial relationship score for the given prompt and model output.
 
@@ -235,6 +236,7 @@ class SpatialRelationshipMetric2D(BaseMetric):
             Dict[str, Union[bool, float, int]]: The comprehensive spatial relationship judgement.
         """
         _ = prompt
+        _ = metadata
 
         image = model_output["image"]
         boxes: List[BoundingBox] = self.judge.predict(image)
@@ -251,5 +253,8 @@ class SpatialRelationshipMetric2D(BaseMetric):
         entity_2: str,
         relationship: str,
         model_output: Dict[str, Any],
+        metadata: weave.Model,
     ) -> Dict[str, Union[bool, float, int]]:
-        return self.evaluate(prompt, entity_1, entity_2, relationship, model_output)
+        return self.evaluate(
+            prompt, entity_1, entity_2, relationship, model_output, metadata
+        )

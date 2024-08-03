@@ -63,6 +63,7 @@ class DisentangledVQAMetric(BaseMetric):
         adj_2: str,
         noun_2: str,
         model_output: Dict[str, Any],
+        metadata: weave.Model,
     ) -> Dict[str, Any]:
         """Evaluate the attribute-binding capability of the model.
 
@@ -78,6 +79,7 @@ class DisentangledVQAMetric(BaseMetric):
             Dict[str, Any]: The evaluation result.
         """
         _ = prompt
+        _ = metadata
         judgement = self.judge.predict(
             adj_1, noun_1, adj_2, noun_2, model_output["image"]
         )
@@ -93,5 +95,8 @@ class DisentangledVQAMetric(BaseMetric):
         adj_2: str,
         noun_2: str,
         model_output: Dict[str, Any],
+        metadata: weave.Model,
     ) -> Dict[str, Any]:
-        return self.evaluate(prompt, adj_1, noun_1, adj_2, noun_2, model_output)
+        return self.evaluate(
+            prompt, adj_1, noun_1, adj_2, noun_2, model_output, metadata
+        )
