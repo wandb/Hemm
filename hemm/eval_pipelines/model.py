@@ -1,10 +1,8 @@
-from typing import Dict
+from typing import Any, Dict
 
 import torch
 import weave
 from diffusers import DiffusionPipeline
-
-from ..utils import base64_encode_image
 
 
 class BaseDiffusionModel(weave.Model):
@@ -26,7 +24,21 @@ class BaseDiffusionModel(weave.Model):
     _torch_dtype: torch.dtype = torch.float16
     _pipeline: DiffusionPipeline = None
 
-    def initialize(self) -> None:
+    def __init__(
+        self,
+        diffusion_model_name_or_path: str,
+        enable_cpu_offfload: bool = False,
+        image_height: int = 512,
+        image_width: int = 512,
+        disable_safety_checker: bool = True,
+    ) -> None:
+        super().__init__(
+            diffusion_model_name_or_path=diffusion_model_name_or_path,
+            enable_cpu_offfload=enable_cpu_offfload,
+            image_height=image_height,
+            image_width=image_width,
+            disable_safety_checker=disable_safety_checker,
+        )
         pipeline_init_kwargs = {
             "pretrained_model_name_or_path": self.diffusion_model_name_or_path,
             "torch_dtype": self._torch_dtype,
@@ -41,7 +53,7 @@ class BaseDiffusionModel(weave.Model):
         self._pipeline.set_progress_bar_config(leave=False, desc="Generating Image")
 
     @weave.op()
-    def predict(self, prompt: str, seed: int) -> Dict[str, str]:
+    def predict(self, prompt: str, seed: int) -> Dict[str, Any]:
         pipeline_output = self._pipeline(
             prompt,
             num_images_per_prompt=1,
@@ -50,6 +62,6 @@ class BaseDiffusionModel(weave.Model):
             generator=torch.Generator(device="cuda").manual_seed(seed),
         )
         return {
-            "image": base64_encode_image(pipeline_output.images[0]),
+            "image": pipeline_output.images[0],
             "nsfw_content_detected": pipeline_output.nsfw_content_detected is not None,
         }

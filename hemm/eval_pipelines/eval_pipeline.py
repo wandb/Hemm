@@ -6,7 +6,6 @@ import wandb
 import weave
 
 from ..metrics.base import BaseMetric
-from ..utils import base64_decode_image
 from .model import BaseDiffusionModel
 
 
@@ -21,7 +20,6 @@ class EvaluationPipeline(ABC):
     def __init__(self, model: BaseDiffusionModel, seed: int = 42) -> None:
         super().__init__()
         self.model = model
-        self.model.initialize()
 
         self.image_size = (self.model.image_height, self.model.image_width)
         self.seed = seed
@@ -70,11 +68,7 @@ class EvaluationPipeline(ABC):
         self.inference_counter += 1
         output = self.model.predict(prompt, seed=self.seed)
         self.table_rows.append(
-            [
-                self.model.diffusion_model_name_or_path,
-                prompt,
-                wandb.Image(base64_decode_image(output["image"])),
-            ]
+            [self.model.diffusion_model_name_or_path, prompt, output["image"]]
         )
         return output
 
@@ -97,6 +91,7 @@ class EvaluationPipeline(ABC):
         config.update(self.evaluation_configs)
         for row_idx, row in enumerate(self.table_rows):
             current_row = row
+            current_row[-1] = wandb.Image(current_row[-1])
             for metric_fn in self.metric_functions:
                 current_row.append(metric_fn.scores[row_idx])
             self.evaluation_table.add_data(*current_row)

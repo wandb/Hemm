@@ -31,7 +31,7 @@ transformers = "^4.41.2"
 jsonlines = "^4.0.0"
 spacy = "^3.7.5"
 instructor = "^1.3.4"
-torchmetrics = "^1.4.1"
+torchmetrics = { extras = ["multimodal"], version = "^1.4.1" }
 
 [tool.poetry.extras]
 core = [
@@ -46,7 +46,8 @@ core = [
     "fire",
     "jsonlines",
     "spacy",
-    "instructor"
+    "instructor",
+    "torchmetrics",
 ]
 docs = [
     "mkdocs",
