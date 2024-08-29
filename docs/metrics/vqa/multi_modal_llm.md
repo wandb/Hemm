@@ -12,7 +12,16 @@ This module aims to implement the Multi-modal LLM based metric inspired by
 
 !!! example
 
-    ```python
+    First, download the Spacy English langugage pipeline
+    ```shell
+    python -m spacy download en_core_web_sm
+    ```
+    Next, you need to set your OpenAI API key:
+    ```
+    export OPENAI_API_KEY="<INSERT-YOUR-OPENAI-API-KEY>"
+    ```
+    Finallly, you can run the following snippet to evaluate your model:
+    ```python  
     import wandb
     import weave
 
