@@ -2,6 +2,7 @@ from typing import Any, Dict, List, Optional, Union
 
 import wandb
 import weave
+from PIL import Image
 
 from ..base import BaseMetric
 from .judges import DETRSpatialRelationShipJudge
@@ -72,7 +73,7 @@ class SpatialRelationshipMetric2D(BaseMetric):
     def compose_judgement(
         self,
         prompt: str,
-        image: str,
+        image: Image.Image,
         entity_1: str,
         entity_2: str,
         relationship: str,
@@ -82,7 +83,7 @@ class SpatialRelationshipMetric2D(BaseMetric):
 
         Args:
             prompt (str): The prompt using which the image was generated.
-            image (str): The base64 encoded image.
+            image (Image.Image): The input image.
             entity_1 (str): First entity.
             entity_2 (str): Second entity.
             relationship (str): Relationship between the entities.

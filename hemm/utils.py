@@ -80,15 +80,18 @@ def publish_dataset_to_weave(
         if __name__ == "__main__":
             weave.init(project_name="t2i_eval")
 
+            def preprocess_sentences_column(example):
+                example["sentences"] = example["sentences"]["raw"]
+                return example
+
+
             dataset_reference = publish_dataset_to_weave(
                 dataset_path="HuggingFaceM4/COCO",
                 prompt_column="sentences",
                 ground_truth_image_column="image",
                 split="validation",
-                dataset_transforms=[
-                    lambda item: {**item, "sentences": item["sentences"]["raw"]}
-                ],
-                data_limit=5,
+                dataset_transforms=preprocess_sentences_column,
+                data_limit=10,
             )
         ```
 
