@@ -2,9 +2,7 @@ from typing import Any, Dict, List, Optional, Union
 
 import wandb
 import weave
-from PIL import Image
 
-from ...utils import base64_decode_image, base64_encode_image
 from ..base import BaseMetric
 from .judges import DETRSpatialRelationShipJudge
 from .judges.commons import BoundingBox
@@ -192,24 +190,14 @@ class SpatialRelationshipMetric2D(BaseMetric):
             {
                 **judgement,
                 **{
-                    "judge_annotated_image": wandb.Image(
-                        base64_decode_image(annotated_image)
-                        if isinstance(annotated_image, str)
-                        else annotated_image
-                    ),
+                    "judge_annotated_image": wandb.Image(annotated_image),
                     "judge_config": self.judge_config,
                 },
             }
         )
         return {
             **judgement,
-            **{
-                "judge_annotated_image": (
-                    base64_encode_image(annotated_image)
-                    if isinstance(annotated_image, Image.Image)
-                    else annotated_image
-                )
-            },
+            **{"judge_annotated_image": annotated_image},
             "judge_config": self.judge_config,
         }
 

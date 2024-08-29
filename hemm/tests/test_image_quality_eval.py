@@ -14,7 +14,7 @@ class TestImageQualityEvaluation(unittest.TestCase):
         wandb.init(
             project="unit-tests",
             entity="hemm-eval",
-            job_type="test_prompt_alignment_evaluation",
+            job_type="test_image_quality_evaluation",
         )
         weave.init(project_name="hemm-eval/unit-tests")
 

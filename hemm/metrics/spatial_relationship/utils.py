@@ -1,10 +1,7 @@
-from typing import Union
-
 import cv2
 import numpy as np
 from PIL import Image
 
-from ...utils import base64_decode_image
 from .judges.commons import BoundingBox
 
 
@@ -39,9 +36,7 @@ def get_iou(entity_1: BoundingBox, entity_2: BoundingBox) -> float:
     return intersection / union
 
 
-def annotate_with_bounding_box(
-    image: Union[str, Image.Image], entity: BoundingBox
-) -> Image.Image:
+def annotate_with_bounding_box(image: Image.Image, entity: BoundingBox) -> Image.Image:
     """Annotate an image with a bounding box and label.
 
     Args:
@@ -51,7 +46,6 @@ def annotate_with_bounding_box(
     Returns:
         Image.Image: The annotated image.
     """
-    image = base64_decode_image(image) if isinstance(image, str) else image
     image = np.array(image)
     cv2.rectangle(
         image,
