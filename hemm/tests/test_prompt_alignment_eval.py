@@ -4,7 +4,7 @@ import wandb
 import weave
 
 from hemm.eval_pipelines import BaseDiffusionModel, EvaluationPipeline
-from hemm.metrics.prompt_alignment import CLIPScoreMetric
+from hemm.metrics.prompt_alignment import CLIPImageQualityScoreMetric, CLIPScoreMetric
 
 
 class TestPromptAlignmentEvaluation(unittest.TestCase):
@@ -30,6 +30,12 @@ class TestPromptAlignmentEvaluation(unittest.TestCase):
             clip_model_name_or_path="openai/clip-vit-base-patch16"
         )
         evaluation_pipeline.add_metric(clip_scorer)
+
+        # Add CLIP IQA Metric
+        clip_iqa_scorer = CLIPImageQualityScoreMetric(
+            clip_model_name_or_path="clip_iqa"
+        )
+        evaluation_pipeline.add_metric(clip_iqa_scorer)
 
         dataset = weave.ref("parti-prompts:v0").get().rows[:2]
         summary = evaluation_pipeline(dataset=dataset)

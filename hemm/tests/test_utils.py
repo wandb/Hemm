@@ -19,11 +19,16 @@ class TestUtils(unittest.TestCase):
         self.assertIsNotNone(dataset_reference)
 
     def test_coco(self):
+        def preprocess_sentences_column(example):
+            example["sentences"] = example["sentences"]["raw"]
+            return example
+
         dataset_reference = publish_dataset_to_weave(
             dataset_path="HuggingFaceM4/COCO",
             prompt_column="sentences",
             ground_truth_image_column="image",
             split="validation",
+            dataset_transforms=[preprocess_sentences_column],
             data_limit=10,
         )
         self.assertIsNotNone(dataset_reference)

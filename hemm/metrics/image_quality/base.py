@@ -1,6 +1,4 @@
-import base64
 from abc import abstractmethod
-from io import BytesIO
 from typing import Any, Dict, Union
 
 from PIL import Image
@@ -50,7 +48,7 @@ class BaseImageQualityMetric(BaseMetric):
         pass
 
     def evaluate(
-        self, prompt: str, ground_truth_image: str, model_output: Dict[str, Any]
+        self, prompt: str, ground_truth_image: Image.Image, model_output: Dict[str, Any]
     ) -> Dict[str, float]:
         """Compute the metric for the given images. This method is used as the scorer
         function for `weave.Evaluation` in the evaluation pipelines.
@@ -63,14 +61,8 @@ class BaseImageQualityMetric(BaseMetric):
         Returns:
             Union[float, Dict[str, float]]: Metric score.
         """
-        ground_truth_pil_image = Image.open(
-            BytesIO(base64.b64decode(ground_truth_image.split(";base64,")[-1]))
-        )
-        generated_pil_image = Image.open(
-            BytesIO(base64.b64decode(model_output["image"].split(";base64,")[-1]))
-        )
         metric_output = self.compute_metric(
-            ground_truth_pil_image, generated_pil_image, prompt
+            ground_truth_image, model_output["image"], prompt
         )
         self.scores.append(metric_output.score)
         return {self.name: metric_output.score}

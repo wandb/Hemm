@@ -65,14 +65,14 @@ class PSNRMetric(BaseImageQualityMetric):
 
     @weave.op()
     def evaluate(
-        self, prompt: str, ground_truth_image: str, model_output: Dict[str, Any]
+        self, prompt: str, ground_truth_image: Image.Image, model_output: Dict[str, Any]
     ) -> Union[float, Dict[str, float]]:
         _ = "PSNRMetric"
         return super().evaluate(prompt, ground_truth_image, model_output)
 
     @weave.op()
     async def evaluate_async(
-        self, prompt: str, ground_truth_image: str, model_output: Dict[str, Any]
+        self, prompt: str, ground_truth_image: Image.Image, model_output: Dict[str, Any]
     ) -> Union[float, Dict[str, float]]:
         _ = "PSNRMetric"
         return self.evaluate(prompt, ground_truth_image, model_output)
