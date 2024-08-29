@@ -17,13 +17,19 @@ class DETRSpatialRelationShipJudge(weave.Model):
         name (str, optional): The name of the judge model
     """
 
-    model_address: str = "facebook/detr-resnet-50"
-    revision: str = "no_timm"
-    name: str = "detr_spatial_relationship_judge"
+    model_address: str
+    revision: str
+    name: str
     _feature_extractor: DetrImageProcessor = None
     _object_detection_model: DetrForObjectDetection = None
 
-    def _initialize_models(self):
+    def __init__(
+        self,
+        model_address: str = "facebook/detr-resnet-50",
+        revision: str = "no_timm",
+        name: str = "detr_spatial_relationship_judge",
+    ):
+        super().__init__(model_address=model_address, revision=revision, name=name)
         self._feature_extractor = DetrImageProcessor.from_pretrained(
             self.model_address, revision=self.revision
         )

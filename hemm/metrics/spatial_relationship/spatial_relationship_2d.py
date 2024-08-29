@@ -61,7 +61,6 @@ class SpatialRelationshipMetric2D(BaseMetric):
     ) -> None:
         super().__init__()
         self.judge = judge
-        self.judge._initialize_models()
         self.judge_config = self.judge.model_dump(mode="json")
         self.iou_threshold = iou_threshold
         self.distance_threshold = distance_threshold
