@@ -51,6 +51,7 @@ core = [
 ]
 docs = [
     "mkdocs",
+    "mkdocstrings",
     "mkdocs-material",
     "mkdocs-minify-plugin",
     "mkdocs-glightbox",
