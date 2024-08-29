@@ -22,7 +22,6 @@ class MultiModalLLMEvaluationMetric(BaseMetric):
     ) -> None:
         super().__init__()
         self.judge = judge
-        self.judge._initialize()
         self.config = self.judge.model_dump()
         self.prompt_property = judge.prompt_property
         self.scores = []

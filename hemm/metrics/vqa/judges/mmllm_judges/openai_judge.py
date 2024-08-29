@@ -5,6 +5,7 @@ import instructor
 import spacy
 import weave
 from openai import OpenAI
+from PIL import Image
 from pydantic import BaseModel
 
 from .commons import (
@@ -13,6 +14,7 @@ from .commons import (
     JudgeMent,
     JudgeQuestion,
 )
+from .....utils import base64_encode_image
 
 
 class OpenAIJudgeMent(BaseModel):
@@ -38,17 +40,31 @@ class OpenAIJudge(weave.Model):
         system_prompt (Optional[str]): The system prompt for the OpenAI model
     """
 
-    prompt_pipeline: str = "en_core_web_sm"
-    prompt_property: PromptCategory = PromptCategory.color
-    openai_model: str = "gpt-4-turbo"
-    max_retries: int = 5
-    seed: int = 42
+    prompt_pipeline: str
+    prompt_property: PromptCategory
+    openai_model: str
+    max_retries: int
+    seed: int
     _nlp_pipeline: spacy.Language = None
     _openai_client: OpenAI = None
     _instructor_openai_client: instructor.Instructor = None
     _total_score: int = 4
 
-    def _initialize(self):
+    def __init__(
+        self,
+        prompt_pipeline: str = "en_core_web_sm",
+        prompt_property: PromptCategory = PromptCategory.color,
+        openai_model: str = "gpt-4-turbo",
+        max_retries: int = 5,
+        seed: int = 42,
+    ):
+        super().__init__(
+            prompt_pipeline=prompt_pipeline,
+            prompt_property=prompt_property,
+            openai_model=openai_model,
+            max_retries=max_retries,
+            seed=seed,
+        )
         self._nlp_pipeline = spacy.load(self.prompt_pipeline)
         self._openai_client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
         self._instructor_openai_client = instructor.from_openai(
@@ -83,13 +99,13 @@ class OpenAIJudge(weave.Model):
         return tagged_prompt_parts
 
     @weave.op()
-    def frame_question(self, prompt: str, image: str) -> List[JudgeQuestion]:
+    def frame_question(self, prompt: str, image: Image.Image) -> List[JudgeQuestion]:
         """Frame the question corresponding to the given prompt and image for
         the chain-of-thought system of judgement.
 
         Args:
             prompt (str): The prompt to frame the question for.
-            image (str): The image to frame the question for.
+            image (Image.Image): The image to frame the question for.
 
         Returns:
             List[JudgeQuestion]: List of questions to ask for the given prompt.
@@ -115,9 +131,8 @@ Give a score from 1 to 5, according to the following criteria:
 2: image not aligned properly with the text.
 1: image almost irrelevant to the text.
                 """,
-                image=image,
             )
-            return [question]
+            return [(question, image)]
         elif self.prompt_property == PromptCategory.action:
             self._total_score = 5
             question = JudgeQuestion(
@@ -139,9 +154,8 @@ Give a score from 1 to 5, according to the following criteria:
 2: the image failed to convey the full scope of the text.
 1: the image did not depict any actions or events that match the text.
                 """,
-                image=image,
             )
-            return [question]
+            return [(question, image)]
         elif self.prompt_property == PromptCategory.numeracy:
             self._total_score = 5
             question = JudgeQuestion(
@@ -163,9 +177,8 @@ Give a score from 1 to 5, according to the following criteria:
 2: image not aligned properly with the text
 1: image almost irrelevant to the text
                 """,
-                image=image,
             )
-            return [question]
+            return [(question, image)]
         elif self.prompt_property == PromptCategory.complex:
             self._total_score = 5
             question = JudgeQuestion(
@@ -190,9 +203,8 @@ Give a score from 1 to 5, according to the following criteria:
 2: the image did not depict any actions or events that match the text.
 1: the image failed to convey the full scope in the text prompt.
                 """,
-                image=image,
             )
-            return [question]
+            return [(question, image)]
         tagged_prompt_parts = self.extract_prompt_parts(prompt)
         questions: List[str] = []
         for tagged_prompt_part in tagged_prompt_parts:
@@ -214,13 +226,14 @@ Give a score from 1 to 4, according to the following criteria:
 2: there is {tagged_prompt_part.noun}, but it is not {tagged_prompt_part.adjective}.
 1: no {tagged_prompt_part.noun} in the image.
                 """,
-                image=image,
             )
-            questions.append(question)
+            questions.append((question, image))
         return questions
 
     @weave.op
-    def execute_chain_of_thought(self, question: JudgeQuestion) -> OpenAIJudgeMent:
+    def execute_chain_of_thought(
+        self, question: JudgeQuestion, image: Image.Image
+    ) -> OpenAIJudgeMent:
         image_description_explanation = (
             self._openai_client.chat.completions.create(
                 model=self.openai_model,
@@ -233,7 +246,10 @@ Give a score from 1 to 4, according to the following criteria:
                     {
                         "role": "user",
                         "content": [
-                            {"type": "image_url", "image_url": {"url": question.image}},
+                            {
+                                "type": "image_url",
+                                "image_url": {"url": base64_encode_image(image)},
+                            },
                         ],
                     },
                 ],
@@ -264,7 +280,10 @@ Provide your analysis and explanation to justify the score.
                     "role": "user",
                     "content": [
                         {"type": "text", "text": question.judgement_question},
-                        {"type": "image_url", "image_url": {"url": question.image}},
+                        {
+                            "type": "image_url",
+                            "image_url": {"url": base64_encode_image(image)},
+                        },
                     ],
                 },
             ],
@@ -272,17 +291,19 @@ Provide your analysis and explanation to justify the score.
         return judgement_response
 
     @weave.op()
-    def predict(self, prompt: str, image: str) -> List[OpenAIJudgeMent]:
+    def predict(self, prompt: str, image: Image.Image) -> List[OpenAIJudgeMent]:
         """Predict the score for the given prompt and image.
 
         Args:
             prompt (str): The prompt to evaluate.
-            image (str): The image to evaluate.
+            image (Image.Image): The image to evaluate.
         """
         questions = self.frame_question(prompt, image)
         answers = []
-        for question in questions:
-            judgement_response: JudgeMent = self.execute_chain_of_thought(question)
+        for question, image in questions:
+            judgement_response: JudgeMent = self.execute_chain_of_thought(
+                question, image
+            )
             judgement_response.explanation = (
                 f"The score is {judgement_response.score}/{self._total_score}. "
                 + judgement_response.explanation
