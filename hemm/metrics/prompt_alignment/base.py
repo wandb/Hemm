@@ -1,6 +1,4 @@
-import base64
 from abc import abstractmethod
-from io import BytesIO
 from typing import Any, Dict, Union
 
 from PIL import Image
@@ -48,9 +46,6 @@ class BasePromptAlignmentMetric(BaseMetric):
         Returns:
             Dict[str, float]: Metric score.
         """
-        pil_image = Image.open(
-            BytesIO(base64.b64decode(model_output["image"].split(";base64,")[-1]))
-        )
-        score = self.compute_metric(pil_image, prompt)
+        score = self.compute_metric(model_output["image"], prompt)
         self.scores.append(score)
         return {self.name: score}

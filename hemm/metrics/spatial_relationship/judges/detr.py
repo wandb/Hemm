@@ -2,9 +2,9 @@ from typing import List
 
 import torch
 import weave
+from PIL import Image
 from transformers import DetrForObjectDetection, DetrImageProcessor
 
-from ....utils import base64_decode_image
 from .commons import BoundingBox, CartesianCoordinate2D
 
 
@@ -17,13 +17,19 @@ class DETRSpatialRelationShipJudge(weave.Model):
         name (str, optional): The name of the judge model
     """
 
-    model_address: str = "facebook/detr-resnet-50"
-    revision: str = "no_timm"
-    name: str = "detr_spatial_relationship_judge"
+    model_address: str
+    revision: str
+    name: str
     _feature_extractor: DetrImageProcessor = None
     _object_detection_model: DetrForObjectDetection = None
 
-    def _initialize_models(self):
+    def __init__(
+        self,
+        model_address: str = "facebook/detr-resnet-50",
+        revision: str = "no_timm",
+        name: str = "detr_spatial_relationship_judge",
+    ):
+        super().__init__(model_address=model_address, revision=revision, name=name)
         self._feature_extractor = DetrImageProcessor.from_pretrained(
             self.model_address, revision=self.revision
         )
@@ -32,19 +38,18 @@ class DETRSpatialRelationShipJudge(weave.Model):
         )
 
     @weave.op()
-    def predict(self, image: str) -> List[BoundingBox]:
+    def predict(self, image: Image.Image) -> List[BoundingBox]:
         """Predict the bounding boxes from the input image.
 
         Args:
-            image (str): The base64 encoded image.
+            image (Image.Image): The input image.
 
         Returns:
             List[BoundingBox]: The predicted bounding boxes.
         """
-        pil_image = base64_decode_image(image)
-        encoding = self._feature_extractor(pil_image, return_tensors="pt")
+        encoding = self._feature_extractor(image, return_tensors="pt")
         outputs = self._object_detection_model(**encoding)
-        target_sizes = torch.tensor([pil_image.size[::-1]])
+        target_sizes = torch.tensor([image.size[::-1]])
         results = self._feature_extractor.post_process_object_detection(
             outputs, target_sizes=target_sizes, threshold=0.9
         )[0]

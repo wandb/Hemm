@@ -1,8 +1,6 @@
-import os
 from typing import Optional, Tuple
 
 import fire
-import jsonlines
 import wandb
 import weave
 

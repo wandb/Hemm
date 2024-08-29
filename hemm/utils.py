@@ -6,8 +6,7 @@ import random
 from pathlib import Path
 from typing import Callable, Dict, List, Optional, Union
 
-import jsonlines
-import wandb
+import numpy as np
 import weave
 from datasets import load_dataset
 from PIL import Image
@@ -58,22 +57,6 @@ def base64_decode_image(image: str) -> Image.Image:
     return Image.open(io.BytesIO(base64.b64decode(image.split(";base64,")[-1])))
 
 
-def save_weave_dataset_rows_to_artifacts(
-    dataset_rows: List[Dict], dump_dir: str
-) -> None:
-    """Saves the dataset rows to W&B artifacts.
-
-    Args:
-        dataset_rows (List[Dict]): List of dataset rows.
-        dump_dir (str): Directory to dump the results.
-    """
-    with jsonlines.open(os.path.join(dump_dir, "data.jsonl"), mode="w") as writer:
-        writer.write(dataset_rows)
-    artifact = wandb.Artifact(name="t2i_compbench_spatial_prompts", type="dataset")
-    artifact.add_file(local_path=os.path.join(dump_dir, "data.jsonl"))
-    wandb.log_artifact(artifact)
-
-
 def publish_dataset_to_weave(
     dataset_path,
     dataset_name: Optional[str] = None,
@@ -83,7 +66,6 @@ def publish_dataset_to_weave(
     data_limit: Optional[int] = None,
     get_weave_dataset_reference: bool = True,
     dataset_transforms: Optional[List[Callable]] = None,
-    column_transforms: Optional[Dict[str, Callable]] = None,
     dump_dir: Optional[str] = "./dump",
     *args,
     **kwargs,
@@ -98,15 +80,18 @@ def publish_dataset_to_weave(
         if __name__ == "__main__":
             weave.init(project_name="t2i_eval")
 
+            def preprocess_sentences_column(example):
+                example["sentences"] = example["sentences"]["raw"]
+                return example
+
+
             dataset_reference = publish_dataset_to_weave(
                 dataset_path="HuggingFaceM4/COCO",
                 prompt_column="sentences",
                 ground_truth_image_column="image",
                 split="validation",
-                dataset_transforms=[
-                    lambda item: {**item, "sentences": item["sentences"]["raw"]}
-                ],
-                data_limit=5,
+                dataset_transforms=preprocess_sentences_column,
+                data_limit=10,
             )
         ```
 
@@ -119,7 +104,6 @@ def publish_dataset_to_weave(
         data_limit (Optional[int], optional): Limit the number of data items.
         get_weave_dataset_reference (bool, optional): Whether to return the Weave dataset reference.
         dataset_transforms (Optional[List[Callable]], optional): List of dataset transforms.
-        column_transforms (Optional[Dict[str, Callable]], optional): Column specific transforms.
         dump_dir (Optional[str], optional): Directory to dump the results.
 
     Returns:
@@ -147,20 +131,7 @@ def publish_dataset_to_weave(
         if ground_truth_image_column
         else dataset_dict
     )
-    column_transforms = (
-        {**column_transforms, **{"ground_truth_image": base64_encode_image}}
-        if column_transforms
-        else {"ground_truth_image": base64_encode_image}
-    )
-    weave_dataset_rows = []
-    for data_item in tqdm(dataset_dict):
-        for key in data_item.keys():
-            if column_transforms and key in column_transforms:
-                data_item[key] = column_transforms[key](data_item[key])
-        weave_dataset_rows.append(data_item)
-
-    if wandb.run:
-        save_weave_dataset_rows_to_artifacts(weave_dataset_rows, dump_dir)
+    weave_dataset_rows = [data_item for data_item in tqdm(dataset_dict)]
 
     weave_dataset = weave.Dataset(name=dataset_name, rows=weave_dataset_rows)
     weave.publish(weave_dataset)
@@ -176,7 +147,9 @@ def str_to_json(json_str: str) -> Union[None, Dict]:
     return structured_response
 
 
-def autogenerate_seed() -> int:
+def autogenerate_seed(set_to_max: bool = False) -> int:
+    if set_to_max:
+        return random.randint(0, np.iinfo(np.int32).max)
     max_seed = int(1024 * 1024 * 1024)
     seed = random.randint(1, max_seed)
     seed = -seed if seed < 0 else seed

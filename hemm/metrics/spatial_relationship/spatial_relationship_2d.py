@@ -4,7 +4,6 @@ import wandb
 import weave
 from PIL import Image
 
-from ...utils import base64_decode_image, base64_encode_image
 from ..base import BaseMetric
 from .judges import DETRSpatialRelationShipJudge
 from .judges.commons import BoundingBox
@@ -63,7 +62,6 @@ class SpatialRelationshipMetric2D(BaseMetric):
     ) -> None:
         super().__init__()
         self.judge = judge
-        self.judge._initialize_models()
         self.judge_config = self.judge.model_dump(mode="json")
         self.iou_threshold = iou_threshold
         self.distance_threshold = distance_threshold
@@ -75,7 +73,7 @@ class SpatialRelationshipMetric2D(BaseMetric):
     def compose_judgement(
         self,
         prompt: str,
-        image: str,
+        image: Image.Image,
         entity_1: str,
         entity_2: str,
         relationship: str,
@@ -85,7 +83,7 @@ class SpatialRelationshipMetric2D(BaseMetric):
 
         Args:
             prompt (str): The prompt using which the image was generated.
-            image (str): The base64 encoded image.
+            image (Image.Image): The input image.
             entity_1 (str): First entity.
             entity_2 (str): Second entity.
             relationship (str): Relationship between the entities.
@@ -192,24 +190,14 @@ class SpatialRelationshipMetric2D(BaseMetric):
             {
                 **judgement,
                 **{
-                    "judge_annotated_image": wandb.Image(
-                        base64_decode_image(annotated_image)
-                        if isinstance(annotated_image, str)
-                        else annotated_image
-                    ),
+                    "judge_annotated_image": wandb.Image(annotated_image),
                     "judge_config": self.judge_config,
                 },
             }
         )
         return {
             **judgement,
-            **{
-                "judge_annotated_image": (
-                    base64_encode_image(annotated_image)
-                    if isinstance(annotated_image, Image.Image)
-                    else annotated_image
-                )
-            },
+            **{"judge_annotated_image": annotated_image},
             "judge_config": self.judge_config,
         }
 

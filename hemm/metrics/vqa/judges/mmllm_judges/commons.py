@@ -7,7 +7,6 @@ class JudgeQuestion(BaseModel):
     image_desciption_system_prompt: str
     judgement_question_system_prompt: str
     judgement_question: str
-    image: str
 
 
 class JudgeMent(BaseModel):

@@ -3,9 +3,8 @@ from typing import Dict, List
 import torch
 import torch.nn.functional as F
 import weave
+from PIL import Image
 from transformers import BlipForQuestionAnswering, BlipProcessor
-
-from ....utils import base64_decode_image
 
 
 class BlipVQAJudge(weave.Model):
@@ -18,14 +17,24 @@ class BlipVQAJudge(weave.Model):
         device (str): The device to use for inference
     """
 
-    blip_processor_address: str = "Salesforce/blip-vqa-base"
-    blip_vqa_address: str = "Salesforce/blip-vqa-base"
-    device: str = "cuda"
+    blip_processor_address: str
+    blip_vqa_address: str
+    device: str
     _torch_dtype: torch.dtype = torch.float32
     _blip_processor_model: BlipProcessor = None
     _blip_vqa_model: BlipForQuestionAnswering = None
 
-    def _initialize_models(self):
+    def __init__(
+        self,
+        blip_processor_address: str = "Salesforce/blip-vqa-base",
+        blip_vqa_address: str = "Salesforce/blip-vqa-base",
+        device: str = "cuda",
+    ):
+        super().__init__(
+            blip_processor_address=blip_processor_address,
+            blip_vqa_address=blip_vqa_address,
+            device=device,
+        )
         self._blip_processor_model = BlipProcessor.from_pretrained(
             self.blip_processor_address
         )
@@ -46,12 +55,11 @@ class BlipVQAJudge(weave.Model):
 
     @weave.op()
     def get_target_token_probability(
-        self, question: str, image: str
+        self, question: str, image: Image.Image
     ) -> Dict[str, float]:
-        pil_image = base64_decode_image(image)
-        inputs = self._blip_processor_model(
-            pil_image, question, return_tensors="pt"
-        ).to(self.device)
+        inputs = self._blip_processor_model(image, question, return_tensors="pt").to(
+            self.device
+        )
         with torch.no_grad():
             generated_ids = self._blip_vqa_model.generate(
                 **inputs, output_scores=True, return_dict_in_generate=True
@@ -63,7 +71,7 @@ class BlipVQAJudge(weave.Model):
 
     @weave.op()
     def predict(
-        self, adj_1: str, noun_1: str, adj_2: str, noun_2: str, image: str
+        self, adj_1: str, noun_1: str, adj_2: str, noun_2: str, image: Image.Image
     ) -> Dict:
         """Predict the probabilities presence of entities in an image using the Blip-VQA model.
 
@@ -72,7 +80,7 @@ class BlipVQAJudge(weave.Model):
             noun_1 (str): The noun of the first entity.
             adj_2 (str): The adjective of the second entity.
             noun_2 (str): The noun of the second entity.
-            image (str): The base64 encoded image.
+            image (Image.Image): The input image.
 
         Returns:
             Dict: The probabilities of the presence of the entities.
