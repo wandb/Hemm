@@ -17,7 +17,7 @@ huggingface-hub = "^0.23.0"
 datasets = "^2.19.1"
 fire = "^0.6.0"
 mkdocs = "^1.4.3"
-mkdocstrings = { extras = ["python"], version = "^0.22.0" }
+mkdocstrings = { extras = ["python"], version = "^1.10.8" }
 mkdocs-material = "^9.1.15"
 mkdocs-minify-plugin = "^0.6.4"
 mkdocs-glightbox = "^0.3.4"
