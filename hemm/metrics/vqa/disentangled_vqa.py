@@ -49,7 +49,6 @@ class DisentangledVQAMetric(BaseMetric):
     ) -> None:
         super().__init__()
         self.judge = judge
-        self.judge._initialize_models()
         self.config = self.judge.model_dump()
         self.scores = []
         self.name = name

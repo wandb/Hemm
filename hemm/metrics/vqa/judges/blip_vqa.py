@@ -17,14 +17,24 @@ class BlipVQAJudge(weave.Model):
         device (str): The device to use for inference
     """
 
-    blip_processor_address: str = "Salesforce/blip-vqa-base"
-    blip_vqa_address: str = "Salesforce/blip-vqa-base"
-    device: str = "cuda"
+    blip_processor_address: str
+    blip_vqa_address: str
+    device: str
     _torch_dtype: torch.dtype = torch.float32
     _blip_processor_model: BlipProcessor = None
     _blip_vqa_model: BlipForQuestionAnswering = None
 
-    def _initialize_models(self):
+    def __init__(
+        self,
+        blip_processor_address: str = "Salesforce/blip-vqa-base",
+        blip_vqa_address: str = "Salesforce/blip-vqa-base",
+        device: str = "cuda",
+    ):
+        super().__init__(
+            blip_processor_address=blip_processor_address,
+            blip_vqa_address=blip_vqa_address,
+            device=device,
+        )
         self._blip_processor_model = BlipProcessor.from_pretrained(
             self.blip_processor_address
         )
