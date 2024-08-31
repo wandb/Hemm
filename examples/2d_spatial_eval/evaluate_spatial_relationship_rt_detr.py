@@ -20,7 +20,7 @@ def main(
     detr_model_address: str = "PekingU/rtdetr_r50vd",
 ):
     wandb.init(project=project, entity=entity, job_type="evaluation")
-    weave.init(project_name=project)
+    weave.init(project_name=f"{entity}/{project}")
 
     dataset = weave.ref(dataset_ref).get()
     dataset = dataset.rows[:dataset_limit] if dataset_limit else dataset
