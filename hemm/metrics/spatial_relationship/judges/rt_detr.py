@@ -3,13 +3,13 @@ from typing import List
 import torch
 import weave
 from PIL import Image
-from transformers import DetrForObjectDetection, DetrImageProcessor
+from transformers import RTDetrForObjectDetection, RTDetrImageProcessor
 
 from .commons import BoundingBox, CartesianCoordinate2D
 
 
-class DETRSpatialRelationShipJudge(weave.Model):
-    """[DETR](https://huggingface.co/docs/transformers/en/model_doc/detr) spatial relationship judge model for 2D images.
+class RTDETRSpatialRelationShipJudge(weave.Model):
+    """[RT-DETR](https://huggingface.co/docs/transformers/en/model_doc/rt_detr) spatial relationship judge model for 2D images.
 
     Args:
         model_address (str, optional): The address of the model to use.
@@ -18,23 +18,21 @@ class DETRSpatialRelationShipJudge(weave.Model):
     """
 
     model_address: str
-    revision: str
     name: str
-    _feature_extractor: DetrImageProcessor = None
-    _object_detection_model: DetrForObjectDetection = None
+    _feature_extractor: RTDetrImageProcessor = None
+    _object_detection_model: RTDetrForObjectDetection = None
 
     def __init__(
         self,
         model_address: str = "facebook/detr-resnet-50",
-        revision: str = "no_timm",
         name: str = "detr_spatial_relationship_judge",
     ):
-        super().__init__(model_address=model_address, revision=revision, name=name)
-        self._feature_extractor = DetrImageProcessor.from_pretrained(
-            self.model_address, revision=self.revision
+        super().__init__(model_address=model_address, name=name)
+        self._feature_extractor = RTDetrImageProcessor.from_pretrained(
+            self.model_address
         )
-        self._object_detection_model = DetrForObjectDetection.from_pretrained(
-            self.model_address, revision=self.revision
+        self._object_detection_model = RTDetrForObjectDetection.from_pretrained(
+            self.model_address
         )
 
     @weave.op()
