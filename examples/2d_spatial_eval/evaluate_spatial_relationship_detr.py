@@ -16,7 +16,7 @@ def main(
     dataset_limit: Optional[int] = None,
     diffusion_model_address: str = "stabilityai/stable-diffusion-2-1",
     diffusion_model_enable_cpu_offfload: bool = False,
-    image_size: Tuple[int, int] = (512, 512),
+    image_size: Tuple[int, int] = (1024, 1024),
     detr_model_address: str = "facebook/detr-resnet-50",
     detr_revision: str = "no_timm",
 ):

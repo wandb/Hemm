@@ -165,3 +165,4 @@ dump/
 .vscode/
 **generated_images/
 .ruff_cache/
+**.jsonl
