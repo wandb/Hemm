@@ -67,7 +67,11 @@ class BlipVQAJudge(weave.Model):
         scores = generated_ids.scores
         yes_probability = self._get_probability("yes", scores)
         no_probability = self._get_probability("no", scores)
-        return {"yes_probability": yes_probability, "no_probability": no_probability}
+        return {
+            "yes_proba": yes_probability,
+            "no_proba": no_probability,
+            "present": yes_probability > no_probability,
+        }
 
     @weave.op()
     def predict(

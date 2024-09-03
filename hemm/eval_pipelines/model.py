@@ -21,6 +21,7 @@ class BaseDiffusionModel(weave.Model):
     image_height: int = 512
     image_width: int = 512
     disable_safety_checker: bool = True
+    pipeline_configs: Dict[str, Any] = {}
     _torch_dtype: torch.dtype = torch.float16
     _pipeline: DiffusionPipeline = None
 
@@ -31,6 +32,7 @@ class BaseDiffusionModel(weave.Model):
         image_height: int = 512,
         image_width: int = 512,
         disable_safety_checker: bool = True,
+        pipeline_configs: Dict[str, Any] = {},
     ) -> None:
         super().__init__(
             diffusion_model_name_or_path=diffusion_model_name_or_path,
@@ -38,11 +40,13 @@ class BaseDiffusionModel(weave.Model):
             image_height=image_height,
             image_width=image_width,
             disable_safety_checker=disable_safety_checker,
+            pipeline_configs=pipeline_configs,
         )
         pipeline_init_kwargs = {
             "pretrained_model_name_or_path": self.diffusion_model_name_or_path,
             "torch_dtype": self._torch_dtype,
         }
+        pipeline_init_kwargs.update(self.pipeline_configs)
         if self.disable_safety_checker:
             pipeline_init_kwargs["safety_checker"] = None
         self._pipeline = DiffusionPipeline.from_pretrained(**pipeline_init_kwargs)
@@ -61,7 +65,12 @@ class BaseDiffusionModel(weave.Model):
             width=self.image_width,
             generator=torch.Generator(device="cuda").manual_seed(seed),
         )
-        return {
+        result_dict = {
             "image": pipeline_output.images[0],
-            "nsfw_content_detected": pipeline_output.nsfw_content_detected is not None,
         }
+        result_dict["nsfw_content_detected"] = (
+            pipeline_output.nsfw_content_detected is not None
+            if hasattr(pipeline_output, "nsfw_content_detected")
+            else False
+        )
+        return result_dict
