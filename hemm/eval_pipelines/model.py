@@ -45,6 +45,7 @@ class BaseDiffusionModel(weave.Model):
             configs=configs,
             pipeline_configs=pipeline_configs,
         )
+        self.configs["torch_dtype"] = str(self._torch_dtype)
         pipeline_init_kwargs = {
             "pretrained_model_name_or_path": self.diffusion_model_name_or_path,
             "torch_dtype": self._torch_dtype,
