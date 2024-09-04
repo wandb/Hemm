@@ -110,7 +110,7 @@ class EvaluationPipeline(ABC):
             dataset=dataset,
             scorers=[metric_fn.evaluate_async for metric_fn in self.metric_functions],
         )
-        with weave.attributes(self.evaluation_configs):
-            summary = asyncio.run(evaluation.evaluate(self.infer_async))
+        self.model.configs.update(self.evaluation_configs)
+        summary = asyncio.run(evaluation.evaluate(self.infer_async))
         self.log_summary(summary)
         return summary
