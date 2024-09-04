@@ -130,6 +130,16 @@ Give a score from 1 to 5, according to the following criteria:
 3: spatial layout not aligned properly with the text.
 2: image not aligned properly with the text.
 1: image almost irrelevant to the text.
+
+Here are some more rules for scoring that you should follow:
+1. The shapes, layouts, orientations, and placements of the objects in the image should be realistic and adhere to physical constraints.
+    You should deduct 1 point from the score if there are any deformations with respect to the shapes, layouts, orientations, and
+    placements of the objects in the image.
+2. The anatomy of characters, humans, and animals should also be realistic and adhere to realistic constraints, shapes, and proportions.
+    You should deduct 1 point from the score if there are any deformations with respect to the anatomy of characters, humans, and animals
+    in the image.
+3. The spatial layout of the objects in the image should be consistent with the text prompt. You should deduct 1 point from the score if the
+    spatial layout of the objects in the image is not consistent with the text prompt.
                 """,
             )
             return [(question, image)]
@@ -153,6 +163,16 @@ Give a score from 1 to 5, according to the following criteria:
 3: the image depicted some elements, but action relationships between objects are not correct.
 2: the image failed to convey the full scope of the text.
 1: the image did not depict any actions or events that match the text.
+
+Here are some more rules for scoring that you should follow:
+1. The shapes, layouts, orientations, and placements of the objects in the image should be realistic and adhere to physical constraints.
+    You should deduct 1 point from the score if there are any deformations with respect to the shapes, layouts, orientations, and
+    placements of the objects in the image.
+2. The anatomy of characters, humans, and animals should also be realistic and adhere to realistic constraints, shapes, and proportions.
+    You should deduct 1 point from the score if there are any deformations with respect to the anatomy of characters, humans, and animals
+    in the image.
+3. The spatial layout of the objects in the image should be consistent with the text prompt. You should deduct 1 point from the score if the
+    spatial layout of the objects in the image is not consistent with the text prompt.
                 """,
             )
             return [(question, image)]
@@ -176,6 +196,16 @@ Give a score from 1 to 5, according to the following criteria:
 3: numerical content not aligned properly with the text
 2: image not aligned properly with the text
 1: image almost irrelevant to the text
+
+Here are some more rules for scoring that you should follow:
+1. The shapes, layouts, orientations, and placements of the objects in the image should be realistic and adhere to physical constraints.
+    You should deduct 1 point from the score if there are any deformations with respect to the shapes, layouts, orientations, and
+    placements of the objects in the image.
+2. The anatomy of characters, humans, and animals should also be realistic and adhere to realistic constraints, shapes, and proportions.
+    You should deduct 1 point from the score if there are any deformations with respect to the anatomy of characters, humans, and animals
+    in the image.
+3. The spatial layout of the objects in the image should be consistent with the text prompt. You should deduct 1 point from the score if the
+    spatial layout of the objects in the image is not consistent with the text prompt.
                 """,
             )
             return [(question, image)]
@@ -202,6 +232,16 @@ Give a score from 1 to 5, according to the following criteria:
 3: the image depicted some elements in the text prompt, but ignored some key parts or details.
 2: the image did not depict any actions or events that match the text.
 1: the image failed to convey the full scope in the text prompt.
+
+Here are some more rules for scoring that you should follow:
+1. The shapes, layouts, orientations, and placements of the objects in the image should be realistic and adhere to physical constraints.
+    You should deduct 1 point from the score if there are any deformations with respect to the shapes, layouts, orientations, and
+    placements of the objects in the image.
+2. The anatomy of characters, humans, and animals should also be realistic and adhere to realistic constraints, shapes, and proportions.
+    You should deduct 1 point from the score if there are any deformations with respect to the anatomy of characters, humans, and animals
+    in the image.
+3. The spatial layout of the objects in the image should be consistent with the text prompt. You should deduct 1 point from the score if the
+    spatial layout of the objects in the image is not consistent with the text prompt.
                 """,
             )
             return [(question, image)]
@@ -225,6 +265,16 @@ Give a score from 1 to 4, according to the following criteria:
 3: there is {tagged_prompt_part.noun}, {self.prompt_property.name} is mostly {tagged_prompt_part.adjective}.
 2: there is {tagged_prompt_part.noun}, but it is not {tagged_prompt_part.adjective}.
 1: no {tagged_prompt_part.noun} in the image.
+
+Here are some more rules for scoring that you should follow:
+1. The shapes, layouts, orientations, and placements of the objects in the image should be realistic and adhere to physical constraints.
+    You should deduct 1 point from the score if there are any deformations with respect to the shapes, layouts, orientations, and
+    placements of the objects in the image.
+2. The anatomy of characters, humans, and animals should also be realistic and adhere to realistic constraints, shapes, and proportions.
+    You should deduct 1 point from the score if there are any deformations with respect to the anatomy of characters, humans, and animals
+    in the image.
+3. The spatial layout of the objects in the image should be consistent with the text prompt. You should deduct 1 point from the score if the
+    spatial layout of the objects in the image is not consistent with the text prompt.
                 """,
             )
             questions.append((question, image))
