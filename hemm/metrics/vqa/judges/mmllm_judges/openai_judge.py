@@ -1,4 +1,5 @@
 import os
+import subprocess
 from typing import List
 
 import instructor
@@ -65,6 +66,7 @@ class OpenAIJudge(weave.Model):
             max_retries=max_retries,
             seed=seed,
         )
+        subprocess.run(["spacy", "download", "en_core_web_sm"])
         self._nlp_pipeline = spacy.load(self.prompt_pipeline)
         self._openai_client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
         self._instructor_openai_client = instructor.from_openai(
