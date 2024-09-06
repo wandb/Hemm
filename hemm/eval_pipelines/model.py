@@ -20,6 +20,7 @@ class BaseDiffusionModel(weave.Model):
     enable_cpu_offfload: bool = False
     image_height: int = 512
     image_width: int = 512
+    num_inference_steps: int = 50
     disable_safety_checker: bool = True
     configs: Dict[str, Any] = {}
     pipeline_configs: Dict[str, Any] = {}
@@ -68,5 +69,6 @@ class BaseDiffusionModel(weave.Model):
             height=self.image_height,
             width=self.image_width,
             generator=torch.Generator(device="cuda").manual_seed(seed),
+            num_inference_steps=self.num_inference_steps,
         )
         return {"image": pipeline_output.images[0]}
