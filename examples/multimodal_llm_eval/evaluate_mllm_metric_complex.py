@@ -18,6 +18,7 @@ def main(
     diffusion_model_enable_cpu_offfload: bool = False,
     image_height: int = 1024,
     image_width: int = 1024,
+    num_inference_steps: int = 50,
 ):
     wandb.init(project=project, entity=entity, job_type="evaluation")
     weave.init(project_name=f"{entity}/{project}")
@@ -30,6 +31,7 @@ def main(
         enable_cpu_offfload=diffusion_model_enable_cpu_offfload,
         image_height=image_height,
         image_width=image_width,
+        num_inference_steps=num_inference_steps,
     )
     diffusion_model._pipeline.set_progress_bar_config(disable=True)
     evaluation_pipeline = EvaluationPipeline(model=diffusion_model)
