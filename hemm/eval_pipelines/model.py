@@ -24,6 +24,7 @@ class BaseDiffusionModel(weave.Model):
     disable_safety_checker: bool = True
     configs: Dict[str, Any] = {}
     pipeline_configs: Dict[str, Any] = {}
+    inference_kwargs: Dict[str, Any] = {}
     _torch_dtype: torch.dtype = torch.float16
     _pipeline: DiffusionPipeline = None
 
@@ -37,6 +38,7 @@ class BaseDiffusionModel(weave.Model):
         disable_safety_checker: bool = True,
         configs: Dict[str, Any] = {},
         pipeline_configs: Dict[str, Any] = {},
+        inference_kwargs: Dict[str, Any] = {},
     ) -> None:
         super().__init__(
             diffusion_model_name_or_path=diffusion_model_name_or_path,
@@ -47,6 +49,7 @@ class BaseDiffusionModel(weave.Model):
             disable_safety_checker=disable_safety_checker,
             configs=configs,
             pipeline_configs=pipeline_configs,
+            inference_kwargs=inference_kwargs,
         )
         self.configs["torch_dtype"] = str(self._torch_dtype)
         pipeline_init_kwargs = {
@@ -72,5 +75,6 @@ class BaseDiffusionModel(weave.Model):
             width=self.image_width,
             generator=torch.Generator(device="cuda").manual_seed(seed),
             num_inference_steps=self.num_inference_steps,
+            **self.inference_kwargs,
         )
         return {"image": pipeline_output.images[0]}
