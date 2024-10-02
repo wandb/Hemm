@@ -96,7 +96,13 @@ class EvaluationPipeline(ABC):
                 current_row.append(metric_fn.scores[row_idx])
             self.evaluation_table.add_data(*current_row)
         summary_table = wandb.Table(columns=["summary"], data=[[summary]])
-        wandb.log({"evalution": self.evaluation_table, "summary": summary_table})
+        wandb.log(
+            {
+                "evalution": self.evaluation_table,
+                "summary": summary_table,
+                "evaluation_summary": summary,
+            }
+        )
 
     def __call__(self, dataset: Union[List[Dict], str]) -> Dict[str, float]:
         """Evaluate the Stable Diffusion model on the given dataset.
