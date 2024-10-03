@@ -12,7 +12,7 @@ Hemm is highly inspired by the following projects:
 
 - [GenEval: An Object-Focused Framework for Evaluating Text-to-Image Alignment](https://arxiv.org/abs/2310.11513)
 
-| ![](./docs/assets/evals.gif) | 
+| ![](./assets/evals.gif) | 
 |:--:| 
 | The evaluation pipeline will take each example, pass it through your application and score the output on multiple custom scoring functions using [Weave Evaluation](https://wandb.github.io/weave/guides/core-types/evaluations). By doing this, you'll have a view of the performance of your model, and a rich UI to drill into individual ouputs and scores. |
 
