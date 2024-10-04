@@ -24,8 +24,6 @@ class EvaluationPipeline(ABC):
     ) -> None:
         super().__init__()
         self.model = model
-
-        self.image_size = (self.model.image_height, self.model.image_width)
         self.seed = seed
 
         self.inference_counter = 1
@@ -34,17 +32,24 @@ class EvaluationPipeline(ABC):
         self.evaluation_table: wandb.Table = None
         self.metric_functions: List[BaseMetric] = []
 
-        self.evaluation_configs = {
-            "pretrained_model_name_or_path": self.model.diffusion_model_name_or_path,
-            "torch_dtype": str(self.model._torch_dtype),
-            "enable_cpu_offfload": self.model.enable_cpu_offfload,
-            "image_size": {
-                "height": self.image_size[0],
-                "width": self.image_size[1],
-            },
-            "seed": seed,
-            "diffusion_pipeline": dict(self.model._pipeline.config),
-        }
+        if isinstance(self.model, BaseDiffusionModel):
+            self.image_size = (self.model.image_height, self.model.image_width)
+            self.evaluation_configs = {
+                "pretrained_model_name_or_path": self.model.diffusion_model_name_or_path,
+                "torch_dtype": str(self.model._torch_dtype),
+                "enable_cpu_offfload": self.model.enable_cpu_offfload,
+                "image_size": {
+                    "height": self.image_size[0],
+                    "width": self.image_size[1],
+                },
+                "seed": seed,
+                "diffusion_pipeline": dict(self.model._pipeline.config),
+            }
+        elif isinstance(self.model, StabilityAPIModel):
+            self.evaluation_configs = {
+                "model_name": self.model.model_name,
+                "aspect_ratio": self.model.aspect_ratio,
+            }
 
     def add_metric(self, metric_fn: BaseMetric):
         """Add a metric function to the evaluation pipeline.
@@ -71,9 +76,16 @@ class EvaluationPipeline(ABC):
             self.evaluation_table = wandb.Table(columns=self.table_columns)
         self.inference_counter += 1
         output = self.model.predict(prompt, seed=self.seed)
-        self.table_rows.append(
-            [self.model.diffusion_model_name_or_path, prompt, output["image"]]
-        )
+        inference_row = []
+        if isinstance(self.model, BaseDiffusionModel):
+            inference_row = [
+                self.model.diffusion_model_name_or_path,
+                prompt,
+                output["image"],
+            ]
+        elif isinstance(self.model, StabilityAPIModel):
+            inference_row = [self.model.model_name, prompt, output["image"]]
+        self.table_rows.append(inference_row)
         return output
 
     @weave.op()
