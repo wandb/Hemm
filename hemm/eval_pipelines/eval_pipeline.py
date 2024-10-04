@@ -6,19 +6,21 @@ import wandb
 import weave
 
 from ..metrics.base import BaseMetric
-from .model import BaseDiffusionModel, FalDiffusionModel
+from .model import BaseDiffusionModel, FalDiffusionModel, StabilityAPIModel
 
 
 class EvaluationPipeline(ABC):
     """Evaluation pipeline to evaluate the a multi-modal generative model.
 
     Args:
-        model (BaseDiffusionModel): The model to evaluate.
+        model (Union[BaseDiffusionModel, FalDiffusionModel, StabilityAPIModel]): The model to evaluate.
         seed (int): Seed value for the random number generator.
     """
 
     def __init__(
-        self, model: Union[BaseDiffusionModel, FalDiffusionModel], seed: int = 42
+        self,
+        model: Union[BaseDiffusionModel, FalDiffusionModel, StabilityAPIModel],
+        seed: int = 42,
     ) -> None:
         super().__init__()
         self.model = model
