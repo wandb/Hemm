@@ -1282,6 +1282,25 @@ files = [
 tests = ["asttokens (>=2.1.0)", "coverage", "coverage-enable-subprocess", "ipython", "littleutils", "pytest", "rich"]
 
 [[package]]
+name = "fal-client"
+version = "0.4.1"
+description = "Python client for fal.ai"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "fal_client-0.4.1-py3-none-any.whl", hash = "sha256:3fe13ac5108a02c1c27e146e52dcbb0b10d33694d870c8a1769966af18ff4a3f"},
+    {file = "fal_client-0.4.1.tar.gz", hash = "sha256:3121cdbf4be8a47226e6df8e782340c1a603b17ec04942a131c2929a32aedff3"},
+]
+
+[package.dependencies]
+httpx = ">=0.21.0,<1"
+httpx-sse = ">=0.4.0,<0.5"
+
+[package.extras]
+dev = ["fal-client[test]"]
+test = ["pillow", "pytest", "pytest-asyncio"]
+
+[[package]]
 name = "fastjsonschema"
 version = "2.19.1"
 description = "Fastest Python implementation of JSON schema"
@@ -1629,6 +1648,17 @@ brotli = ["brotli", "brotlicffi"]
 cli = ["click (==8.*)", "pygments (==2.*)", "rich (>=10,<14)"]
 http2 = ["h2 (>=3,<5)"]
 socks = ["socksio (==1.*)"]
+
+[[package]]
+name = "httpx-sse"
+version = "0.4.0"
+description = "Consume Server-Sent Event (SSE) messages with HTTPX."
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "httpx-sse-0.4.0.tar.gz", hash = "sha256:1e81a3a3070ce322add1d3529ed42eb5f70817f45ed6ec915ab753f961139721"},
+    {file = "httpx_sse-0.4.0-py3-none-any.whl", hash = "sha256:f329af6eae57eaa2bdfd962b42524764af68075ea87370a2de920af5341e318f"},
+]
 
 [[package]]
 name = "huggingface-hub"
@@ -7035,10 +7065,10 @@ docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.link
 testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-ignore-flaky", "pytest-mypy", "pytest-ruff (>=0.2.1)"]
 
 [extras]
-core = ["accelerate", "datasets", "diffusers", "fire", "huggingface-hub", "instructor", "jsonlines", "poetry", "spacy", "torchmetrics", "transformers", "wandb", "weave"]
+core = ["accelerate", "datasets", "diffusers", "fire", "huggingface-hub", "instructor", "jsonlines", "poetry", "sentencepiece", "spacy", "torchmetrics", "transformers", "wandb", "weave"]
 docs = ["jupyter", "mkdocs", "mkdocs-glightbox", "mkdocs-jupyter", "mkdocs-material", "mkdocs-minify-plugin", "mkdocstrings"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "ea40234059583011ea809df1b374a1e4fe7d7b37ee0210b70eaa34ac02f21001"
+content-hash = "cc5e5de99369c72006d81aba99b2d4449af275925b63b17024a8e6646cffcef2"

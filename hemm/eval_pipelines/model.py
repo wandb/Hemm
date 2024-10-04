@@ -1,8 +1,13 @@
 from typing import Any, Dict
 
+import fal_client
 import torch
 import weave
 from diffusers import DiffusionPipeline
+from diffusers.utils.loading_utils import load_image
+from PIL import Image
+
+from ..utils import custom_weave_wrapper
 
 
 class BaseDiffusionModel(weave.Model):
@@ -78,3 +83,22 @@ class BaseDiffusionModel(weave.Model):
             **self.inference_kwargs,
         )
         return {"image": pipeline_output.images[0]}
+
+
+class FalDiffusionModel(BaseDiffusionModel):
+    model_address: str
+    inference_kwargs: Dict[str, Any] = {}
+
+    @weave.op()
+    def generate_image(self, prompt: str, seed: int) -> Image.Image:
+        result = custom_weave_wrapper(name="fal_client.submit.get")(
+            fal_client.submit(
+                self.model_address,
+                arguments={"prompt": prompt, "seed": seed, **self.inference_kwargs},
+            ).get
+        )()
+        return load_image(result["images"][0]["url"])
+
+    @weave.op()
+    def predict(self, prompt: str, seed: int) -> Image.Image:
+        return self.generate_image(prompt=prompt, seed=seed)
