@@ -2,26 +2,29 @@ import asyncio
 from abc import ABC
 from typing import Dict, List, Union
 
-import wandb
 import weave
 
+import wandb
+
 from ..metrics.base import BaseMetric
-from .model import BaseDiffusionModel
+from .model import BaseDiffusionModel, FalDiffusionModel, StabilityAPIModel
 
 
 class EvaluationPipeline(ABC):
     """Evaluation pipeline to evaluate the a multi-modal generative model.
 
     Args:
-        model (BaseDiffusionModel): The model to evaluate.
+        model (Union[BaseDiffusionModel, FalDiffusionModel, StabilityAPIModel]): The model to evaluate.
         seed (int): Seed value for the random number generator.
     """
 
-    def __init__(self, model: BaseDiffusionModel, seed: int = 42) -> None:
+    def __init__(
+        self,
+        model: Union[BaseDiffusionModel, FalDiffusionModel, StabilityAPIModel],
+        seed: int = 42,
+    ) -> None:
         super().__init__()
         self.model = model
-
-        self.image_size = (self.model.image_height, self.model.image_width)
         self.seed = seed
 
         self.inference_counter = 1
@@ -30,17 +33,24 @@ class EvaluationPipeline(ABC):
         self.evaluation_table: wandb.Table = None
         self.metric_functions: List[BaseMetric] = []
 
-        self.evaluation_configs = {
-            "pretrained_model_name_or_path": self.model.diffusion_model_name_or_path,
-            "torch_dtype": str(self.model._torch_dtype),
-            "enable_cpu_offfload": self.model.enable_cpu_offfload,
-            "image_size": {
-                "height": self.image_size[0],
-                "width": self.image_size[1],
-            },
-            "seed": seed,
-            "diffusion_pipeline": dict(self.model._pipeline.config),
-        }
+        if isinstance(self.model, BaseDiffusionModel):
+            self.image_size = (self.model.image_height, self.model.image_width)
+            self.evaluation_configs = {
+                "pretrained_model_name_or_path": self.model.diffusion_model_name_or_path,
+                "torch_dtype": str(self.model._torch_dtype),
+                "enable_cpu_offfload": self.model.enable_cpu_offfload,
+                "image_size": {
+                    "height": self.image_size[0],
+                    "width": self.image_size[1],
+                },
+                "seed": seed,
+                "diffusion_pipeline": dict(self.model._pipeline.config),
+            }
+        elif isinstance(self.model, StabilityAPIModel):
+            self.evaluation_configs = {
+                "model_name": self.model.model_name,
+                "aspect_ratio": self.model.aspect_ratio,
+            }
 
     def add_metric(self, metric_fn: BaseMetric):
         """Add a metric function to the evaluation pipeline.
@@ -67,9 +77,16 @@ class EvaluationPipeline(ABC):
             self.evaluation_table = wandb.Table(columns=self.table_columns)
         self.inference_counter += 1
         output = self.model.predict(prompt, seed=self.seed)
-        self.table_rows.append(
-            [self.model.diffusion_model_name_or_path, prompt, output["image"]]
-        )
+        inference_row = []
+        if isinstance(self.model, BaseDiffusionModel):
+            inference_row = [
+                self.model.diffusion_model_name_or_path,
+                prompt,
+                output["image"],
+            ]
+        elif isinstance(self.model, StabilityAPIModel):
+            inference_row = [self.model.model_name, prompt, output["image"]]
+        self.table_rows.append(inference_row)
         return output
 
     @weave.op()
@@ -104,17 +121,23 @@ class EvaluationPipeline(ABC):
             }
         )
 
-    def __call__(self, dataset: Union[List[Dict], str]) -> Dict[str, float]:
+    def __call__(
+        self, dataset: Union[List[Dict], str], evaluation_in_async: bool = True
+    ) -> Dict[str, float]:
         """Evaluate the Stable Diffusion model on the given dataset.
 
         Args:
             dataset (Union[List[Dict], str]): Dataset to evaluate the model on. If a string is
                 passed, it is assumed to be a Weave dataset reference.
+            evaluation_in_async (bool): Whether to evaluate the metrics in async mode.
         """
         dataset = weave.ref(dataset).get() if isinstance(dataset, str) else dataset
         evaluation = weave.Evaluation(
             dataset=dataset,
-            scorers=[metric_fn.evaluate_async for metric_fn in self.metric_functions],
+            scorers=[
+                metric_fn.evaluate_async if evaluation_in_async else metric_fn.evaluate
+                for metric_fn in self.metric_functions
+            ],
         )
         self.model.configs.update(self.evaluation_configs)
         summary = asyncio.run(evaluation.evaluate(self.infer_async))
