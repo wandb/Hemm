@@ -12,7 +12,7 @@ from hemm.metrics.vqa.judges.mmllm_judges import OpenAIJudge, PromptCategory
 def main(
     project="mllm-eval",
     entity="hemm-eval",
-    dataset_ref: Optional[str] = "attribute_binding_dataset:v1",
+    dataset_ref: Optional[str] = "Dataset:v0",
     dataset_limit: Optional[int] = None,
     model_name: str = "sd3-large",
 ):
