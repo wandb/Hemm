@@ -107,17 +107,23 @@ class EvaluationPipeline(ABC):
             }
         )
 
-    def __call__(self, dataset: Union[List[Dict], str]) -> Dict[str, float]:
+    def __call__(
+        self, dataset: Union[List[Dict], str], async_infer: bool = False
+    ) -> Dict[str, float]:
         """Evaluate the Stable Diffusion model on the given dataset.
 
         Args:
             dataset (Union[List[Dict], str]): Dataset to evaluate the model on. If a string is
                 passed, it is assumed to be a Weave dataset reference.
+            async_infer (bool, optional): Whether to use async inference. Defaults to False.
         """
         dataset = weave.ref(dataset).get() if isinstance(dataset, str) else dataset
         evaluation = weave.Evaluation(
             dataset=dataset,
-            scorers=[metric_fn.evaluate_async for metric_fn in self.metric_functions],
+            scorers=[
+                metric_fn.evaluate_async if async_infer else metric_fn.evaluate
+                for metric_fn in self.metric_functions
+            ],
         )
         self.model.configs.update(self.evaluation_configs)
         summary = asyncio.run(evaluation.evaluate(self.infer_async))
