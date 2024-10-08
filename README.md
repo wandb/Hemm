@@ -41,8 +41,9 @@ import wandb
 import weave
 
 
-from hemm.eval_pipelines import BaseDiffusionModel, EvaluationPipeline
+from hemm.eval_pipelines import EvaluationPipeline
 from hemm.metrics.prompt_alignment import CLIPImageQualityScoreMetric, CLIPScoreMetric
+from hemm.models import BaseDiffusionModel
 
 
 # Initialize Weave and WandB

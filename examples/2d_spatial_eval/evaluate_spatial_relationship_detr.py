@@ -1,12 +1,13 @@
 from typing import Optional, Tuple
 
 import fire
-import wandb
 import weave
 
-from hemm.eval_pipelines import BaseDiffusionModel, EvaluationPipeline
+import wandb
+from hemm.eval_pipelines import EvaluationPipeline
 from hemm.metrics.spatial_relationship import SpatialRelationshipMetric2D
 from hemm.metrics.spatial_relationship.judges import DETRSpatialRelationShipJudge
+from hemm.models import BaseDiffusionModel
 
 
 def main(

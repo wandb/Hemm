@@ -1,12 +1,13 @@
 from typing import Optional
 
 import fire
-import wandb
 import weave
 
-from hemm.eval_pipelines import BaseDiffusionModel, EvaluationPipeline
+import wandb
+from hemm.eval_pipelines import EvaluationPipeline
 from hemm.metrics.vqa import MultiModalLLMEvaluationMetric
 from hemm.metrics.vqa.judges.mmllm_judges import OpenAIJudge, PromptCategory
+from hemm.models import BaseDiffusionModel
 
 
 def main(
@@ -16,6 +17,7 @@ def main(
     dataset_limit: Optional[int] = None,
     diffusion_model_address: str = "stabilityai/stable-diffusion-2-1",
     diffusion_model_enable_cpu_offfload: bool = False,
+    openai_judge_model: str = "gpt-4o",
     image_height: int = 1024,
     image_width: int = 1024,
     num_inference_steps: int = 50,
@@ -36,7 +38,9 @@ def main(
     diffusion_model._pipeline.set_progress_bar_config(disable=True)
     evaluation_pipeline = EvaluationPipeline(model=diffusion_model)
 
-    judge = OpenAIJudge(prompt_property=PromptCategory.action)
+    judge = OpenAIJudge(
+        prompt_property=PromptCategory.action, openai_model=openai_judge_model
+    )
     metric = MultiModalLLMEvaluationMetric(judge=judge)
     evaluation_pipeline.add_metric(metric)
 

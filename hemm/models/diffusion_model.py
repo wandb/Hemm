@@ -6,14 +6,18 @@ from diffusers import DiffusionPipeline
 
 
 class BaseDiffusionModel(weave.Model):
-    """Base `weave.Model` wrapping `diffusers.DiffusionPipeline`.
+    """`weave.Model` wrapping `diffusers.DiffusionPipeline`.
 
     Args:
         diffusion_model_name_or_path (str): The name or path of the diffusion model.
         enable_cpu_offfload (bool): Enable CPU offload for the diffusion model.
         image_height (int): The height of the generated image.
         image_width (int): The width of the generated image.
+        num_inference_steps (int): The number of inference steps.
         disable_safety_checker (bool): Disable safety checker for the diffusion model.
+        configs (Dict[str, Any]): Additional configs.
+        pipeline_configs (Dict[str, Any]): Diffusion pipeline configs.
+        inference_kwargs (Dict[str, Any]): Inference kwargs.
     """
 
     diffusion_model_name_or_path: str
