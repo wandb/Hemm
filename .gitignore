@@ -166,3 +166,4 @@ dump/
 **generated_images/
 .ruff_cache/
 **.jsonl
+test.py

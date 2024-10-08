@@ -1,12 +1,13 @@
 from typing import Optional
 
 import fire
-import wandb
 import weave
 
-from hemm.eval_pipelines import BaseDiffusionModel, EvaluationPipeline
+import wandb
+from hemm.eval_pipelines import EvaluationPipeline
 from hemm.metrics.vqa import MultiModalLLMEvaluationMetric
 from hemm.metrics.vqa.judges.mmllm_judges import OpenAIJudge, PromptCategory
+from hemm.models import BaseDiffusionModel
 
 
 def main(
