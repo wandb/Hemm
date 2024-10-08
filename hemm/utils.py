@@ -157,7 +157,7 @@ def autogenerate_seed(set_to_max: bool = False) -> int:
     return seed
 
 
-def custom_wrapper(name: str) -> Callable[[Callable], Callable]:
+def custom_weave_wrapper(name: str) -> Callable[[Callable], Callable]:
     def wrapper(fn: Callable) -> Callable:
         op = weave.op()(fn)
         op.name = name  # type: ignore
