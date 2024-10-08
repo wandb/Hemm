@@ -6,7 +6,10 @@ import wandb
 import weave
 
 from ..metrics.base import BaseMetric
-from .model import BaseDiffusionModel
+from ..models import BaseDiffusionModel, FalAIModel, StabilityAPIModel
+
+
+MODEL_TYPE = Union[BaseDiffusionModel, FalAIModel, StabilityAPIModel]
 
 
 class EvaluationPipeline(ABC):
@@ -17,7 +20,7 @@ class EvaluationPipeline(ABC):
         seed (int): Seed value for the random number generator.
     """
 
-    def __init__(self, model: BaseDiffusionModel, seed: int = 42) -> None:
+    def __init__(self, model: MODEL_TYPE, seed: int = 42) -> None:
         super().__init__()
         self.model = model
 

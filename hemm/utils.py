@@ -155,3 +155,12 @@ def autogenerate_seed(set_to_max: bool = False) -> int:
     seed = -seed if seed < 0 else seed
     seed = seed % max_seed
     return seed
+
+
+def custom_wrapper(name: str) -> Callable[[Callable], Callable]:
+    def wrapper(fn: Callable) -> Callable:
+        op = weave.op()(fn)
+        op.name = name  # type: ignore
+        return op
+
+    return wrapper
