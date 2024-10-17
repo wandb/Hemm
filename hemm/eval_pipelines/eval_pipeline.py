@@ -44,7 +44,7 @@ class EvaluationPipeline(ABC):
                 exist_ok=True,
             )
 
-        self.inference_counter = 1
+        self.inference_counter = 0
         self.table_columns = ["model", "prompt", "generated_image"]
         self.table_rows: List = []
         self.evaluation_table: wandb.Table = None
@@ -83,9 +83,8 @@ class EvaluationPipeline(ABC):
             Dict[str, str]: Dictionary containing base64 encoded image to be logged as
                 a Weave object.
         """
-        if self.inference_counter == 1:
+        if self.inference_counter == 0:
             self.evaluation_table = wandb.Table(columns=self.table_columns)
-        self.inference_counter += 1
         output = self.model.predict(prompt, seed=self.seed)
         self.table_rows.append(
             [self.model.diffusion_model_name_or_path, prompt, output["image"]]
@@ -95,9 +94,10 @@ class EvaluationPipeline(ABC):
                 os.path.join(
                     "inference_dataset",
                     self.save_inference_dataset_name,
-                    f"{self.inference_counter - 1}.png",
+                    f"{self.inference_counter}.png",
                 )
             )
+        self.inference_counter += 1
         return output
 
     @weave.op()
