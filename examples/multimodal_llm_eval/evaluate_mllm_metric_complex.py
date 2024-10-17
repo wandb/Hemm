@@ -21,6 +21,7 @@ def main(
     image_height: int = 1024,
     image_width: int = 1024,
     num_inference_steps: int = 50,
+    mock_inference_dataset_name: Optional[str] = None,
     save_inference_dataset_name: Optional[str] = None,
 ):
     wandb.init(project=project, entity=entity, job_type="evaluation")
@@ -38,7 +39,9 @@ def main(
     )
     diffusion_model._pipeline.set_progress_bar_config(disable=True)
     evaluation_pipeline = EvaluationPipeline(
-        model=diffusion_model, save_inference_dataset_name=save_inference_dataset_name
+        model=diffusion_model,
+        mock_inference_dataset_name=mock_inference_dataset_name,
+        save_inference_dataset_name=save_inference_dataset_name,
     )
 
     judge = OpenAIJudge(

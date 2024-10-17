@@ -21,6 +21,9 @@ class EvaluationPipeline(ABC):
     Args:
         model (BaseDiffusionModel): The model to evaluate.
         seed (int): Seed value for the random number generator.
+        mock_inference_dataset_name (Optional[str]): A weave dataset name which if provided will
+            mock inference results. This prevents the need for redundant generations when switching
+            metrics/judges with the same evaluation datset(s).
         save_inference_dataset_name (Optional[str]): A weave dataset name which if provided will
             save inference results as a separate weave dataset.
     """
@@ -29,6 +32,7 @@ class EvaluationPipeline(ABC):
         self,
         model: MODEL_TYPE,
         seed: int = 42,
+        mock_inference_dataset_name: Optional[str] = None,
         save_inference_dataset_name: Optional[str] = None,
     ) -> None:
         super().__init__()
@@ -36,7 +40,14 @@ class EvaluationPipeline(ABC):
 
         self.image_size = (self.model.image_height, self.model.image_width)
         self.seed = seed
-        self.save_inference_dataset_name = save_inference_dataset_name
+        self.mock_inference_dataset_name = mock_inference_dataset_name
+        if mock_inference_dataset_name:
+            self.save_inference_dataset_name = None
+            self.mock_inference_dataset = (
+                weave.ref(mock_inference_dataset_name).get().rows
+            )
+        else:
+            self.save_inference_dataset_name = save_inference_dataset_name
 
         if self.save_inference_dataset_name:
             os.makedirs(
@@ -85,7 +96,15 @@ class EvaluationPipeline(ABC):
         """
         if self.inference_counter == 0:
             self.evaluation_table = wandb.Table(columns=self.table_columns)
-        output = self.model.predict(prompt, seed=self.seed)
+        output = (
+            {
+                "image": self.mock_inference_dataset[self.inference_counter][
+                    "generated_image"
+                ]
+            }
+            if self.mock_inference_dataset_name
+            else self.model.predict(prompt, seed=self.seed)
+        )
         self.table_rows.append(
             [self.model.diffusion_model_name_or_path, prompt, output["image"]]
         )
