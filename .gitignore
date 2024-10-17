@@ -168,4 +168,4 @@ dump/
 **.jsonl
 test.py
 inference_dataset/
-poetry.lock
+uv.lock
