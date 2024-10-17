@@ -1,8 +1,8 @@
 import unittest
 
-import wandb
 import weave
 
+import wandb
 from hemm.eval_pipelines import BaseDiffusionModel, EvaluationPipeline
 from hemm.metrics.vqa import MultiModalLLMEvaluationMetric
 from hemm.metrics.vqa.judges.mmllm_judges import OpenAIJudge, PromptCategory

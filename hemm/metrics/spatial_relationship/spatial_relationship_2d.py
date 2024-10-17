@@ -1,8 +1,9 @@
 from typing import Any, Dict, List, Optional, Union
 
-import wandb
 import weave
 from PIL import Image
+
+import wandb
 
 from ..base import BaseMetric
 from .judges import DETRSpatialRelationShipJudge

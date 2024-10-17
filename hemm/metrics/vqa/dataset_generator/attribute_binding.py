@@ -3,10 +3,11 @@ import os
 from typing import Dict, List, Optional, Union
 
 import jsonlines
-import wandb
 import weave
 from openai import OpenAI
 from pydantic import BaseModel
+
+import wandb
 
 from ....utils import autogenerate_seed, str_to_json
 

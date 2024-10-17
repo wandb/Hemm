@@ -4,9 +4,10 @@ import shutil
 from abc import ABC
 from typing import Any, Dict, List, Optional, Union
 
-import wandb
 import weave
 from PIL import Image
+
+import wandb
 
 from ..metrics.base import BaseMetric
 from ..models import BaseDiffusionModel, FalAIModel, StabilityAPIModel
@@ -133,14 +134,19 @@ class EvaluationPipeline(ABC):
 
     def save_inference_results(self, dataset: Any):
         inference_dataset_rows = []
-        for idx, row in enumerate(dataset):
+        for idx, row in enumerate(dataset.rows):
             generated_image = Image.open(
                 os.path.join(
                     "inference_dataset", self.save_inference_dataset_name, f"{idx}.png"
                 )
             )
             inference_dataset_rows.append(
-                {"generated_image": generated_image, "seed": self.seed, **dict(row)}
+                {
+                    "generated_image": generated_image,
+                    "seed": self.seed,
+                    **dict(row),
+                    "image_generation_model": self.model.model_dump(),
+                }
             )
         weave.publish(
             weave.Dataset(
