@@ -2,7 +2,7 @@ import asyncio
 import os
 import shutil
 from abc import ABC
-from typing import Any, Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union
 
 import weave
 from PIL import Image
@@ -21,9 +21,9 @@ class EvaluationPipeline(ABC):
     Args:
         model (BaseDiffusionModel): The model to evaluate.
         seed (int): Seed value for the random number generator.
-        mock_inference_dataset_name (Optional[str]): A weave dataset name which if provided will
-            mock inference results. This prevents the need for redundant generations when switching
-            metrics/judges with the same evaluation datset(s).
+        mock_inference_dataset_address (Optional[str]): A wandb dataset artifact address which if
+            provided will mock inference results. This prevents the need for redundant generations
+            when switching metrics/judges with the same evaluation datset(s).
         save_inference_dataset_name (Optional[str]): A weave dataset name which if provided will
             save inference results as a separate weave dataset.
     """
@@ -32,7 +32,7 @@ class EvaluationPipeline(ABC):
         self,
         model: MODEL_TYPE,
         seed: int = 42,
-        mock_inference_dataset_name: Optional[str] = None,
+        mock_inference_dataset_address: Optional[str] = None,
         save_inference_dataset_name: Optional[str] = None,
     ) -> None:
         super().__init__()
@@ -40,13 +40,14 @@ class EvaluationPipeline(ABC):
 
         self.image_size = (self.model.image_height, self.model.image_width)
         self.seed = seed
-        self.mock_inference_dataset_name = mock_inference_dataset_name
-        if mock_inference_dataset_name:
+        self.mock_inference_dataset_address = mock_inference_dataset_address
+        if mock_inference_dataset_address:
             self.save_inference_dataset_name = None
-            self.mock_inference_dataset = [
-                dict(row)
-                for row in list(weave.ref(mock_inference_dataset_name).get().rows)
-            ]
+            artifact = wandb.use_artifact(
+                self.mock_inference_dataset_address, type="dataset"
+            )
+            self.mock_inference_dataset_dir = artifact.download()
+
         else:
             self.save_inference_dataset_name = save_inference_dataset_name
 
@@ -97,15 +98,15 @@ class EvaluationPipeline(ABC):
         """
         if self.inference_counter == 0:
             self.evaluation_table = wandb.Table(columns=self.table_columns)
-        output = (
-            {
-                "image": self.mock_inference_dataset[self.inference_counter][
-                    "generated_image"
-                ]
-            }
-            if self.mock_inference_dataset_name
-            else self.model.predict(prompt, seed=self.seed)
-        )
+        if self.mock_inference_dataset_address:
+            image = Image.open(
+                os.path.join(
+                    self.mock_inference_dataset_dir, f"{self.inference_counter}.png"
+                )
+            )
+            output = {"image": image}
+        else:
+            output = self.model.predict(prompt, seed=self.seed)
         self.table_rows.append(
             [self.model.diffusion_model_name_or_path, prompt, output["image"]]
         )
@@ -152,28 +153,18 @@ class EvaluationPipeline(ABC):
             }
         )
 
-    def save_inference_results(self, dataset: Any):
-        inference_dataset_rows = []
-        for idx, row in enumerate(dataset.rows):
-            generated_image = Image.open(
-                os.path.join(
-                    "inference_dataset", self.save_inference_dataset_name, f"{idx}.png"
-                )
-            )
-            inference_dataset_rows.append(
-                {
-                    "generated_image": generated_image,
-                    "seed": self.seed,
-                    **dict(row),
-                    "image_generation_model": self.model.model_dump(),
-                }
-            )
-        weave.publish(
-            weave.Dataset(
-                name=self.save_inference_dataset_name, rows=inference_dataset_rows
-            )
+    def save_inference_results(self):
+        artifact = wandb.Artifact(name=self.save_inference_dataset_name, type="dataset")
+        artifact.add_dir(
+            os.path.join("inference_dataset", self.save_inference_dataset_name)
         )
-        shutil.rmtree("inference_dataset")
+        artifact.save()
+
+    def cleanup(self):
+        """Cleanup the inference dataset directory. Should be called after the evaluation is complete
+        and `wandb.finish()` is called."""
+        if os.path.exists("inference_dataset"):
+            shutil.rmtree("inference_dataset")
 
     def __call__(
         self, dataset: Union[List[Dict], str], async_infer: bool = False
@@ -197,5 +188,5 @@ class EvaluationPipeline(ABC):
         summary = asyncio.run(evaluation.evaluate(self.infer_async))
         self.log_summary(summary)
         if self.save_inference_dataset_name:
-            self.save_inference_results(dataset=dataset)
+            self.save_inference_results()
         return summary
