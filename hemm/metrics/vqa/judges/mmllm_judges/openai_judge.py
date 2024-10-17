@@ -2,20 +2,14 @@ import os
 import subprocess
 from typing import List
 
-import instructor
 import spacy
 import weave
 from openai import OpenAI
 from PIL import Image
 from pydantic import BaseModel
 
-from .commons import (
-    PromptCategory,
-    TaggedPromptParts,
-    JudgeMent,
-    JudgeQuestion,
-)
 from .....utils import base64_encode_image
+from .commons import JudgeMent, JudgeQuestion, PromptCategory, TaggedPromptParts
 
 
 class OpenAIJudgeMent(BaseModel):
@@ -48,14 +42,13 @@ class OpenAIJudge(weave.Model):
     seed: int
     _nlp_pipeline: spacy.Language = None
     _openai_client: OpenAI = None
-    _instructor_openai_client: instructor.Instructor = None
     _total_score: int = 4
 
     def __init__(
         self,
         prompt_pipeline: str = "en_core_web_sm",
         prompt_property: PromptCategory = PromptCategory.color,
-        openai_model: str = "gpt-4-turbo",
+        openai_model: str = "gpt-4o-2024-08-06",
         max_retries: int = 5,
         seed: int = 42,
     ):
@@ -69,9 +62,6 @@ class OpenAIJudge(weave.Model):
         subprocess.run(["spacy", "download", "en_core_web_sm"])
         self._nlp_pipeline = spacy.load(self.prompt_pipeline)
         self._openai_client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
-        self._instructor_openai_client = instructor.from_openai(
-            OpenAI(api_key=os.environ["OPENAI_API_KEY"])
-        )
 
     @weave.op()
     def extract_prompt_parts(self, prompt: str) -> List[TaggedPromptParts]:
@@ -318,27 +308,30 @@ Here is a detailed explanation of the image:
 
 Provide your analysis and explanation to justify the score.
         """
-        judgement_response = self._instructor_openai_client.chat.completions.create(
-            model=self.openai_model,
-            response_model=JudgeMent,
-            max_retries=self.max_retries,
-            seed=self.seed,
-            messages=[
-                {
-                    "role": "system",
-                    "content": question.judgement_question_system_prompt,
-                },
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": question.judgement_question},
-                        {
-                            "type": "image_url",
-                            "image_url": {"url": base64_encode_image(image)},
-                        },
-                    ],
-                },
-            ],
+        judgement_response = (
+            self._openai_client.beta.chat.completions.parse(
+                model=self.openai_model,
+                response_format=JudgeMent,
+                seed=self.seed,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": question.judgement_question_system_prompt,
+                    },
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": question.judgement_question},
+                            {
+                                "type": "image_url",
+                                "image_url": {"url": base64_encode_image(image)},
+                            },
+                        ],
+                    },
+                ],
+            )
+            .choices[0]
+            .message.parsed
         )
         return judgement_response
 

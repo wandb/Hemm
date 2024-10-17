@@ -167,3 +167,4 @@ dump/
 .ruff_cache/
 **.jsonl
 test.py
+inference_dataset/

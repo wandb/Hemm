@@ -1,13 +1,15 @@
 import asyncio
+import os
+import shutil
 from abc import ABC
-from typing import Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
 
 import wandb
 import weave
+from PIL import Image
 
 from ..metrics.base import BaseMetric
 from ..models import BaseDiffusionModel, FalAIModel, StabilityAPIModel
-
 
 MODEL_TYPE = Union[BaseDiffusionModel, FalAIModel, StabilityAPIModel]
 
@@ -18,14 +20,28 @@ class EvaluationPipeline(ABC):
     Args:
         model (BaseDiffusionModel): The model to evaluate.
         seed (int): Seed value for the random number generator.
+        save_inference_dataset_name (Optional[str]): A weave dataset name which if provided will
+            save inference results as a separate weave dataset.
     """
 
-    def __init__(self, model: MODEL_TYPE, seed: int = 42) -> None:
+    def __init__(
+        self,
+        model: MODEL_TYPE,
+        seed: int = 42,
+        save_inference_dataset_name: Optional[str] = None,
+    ) -> None:
         super().__init__()
         self.model = model
 
         self.image_size = (self.model.image_height, self.model.image_width)
         self.seed = seed
+        self.save_inference_dataset_name = save_inference_dataset_name
+
+        if self.save_inference_dataset_name:
+            os.makedirs(
+                os.path.join("inference_dataset", self.save_inference_dataset_name),
+                exist_ok=True,
+            )
 
         self.inference_counter = 1
         self.table_columns = ["model", "prompt", "generated_image"]
@@ -73,6 +89,14 @@ class EvaluationPipeline(ABC):
         self.table_rows.append(
             [self.model.diffusion_model_name_or_path, prompt, output["image"]]
         )
+        if self.save_inference_dataset_name:
+            output["image"].save(
+                os.path.join(
+                    "inference_dataset",
+                    self.save_inference_dataset_name,
+                    f"{self.inference_counter - 1}.png",
+                )
+            )
         return output
 
     @weave.op()
@@ -107,6 +131,24 @@ class EvaluationPipeline(ABC):
             }
         )
 
+    def save_inference_results(self, dataset: Any):
+        inference_dataset_rows = []
+        for idx, row in enumerate(dataset):
+            generated_image = Image.open(
+                os.path.join(
+                    "inference_dataset", self.save_inference_dataset_name, f"{idx}.png"
+                )
+            )
+            inference_dataset_rows.append(
+                {"generated_image": generated_image, "seed": self.seed, **dict(row)}
+            )
+        weave.publish(
+            weave.Dataset(
+                name=self.save_inference_dataset_name, rows=inference_dataset_rows
+            )
+        )
+        shutil.rmtree("inference_dataset")
+
     def __call__(
         self, dataset: Union[List[Dict], str], async_infer: bool = False
     ) -> Dict[str, float]:
@@ -128,4 +170,6 @@ class EvaluationPipeline(ABC):
         self.model.configs.update(self.evaluation_configs)
         summary = asyncio.run(evaluation.evaluate(self.infer_async))
         self.log_summary(summary)
+        if self.save_inference_dataset_name:
+            self.save_inference_results(dataset=dataset)
         return summary
