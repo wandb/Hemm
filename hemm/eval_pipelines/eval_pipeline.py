@@ -43,9 +43,10 @@ class EvaluationPipeline(ABC):
         self.mock_inference_dataset_name = mock_inference_dataset_name
         if mock_inference_dataset_name:
             self.save_inference_dataset_name = None
-            self.mock_inference_dataset = (
-                weave.ref(mock_inference_dataset_name).get().rows
-            )
+            self.mock_inference_dataset = [
+                dict(row)
+                for row in list(weave.ref(mock_inference_dataset_name).get().rows)
+            ]
         else:
             self.save_inference_dataset_name = save_inference_dataset_name
 
