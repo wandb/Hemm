@@ -166,3 +166,6 @@ dump/
 **generated_images/
 .ruff_cache/
 **.jsonl
+test.py
+inference_dataset/
+uv.lock

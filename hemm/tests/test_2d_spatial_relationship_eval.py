@@ -1,8 +1,8 @@
 import unittest
 
-import wandb
 import weave
 
+import wandb
 from hemm.eval_pipelines import BaseDiffusionModel, EvaluationPipeline
 from hemm.metrics.spatial_relationship import SpatialRelationshipMetric2D
 from hemm.metrics.spatial_relationship.judges import (
