@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Any, Dict, Literal, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Literal, Optional, Tuple, Union
 
 import numpy as np
 import torch
@@ -7,7 +7,6 @@ import weave
 from PIL import Image
 from torchmetrics.functional.image import learned_perceptual_image_patch_similarity
 
-from ...utils import base64_encode_image
 from .base import BaseImageQualityMetric, ComputeMetricOutput
 
 
@@ -22,25 +21,30 @@ class LPIPSMetric(BaseImageQualityMetric):
             or "squeeze".
         image_size (Tuple[int, int]): The size to which images will be resized before computing
             LPIPS.
-        name (str): The name of the metric.
     """
+
+    lpips_net_type: Literal["alex", "vgg", "squeeze"]
+    image_height: int
+    image_width: int
+    _lpips_metric: Callable
 
     def __init__(
         self,
         lpips_net_type: Literal["alex", "vgg", "squeeze"] = "alex",
         image_size: Optional[Tuple[int, int]] = (512, 512),
-        name: str = "alexnet_learned_perceptual_image_patch_similarity",
     ) -> None:
-        super().__init__(name)
-        self.image_size = image_size
-        self.lpips_metric = partial(
-            learned_perceptual_image_patch_similarity, net_type=lpips_net_type
+        super().__init__(
+            lpips_net_type=lpips_net_type,
+            image_height=image_size[0],
+            image_width=image_size[1],
         )
-        self.config = {"lpips_net_type": lpips_net_type}
+        self._lpips_metric = partial(
+            learned_perceptual_image_patch_similarity, net_type=self.lpips_net_type
+        )
 
     @weave.op()
     def compute_metric(
-        self, ground_truth_pil_image: Image, generated_pil_image: Image, prompt: str
+        self, ground_truth_pil_image: Image, generated_pil_image: Image
     ) -> ComputeMetricOutput:
         ground_truth_image = (
             torch.from_numpy(
@@ -62,23 +66,15 @@ class LPIPSMetric(BaseImageQualityMetric):
         )
         ground_truth_image = (ground_truth_image / 127.5) - 1.0
         generated_image = (generated_image / 127.5) - 1.0
-        return ComputeMetricOutput(
-            score=float(
-                self.lpips_metric(generated_image, ground_truth_image).detach()
+        return {
+            "score": float(
+                self._lpips_metric(generated_image, ground_truth_image).detach()
             ),
-            ground_truth_image=base64_encode_image(ground_truth_pil_image),
-        )
+            "ground_truth_image": ground_truth_pil_image,
+        }
 
     @weave.op()
     def evaluate(
         self, prompt: str, ground_truth_image: Image.Image, model_output: Dict[str, Any]
     ) -> Union[float, Dict[str, float]]:
-        _ = "LPIPSMetric"
         return super().evaluate(prompt, ground_truth_image, model_output)
-
-    @weave.op()
-    async def evaluate_async(
-        self, prompt: str, ground_truth_image: Image.Image, model_output: Dict[str, Any]
-    ) -> Union[float, Dict[str, float]]:
-        _ = "LPIPSMetric"
-        return self.evaluate(prompt, ground_truth_image, model_output)

@@ -35,4 +35,4 @@ class BasePromptAlignmentMetric(weave.Scorer):
             Dict[str, float]: Metric score.
         """
         score = self.compute_metric(model_output["image"], prompt)
-        return {self.name: score}
+        return {"score": score}

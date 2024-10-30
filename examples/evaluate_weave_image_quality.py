@@ -1,38 +1,32 @@
+import asyncio
+
 import fire
 import weave
 
-import wandb
-from hemm.eval_pipelines import EvaluationPipeline
 from hemm.metrics.image_quality import LPIPSMetric, PSNRMetric, SSIMMetric
-from hemm.models import BaseDiffusionModel
+from hemm.models import DiffusersModel
 
 
 def main(
     project_name: str = "image-quality",
     diffusion_model_name_or_path="stabilityai/stable-diffusion-2-1",
     dataset_ref: str = "COCO:v0",
+    image_height: int = 1024,
+    image_width: int = 1024,
 ):
-    wandb.init(project=project_name, job_type="evaluation")
     weave.init(project_name=project_name)
 
-    model = BaseDiffusionModel(
-        diffusion_model_name_or_path=diffusion_model_name_or_path
+    model = DiffusersModel(diffusion_model_name_or_path=diffusion_model_name_or_path)
+
+    psnr_metric = PSNRMetric(image_size=(image_height, image_width))
+    ssim_metric = SSIMMetric(image_size=(image_height, image_width))
+    lpips_metric = LPIPSMetric(image_size=(image_height, image_width))
+
+    dataset = weave.ref(dataset_ref).get()
+    evaluation = weave.Evaluation(
+        dataset=dataset, scorers=[psnr_metric, ssim_metric, lpips_metric]
     )
-    evaluation_pipeline = EvaluationPipeline(model=model)
-
-    # Add PSNR Metric
-    psnr_metric = PSNRMetric(image_size=evaluation_pipeline.image_size)
-    evaluation_pipeline.add_metric(psnr_metric)
-
-    # Add SSIM Metric
-    ssim_metric = SSIMMetric(image_size=evaluation_pipeline.image_size)
-    evaluation_pipeline.add_metric(ssim_metric)
-
-    # Add LPIPS Metric
-    lpips_metric = LPIPSMetric(image_size=evaluation_pipeline.image_size)
-    evaluation_pipeline.add_metric(lpips_metric)
-
-    evaluation_pipeline(dataset=dataset_ref)
+    asyncio.run(evaluation.evaluate(model))
 
 
 if __name__ == "__main__":

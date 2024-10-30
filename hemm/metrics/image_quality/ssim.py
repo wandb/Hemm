@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Optional, Tuple, Union
 
 import numpy as np
 import torch
@@ -7,7 +7,6 @@ import weave
 from PIL import Image
 from torchmetrics.functional.image import structural_similarity_index_measure
 
-from ...utils import base64_encode_image
 from .base import BaseImageQualityMetric, ComputeMetricOutput
 
 
@@ -29,6 +28,14 @@ class SSIMMetric(BaseImageQualityMetric):
         name (str): The name of the metric.
     """
 
+    ssim_gaussian_kernel: bool
+    ssim_sigma: float
+    ssim_kernel_size: int
+    ssim_data_range: Union[float, Tuple[float, float], None]
+    ssim_k1: float
+    ssim_k2: float
+    _ssim_metric: Callable
+
     def __init__(
         self,
         ssim_gaussian_kernel: bool = True,
@@ -38,11 +45,18 @@ class SSIMMetric(BaseImageQualityMetric):
         ssim_k1: float = 0.01,
         ssim_k2: float = 0.03,
         image_size: Optional[Tuple[int, int]] = (512, 512),
-        name: str = "structural_similarity_index_measure",
     ) -> None:
-        super().__init__(name)
-        self.image_size = image_size
-        self.ssim_metric = partial(
+        super().__init__(
+            ssim_gaussian_kernel=ssim_gaussian_kernel,
+            ssim_sigma=ssim_sigma,
+            ssim_kernel_size=ssim_kernel_size,
+            ssim_data_range=ssim_data_range,
+            ssim_k1=ssim_k1,
+            ssim_k2=ssim_k2,
+            image_height=image_size[0],
+            image_width=image_size[1],
+        )
+        self._ssim_metric = partial(
             structural_similarity_index_measure,
             gaussian_kernel=ssim_gaussian_kernel,
             sigma=ssim_sigma,
@@ -51,21 +65,10 @@ class SSIMMetric(BaseImageQualityMetric):
             k1=ssim_k1,
             k2=ssim_k2,
         )
-        self.config = {
-            "ssim_gaussian_kernel": ssim_gaussian_kernel,
-            "ssim_sigma": ssim_sigma,
-            "ssim_kernel_size": ssim_kernel_size,
-            "ssim_data_range": ssim_data_range,
-            "ssim_k1": ssim_k1,
-            "ssim_k2": ssim_k2,
-        }
 
     @weave.op()
     def compute_metric(
-        self,
-        ground_truth_pil_image: Image.Image,
-        generated_pil_image: Image.Image,
-        prompt: str,
+        self, ground_truth_pil_image: Image.Image, generated_pil_image: Image.Image
     ) -> ComputeMetricOutput:
         ground_truth_image = (
             torch.from_numpy(
@@ -85,21 +88,13 @@ class SSIMMetric(BaseImageQualityMetric):
             .permute(0, 3, 1, 2)
             .float()
         )
-        return ComputeMetricOutput(
-            score=float(self.ssim_metric(generated_image, ground_truth_image)),
-            ground_truth_image=base64_encode_image(ground_truth_pil_image),
-        )
+        return {
+            "score": float(self._ssim_metric(generated_image, ground_truth_image)),
+            "ground_truth_image": ground_truth_pil_image,
+        }
 
     @weave.op()
     def evaluate(
         self, prompt: str, ground_truth_image: Image.Image, model_output: Dict[str, Any]
     ) -> Union[float, Dict[str, float]]:
-        _ = "SSIMMetric"
         return super().evaluate(prompt, ground_truth_image, model_output)
-
-    @weave.op()
-    async def evaluate_async(
-        self, prompt: str, ground_truth_image: Image.Image, model_output: Dict[str, Any]
-    ) -> Union[float, Dict[str, float]]:
-        _ = "SSIMMetric"
-        return self.evaluate(prompt, ground_truth_image, model_output)

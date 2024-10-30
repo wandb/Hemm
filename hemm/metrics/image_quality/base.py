@@ -1,10 +1,9 @@
 from abc import abstractmethod
 from typing import Any, Dict, Union
 
+import weave
 from PIL import Image
 from pydantic import BaseModel
-
-from ..base import BaseMetric
 
 
 class ComputeMetricOutput(BaseModel):
@@ -14,25 +13,11 @@ class ComputeMetricOutput(BaseModel):
     ground_truth_image: str
 
 
-class BaseImageQualityMetric(BaseMetric):
-
-    def __init__(self, name: str) -> None:
-        """Base class for Image Quality Metrics.
-
-        Args:
-            name (str): Name of the metric.
-        """
-        super().__init__()
-        self.scores = []
-        self.name = name
-        self.config = {}
+class BaseImageQualityMetric(weave.Scorer):
 
     @abstractmethod
     def compute_metric(
-        self,
-        ground_truth_pil_image: Image.Image,
-        generated_pil_image: Image.Image,
-        prompt: str,
+        self, ground_truth_pil_image: Image.Image, generated_pil_image: Image.Image
     ) -> ComputeMetricOutput:
         """Compute the metric for the given images. This is an abstract
         method and must be overriden by the child class implementation.
@@ -40,7 +25,6 @@ class BaseImageQualityMetric(BaseMetric):
         Args:
             ground_truth_pil_image (Image.Image): Ground truth image in PIL format.
             generated_pil_image (Image.Image): Generated image in PIL format.
-            prompt (str): Prompt for the image generation.
 
         Returns:
             ComputeMetricOutput: Output containing the metric score and ground truth image.
@@ -64,5 +48,4 @@ class BaseImageQualityMetric(BaseMetric):
         metric_output = self.compute_metric(
             ground_truth_image, model_output["image"], prompt
         )
-        self.scores.append(metric_output.score)
-        return {self.name: metric_output.score}
+        return {"score": metric_output.score}
