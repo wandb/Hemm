@@ -9,18 +9,21 @@ from .base import BasePromptAlignmentMetric
 
 
 class BLIPScoreMertric(BasePromptAlignmentMetric):
+    model_name: str = "Salesforce/blip-image-captioning-base"
+    device: str = "cuda"
+    _blip_processor: BlipProcessor
+    _blip_model: BlipForConditionalGeneration
+
     def __init__(
         self,
-        name: str = "blip_score",
-        blip_model_name_or_path: str = "Salesforce/blip-image-captioning-base",
+        model_name: str = "Salesforce/blip-image-captioning-base",
         device: str = "cuda",
     ) -> None:
-        super().__init__(name)
-        self.blip_processor = BlipProcessor.from_pretrained(blip_model_name_or_path)
-        self.blip_model = BlipForConditionalGeneration.from_pretrained(
-            blip_model_name_or_path
-        ).to(device)
-        self.config = {"blip_model_name_or_path": blip_model_name_or_path}
+        super().__init__(model_name=model_name, device=device)
+        self._blip_processor = BlipProcessor.from_pretrained(model_name)
+        self._blip_model = BlipForConditionalGeneration.from_pretrained(model_name).to(
+            device
+        )
 
     @weave.op()
     def compute_metric(
@@ -49,12 +52,4 @@ class BLIPScoreMertric(BasePromptAlignmentMetric):
 
     @weave.op()
     def evaluate(self, prompt: str, model_output: Dict[str, Any]) -> Dict[str, float]:
-        _ = "BLIPScoreMertric"
         return super().evaluate(prompt, model_output)
-
-    @weave.op()
-    async def evaluate_async(
-        self, prompt: str, model_output: Dict[str, Any]
-    ) -> Dict[str, float]:
-        _ = "BLIPScoreMertric"
-        return self.evaluate(prompt, model_output)

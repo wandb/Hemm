@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Any, Dict, Union
+from typing import Any, Callable, Dict, List, Union
 
 import numpy as np
 import torch
@@ -28,38 +28,37 @@ class CLIPImageQualityScoreMetric(BasePromptAlignmentMetric):
     image is more similar to the first prompt than the second prompt.
 
     Args:
-        clip_model_name_or_path (str, optional): The name or path of the CLIP model to use.
-            Defaults to "clip_iqa".
-        name (str, optional): Name of the metric. Defaults to "clip_image_quality_assessment".
+        model_name (str, optional): The name or path of the CLIP model to use.
     """
 
-    def __init__(
-        self,
-        clip_model_name_or_path: str = "clip_iqa",
-        name: str = "clip_image_quality_assessment",
-    ) -> None:
-        super().__init__(name)
-        self.clip_iqa_fn = partial(
-            clip_image_quality_assessment, model_name_or_path=clip_model_name_or_path
+    model_name: str
+    built_in_prompts: List[str]
+    _clip_iqa_fn: Callable
+
+    def __init__(self, model_name: str = "clip_iqa") -> None:
+        super().__init__(
+            model_name=model_name,
+            built_in_prompts=[
+                "quality",
+                "brightness",
+                "noisiness",
+                "colorfullness",
+                "sharpness",
+                "contrast",
+                "complexity",
+                "natural",
+                "happy",
+                "scary",
+                "new",
+                "real",
+                "beautiful",
+                "lonely",
+                "relaxing",
+            ],
         )
-        self.built_in_prompts = [
-            "quality",
-            "brightness",
-            "noisiness",
-            "colorfullness",
-            "sharpness",
-            "contrast",
-            "complexity",
-            "natural",
-            "happy",
-            "scary",
-            "new",
-            "real",
-            "beautiful",
-            "lonely",
-            "relaxing",
-        ]
-        self.config = {"clip_model_name_or_path": clip_model_name_or_path}
+        self._clip_iqa_fn = partial(
+            clip_image_quality_assessment, model_name_or_path=model_name
+        )
 
     @weave.op()
     def compute_metric(
@@ -81,12 +80,4 @@ class CLIPImageQualityScoreMetric(BasePromptAlignmentMetric):
 
     @weave.op()
     def evaluate(self, prompt: str, model_output: Dict[str, Any]) -> Dict[str, float]:
-        _ = "CLIPImageQualityScoreMetric"
         return super().evaluate(prompt, model_output)
-
-    @weave.op()
-    async def evaluate_async(
-        self, prompt: str, model_output: Dict[str, Any]
-    ) -> Dict[str, float]:
-        _ = "CLIPImageQualityScoreMetric"
-        return self.evaluate(prompt, model_output)

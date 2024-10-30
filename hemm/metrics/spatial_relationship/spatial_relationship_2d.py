@@ -3,8 +3,6 @@ from typing import Any, Dict, List, Union
 import weave
 from PIL import Image
 
-import wandb
-
 from .judges.commons import BoundingBox
 from .utils import annotate_with_bounding_box, get_iou
 
@@ -172,20 +170,7 @@ class SpatialRelationshipMetric2D(weave.Scorer):
                         score = self.iou_threshold / iou
             judgement["score"] = score
 
-        self.scores.append(
-            {
-                **judgement,
-                **{
-                    "judge_annotated_image": wandb.Image(annotated_image),
-                    "judge_config": self.judge_config,
-                },
-            }
-        )
-        return {
-            **judgement,
-            **{"judge_annotated_image": annotated_image},
-            "judge_config": self.judge_config,
-        }
+        return {**judgement, **{"judge_annotated_image": annotated_image}}
 
     @weave.op()
     def score(

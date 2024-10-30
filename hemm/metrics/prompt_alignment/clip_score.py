@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Any, Dict, Union
+from typing import Any, Callable, Dict, Union
 
 import numpy as np
 import torch
@@ -17,21 +17,15 @@ class CLIPScoreMetric(BasePromptAlignmentMetric):
     be highly correlated with human judgement.
 
     Args:
-        name (str, optional): Name of the metric. Defaults to "clip_score".
-        clip_model_name_or_path (str, optional): The name or path of the CLIP model to use.
-            Defaults to "openai/clip-vit-base-patch16".
+        model_name (str, optional): The name or path of the CLIP model to use.
     """
 
-    def __init__(
-        self,
-        clip_model_name_or_path: str = "openai/clip-vit-base-patch16",
-        name: str = "clip_score",
-    ) -> None:
-        super().__init__(name)
-        self.clip_score_fn = partial(
-            clip_score, model_name_or_path=clip_model_name_or_path
-        )
-        self.config = {"clip_model_name_or_path": clip_model_name_or_path}
+    model_name: str
+    _clip_score_fn: Callable
+
+    def __init__(self, model_name: str = "openai/clip-vit-base-patch16") -> None:
+        super().__init__(model_name=model_name)
+        self._clip_score_fn = partial(clip_score, model_name_or_path=model_name)
 
     @weave.op()
     def compute_metric(
@@ -46,12 +40,4 @@ class CLIPScoreMetric(BasePromptAlignmentMetric):
 
     @weave.op()
     def evaluate(self, prompt: str, model_output: Dict[str, Any]) -> Dict[str, float]:
-        _ = "CLIPScoreMetric"
         return super().evaluate(prompt, model_output)
-
-    @weave.op()
-    async def evaluate_async(
-        self, prompt: str, model_output: Dict[str, Any]
-    ) -> Dict[str, float]:
-        _ = "CLIPScoreMetric"
-        return self.evaluate(prompt, model_output)
