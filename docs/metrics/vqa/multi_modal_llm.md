@@ -22,31 +22,25 @@ This module aims to implement the Multi-modal LLM based metric inspired by
     ```
     Finallly, you can run the following snippet to evaluate your model:
     ```python  
-    import wandb
+    import asyncio
+
     import weave
 
-    from hemm.eval_pipelines import BaseDiffusionModel, EvaluationPipeline
     from hemm.metrics.vqa import MultiModalLLMEvaluationMetric
-    from hemm.metrics.vqa.judges.mmllm_judges import OpenAIJudge, PromptCategory
+    from hemm.metrics.vqa.judges.mmllm_judges import OpenAIJudge
+    from hemm.models import DiffusersModel
 
-    wandb.init(project="mllm-eval", job_type="evaluation")
-    weave.init(project_name="mllm-eval")
+    weave.init(project_name="hemm-eval/mllm-eval")
 
-    dataset = weave.ref(dataset_ref).get()
-
-    diffusion_model = BaseDiffusionModel(
+    model = DiffusersModel(
         diffusion_model_name_or_path="stabilityai/stable-diffusion-2-1",
-        enable_cpu_offfload=False,
-        image_height=512,
-        image_width=512,
+        image_height=1024,
+        image_width=1024,
     )
-    evaluation_pipeline = EvaluationPipeline(model=diffusion_model)
+    metric = MultiModalLLMEvaluationMetric(judge=OpenAIJudge())
 
-    judge = OpenAIJudge(prompt_property=PromptCategory.complex)
-    metric = MultiModalLLMEvaluationMetric(judge=judge)
-    evaluation_pipeline.add_metric(metric)
-
-    evaluation_pipeline(dataset=dataset)
+    evaluation = weave.Evaluation(dataset=weave.ref("Dataset:v2").get(), scorers=[metric])
+    asyncio.run(evaluation.evaluate(model))
     ```
 
 ## Metrics
