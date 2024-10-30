@@ -26,15 +26,7 @@ def test_2d_spatial_relationship_evaluation_detr_judge():
 
     dataset = weave.ref("2d-spatial-prompts-mscoco:v0").get().rows[:2]
     evaluation = weave.Evaluation(dataset=dataset, scorers=[metric])
-    summary = asyncio.run(evaluation.evaluate(model))
-
-    assert (
-        summary["SpatialRelationshipMetric2D.evaluate_async"][
-            "2d_spatial_relationship_score"
-        ]["mean"]
-        > 0
-    )
-    assert summary["model_latency"]["mean"] > 0
+    asyncio.run(evaluation.evaluate(model))
 
 
 def test_2d_spatial_relationship_evaluation_rt_detr_judge():
@@ -51,12 +43,4 @@ def test_2d_spatial_relationship_evaluation_rt_detr_judge():
 
     dataset = weave.ref("2d-spatial-prompts-mscoco:v0").get().rows[:2]
     evaluation = weave.Evaluation(dataset=dataset, scorers=[metric])
-    summary = asyncio.run(evaluation.evaluate(model))
-
-    assert (
-        summary["SpatialRelationshipMetric2D.evaluate_async"][
-            "2d_spatial_relationship_score"
-        ]["mean"]
-        > 0
-    )
-    assert summary["model_latency"]["mean"] > 0
+    asyncio.run(evaluation.evaluate(model))

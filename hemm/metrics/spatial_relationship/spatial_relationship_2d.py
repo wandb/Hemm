@@ -52,6 +52,7 @@ class SpatialRelationshipMetric2D(weave.Scorer):
 
     judge: weave.Model
     iou_threshold: float = 0.1
+    distance_threshold: float = 150
 
     @weave.op()
     def compose_judgement(
