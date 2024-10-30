@@ -37,49 +37,33 @@ First, you need to publish your evaluation dataset to Weave. Check out [this tut
 Once you have a dataset on your Weave project, you can evaluate a text-to-image generation model on the metrics.
 
 ```python
-import wandb
+import asyncio
 import weave
+from hemm.metrics.image_quality import LPIPSMetric, PSNRMetric, SSIMMetric
+from hemm.models import DiffusersModel
 
-
-from hemm.eval_pipelines import EvaluationPipeline
-from hemm.metrics.prompt_alignment import CLIPImageQualityScoreMetric, CLIPScoreMetric
-from hemm.models import BaseDiffusionModel
-
-
-# Initialize Weave and WandB
-wandb.init(project="image-quality-leaderboard", job_type="evaluation")
+# Initialize Weave
 weave.init(project_name="image-quality-leaderboard")
 
-
-# Initialize the diffusion model to be evaluated as a `weave.Model` using `BaseWeaveModel`
-# The `BaseDiffusionModel` class uses a `diffusers.DiffusionPipeline` under the hood.
+# The `DiffusersModel` is a `weave.Model` that uses a `diffusers.DiffusionPipeline` under the hood.
 # You can write your own model `weave.Model` if your model is not diffusers compatible.
-model = BaseDiffusionModel(diffusion_model_name_or_path="CompVis/stable-diffusion-v1-4")
-
-
-# Add the model to the evaluation pipeline
-evaluation_pipeline = EvaluationPipeline(model=model)
-
+model = DiffusersModel(diffusion_model_name_or_path="CompVis/stable-diffusion-v1-4")
 
 # Add PSNR Metric to the evaluation pipeline
-psnr_metric = PSNRMetric(image_size=evaluation_pipeline.image_size)
-evaluation_pipeline.add_metric(psnr_metric)
-
+psnr_metric = PSNRMetric(image_size=(model.image_height, model.image_width))
 
 # Add SSIM Metric to the evaluation pipeline
-ssim_metric = SSIMMetric(image_size=evaluation_pipeline.image_size)
-evaluation_pipeline.add_metric(ssim_metric)
-
+ssim_metric = SSIMMetric(image_size=(model.image_height, model.image_width))
 
 # Add LPIPS Metric to the evaluation pipeline
-lpips_metric = LPIPSMetric(image_size=evaluation_pipeline.image_size)
-evaluation_pipeline.add_metric(lpips_metric)
-
+lpips_metric = LPIPSMetric(image_size=(model.image_height, model.image_width))
 
 # Get the Weave dataset reference
 dataset = weave.ref("COCO:v0").get()
 
-
 # Evaluate!
-evaluation_pipeline(dataset=dataset)
+evaluation = weave.Evaluation(
+    dataset=dataset, scorers=[psnr_metric, ssim_metric, lpips_metric]
+)
+summary = asyncio.run(evaluation.evaluate(model))
 ```
