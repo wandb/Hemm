@@ -7,10 +7,8 @@ import weave
 from PIL import Image
 from torchmetrics.functional.image import learned_perceptual_image_patch_similarity
 
-from .base import BaseImageQualityMetric, ComputeMetricOutput
 
-
-class LPIPSMetric(BaseImageQualityMetric):
+class LPIPSMetric(weave.Scorer):
     """LPIPS Metric to compute the Learned Perceptual Image Patch Similarity (LPIPS) score
     between two images. LPIPS essentially computes the similarity between the activations of
     two image patches for some pre-defined network. This measure has been shown to match
@@ -46,7 +44,7 @@ class LPIPSMetric(BaseImageQualityMetric):
     @weave.op()
     def compute_metric(
         self, ground_truth_pil_image: Image, generated_pil_image: Image
-    ) -> ComputeMetricOutput:
+    ) -> Dict[str, float]:
         ground_truth_image = (
             torch.from_numpy(
                 np.expand_dims(
@@ -88,4 +86,6 @@ class LPIPSMetric(BaseImageQualityMetric):
     def score(
         self, prompt: str, ground_truth_image: Image.Image, model_output: Dict[str, Any]
     ) -> Union[float, Dict[str, float]]:
-        return super().evaluate(prompt, ground_truth_image, model_output)
+        _ = prompt
+        metric_output = self.compute_metric(ground_truth_image, model_output["image"])
+        return {"score": metric_output.score}

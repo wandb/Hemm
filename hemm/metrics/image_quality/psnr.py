@@ -7,10 +7,8 @@ import weave
 from PIL import Image
 from torchmetrics.functional.image import peak_signal_noise_ratio
 
-from .base import BaseImageQualityMetric, ComputeMetricOutput
 
-
-class PSNRMetric(BaseImageQualityMetric):
+class PSNRMetric(weave.Scorer):
     """PSNR Metric to compute the Peak Signal-to-Noise Ratio (PSNR) between two images.
 
     Args:
@@ -43,7 +41,7 @@ class PSNRMetric(BaseImageQualityMetric):
     @weave.op()
     def compute_metric(
         self, ground_truth_pil_image: Image.Image, generated_pil_image: Image.Image
-    ) -> ComputeMetricOutput:
+    ) -> Dict[str, float]:
         ground_truth_image = torch.from_numpy(
             np.expand_dims(
                 np.array(ground_truth_pil_image.resize(self.image_size)), axis=0
@@ -65,5 +63,6 @@ class PSNRMetric(BaseImageQualityMetric):
     def score(
         self, prompt: str, ground_truth_image: Image.Image, model_output: Dict[str, Any]
     ) -> Union[float, Dict[str, float]]:
-        _ = "PSNRMetric"
-        return super().evaluate(prompt, ground_truth_image, model_output)
+        _ = prompt
+        metric_output = self.compute_metric(ground_truth_image, model_output["image"])
+        return {"score": metric_output.score}

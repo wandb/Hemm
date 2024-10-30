@@ -7,10 +7,8 @@ import weave
 from PIL import Image
 from torchmetrics.functional.image import structural_similarity_index_measure
 
-from .base import BaseImageQualityMetric, ComputeMetricOutput
 
-
-class SSIMMetric(BaseImageQualityMetric):
+class SSIMMetric(weave.Scorer):
     """SSIM Metric to compute the
     [Structural Similarity Index Measure (SSIM)](https://en.wikipedia.org/wiki/Structural_similarity)
     between two images.
@@ -71,7 +69,7 @@ class SSIMMetric(BaseImageQualityMetric):
     @weave.op()
     def compute_metric(
         self, ground_truth_pil_image: Image.Image, generated_pil_image: Image.Image
-    ) -> ComputeMetricOutput:
+    ) -> Dict[str, float]:
         ground_truth_image = (
             torch.from_numpy(
                 np.expand_dims(
@@ -109,4 +107,6 @@ class SSIMMetric(BaseImageQualityMetric):
     def score(
         self, prompt: str, ground_truth_image: Image.Image, model_output: Dict[str, Any]
     ) -> Union[float, Dict[str, float]]:
-        return super().evaluate(prompt, ground_truth_image, model_output)
+        _ = prompt
+        metric_output = self.compute_metric(ground_truth_image, model_output["image"])
+        return {"score": metric_output.score}
