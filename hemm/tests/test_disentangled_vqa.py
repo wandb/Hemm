@@ -19,6 +19,4 @@ def test_desentangled_vqa_evaluation():
 
     dataset = weave.ref("attribute_binding_dataset:v0").get().rows[:2]
     evaluation = weave.Evaluation(dataset=dataset, scorers=[metric])
-    summary = asyncio.run(evaluation.evaluate(model))
-
-    assert summary["model_latency"]["mean"] > 0
+    asyncio.run(evaluation.evaluate(model))

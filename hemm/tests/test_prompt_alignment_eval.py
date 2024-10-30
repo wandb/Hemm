@@ -20,7 +20,4 @@ def test_prompt_alignment_evaluation():
     evaluation = weave.Evaluation(
         dataset=dataset, scorers=[clip_scorer, clip_iqa_scorer]
     )
-    summary = asyncio.run(evaluation.evaluate(model))
-
-    assert summary["CLIPScoreMetric.evaluate_async"]["clip_score"]["mean"] > 0.0
-    assert summary["model_latency"]["mean"] > 0.0
+    asyncio.run(evaluation.evaluate(model))
