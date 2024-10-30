@@ -5,8 +5,7 @@ import numpy as np
 import torch
 import weave
 from PIL import Image
-from torchmetrics.functional.image import \
-    learned_perceptual_image_patch_similarity
+from torchmetrics.functional.image import learned_perceptual_image_patch_similarity
 
 from ...utils import base64_encode_image
 from .base import BaseImageQualityMetric, ComputeMetricOutput
