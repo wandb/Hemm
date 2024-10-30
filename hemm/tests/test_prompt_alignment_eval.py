@@ -13,9 +13,9 @@ def test_prompt_alignment_evaluation():
         enable_cpu_offfload=False,
     )
     clip_scorer = CLIPScoreMetric(
-        clip_model_name_or_path="openai/clip-vit-base-patch16"
+        model_name="openai/clip-vit-base-patch16"
     )
-    clip_iqa_scorer = CLIPImageQualityScoreMetric(clip_model_name_or_path="clip_iqa")
+    clip_iqa_scorer = CLIPImageQualityScoreMetric(model_name="clip_iqa")
     dataset = weave.ref("parti-prompts:v0").get().rows[:2]
     evaluation = weave.Evaluation(
         dataset=dataset, scorers=[clip_scorer, clip_iqa_scorer]
