@@ -51,5 +51,5 @@ class BLIPScoreMertric(BasePromptAlignmentMetric):
         )
 
     @weave.op()
-    def evaluate(self, prompt: str, model_output: Dict[str, Any]) -> Dict[str, float]:
+    def score(self, prompt: str, model_output: Dict[str, Any]) -> Dict[str, float]:
         return super().evaluate(prompt, model_output)

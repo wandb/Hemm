@@ -85,7 +85,7 @@ class LPIPSMetric(BaseImageQualityMetric):
         }
 
     @weave.op()
-    def evaluate(
+    def score(
         self, prompt: str, ground_truth_image: Image.Image, model_output: Dict[str, Any]
     ) -> Union[float, Dict[str, float]]:
         return super().evaluate(prompt, ground_truth_image, model_output)
