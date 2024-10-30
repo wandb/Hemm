@@ -12,9 +12,7 @@ def test_prompt_alignment_evaluation():
         diffusion_model_name_or_path="CompVis/stable-diffusion-v1-4",
         enable_cpu_offfload=False,
     )
-    clip_scorer = CLIPScoreMetric(
-        model_name="openai/clip-vit-base-patch16"
-    )
+    clip_scorer = CLIPScoreMetric(model_name="openai/clip-vit-base-patch16")
     clip_iqa_scorer = CLIPImageQualityScoreMetric(model_name="clip_iqa")
     dataset = weave.ref("parti-prompts:v0").get().rows[:2]
     evaluation = weave.Evaluation(
