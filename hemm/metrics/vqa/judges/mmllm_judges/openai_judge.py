@@ -9,7 +9,7 @@ from PIL import Image
 from pydantic import BaseModel
 
 from .....utils import base64_encode_image
-from .commons import JudgeMent, JudgeQuestion, PromptCategory, TaggedPromptParts
+from .commons import JudgeMent, PromptCategory, TaggedPromptParts
 
 
 class OpenAIJudgeMent(BaseModel):
