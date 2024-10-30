@@ -9,7 +9,8 @@ from PIL import Image
 from pydantic import BaseModel
 
 from .....utils import base64_encode_image
-from .commons import JudgeMent, JudgeQuestion, PromptCategory, TaggedPromptParts
+from .commons import (JudgeMent, JudgeQuestion, PromptCategory,
+                      TaggedPromptParts)
 
 
 class OpenAIJudgeMent(BaseModel):
@@ -102,6 +103,7 @@ class OpenAIJudge(weave.Model):
         Returns:
             List[JudgeQuestion]: List of questions to ask for the given prompt.
         """
+        prompt = str(prompt)
         if self.prompt_property in [PromptCategory.spatial, PromptCategory.spatial_3d]:
             self._total_score = 5
             question = JudgeQuestion(
@@ -309,7 +311,7 @@ Here is a detailed explanation of the image:
 Provide your analysis and explanation to justify the score.
         """
         judgement_response = (
-            self._openai_client.beta.chat.completions.parse(
+            weave.op()(self._openai_client.beta.chat.completions.parse)(
                 model=self.openai_model,
                 response_format=JudgeMent,
                 seed=self.seed,

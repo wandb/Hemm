@@ -6,9 +6,7 @@ import wandb
 from hemm.eval_pipelines import BaseDiffusionModel, EvaluationPipeline
 from hemm.metrics.spatial_relationship import SpatialRelationshipMetric2D
 from hemm.metrics.spatial_relationship.judges import (
-    DETRSpatialRelationShipJudge,
-    RTDETRSpatialRelationShipJudge,
-)
+    DETRSpatialRelationShipJudge, RTDETRSpatialRelationShipJudge)
 
 
 class Test2DSpatialRelationshipEval(unittest.TestCase):
