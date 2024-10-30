@@ -2,11 +2,10 @@ from typing import Any, Dict, Optional, Union
 
 import weave
 
-from ..base import BaseMetric
 from .judges import BlipVQAJudge
 
 
-class DisentangledVQAMetric(BaseMetric):
+class DisentangledVQAMetric(weave.Scorer):
     """Disentangled VQA metric to evaluate the attribute-binding capability
     for image generation models as proposed in Section 4.1 from the paper
     [T2I-CompBench: A Comprehensive Benchmark for Open-world Compositional Text-to-image Generation](https://arxiv.org/pdf/2307.06350).
@@ -54,7 +53,7 @@ class DisentangledVQAMetric(BaseMetric):
         self.name = name
 
     @weave.op()
-    def evaluate(
+    def score(
         self,
         prompt: str,
         adj_1: str,
@@ -80,17 +79,4 @@ class DisentangledVQAMetric(BaseMetric):
         judgement = self.judge.predict(
             adj_1, noun_1, adj_2, noun_2, model_output["image"]
         )
-        self.scores.append(judgement)
         return judgement
-
-    @weave.op()
-    async def evaluate_async(
-        self,
-        prompt: str,
-        adj_1: str,
-        noun_1: str,
-        adj_2: str,
-        noun_2: str,
-        model_output: Dict[str, Any],
-    ) -> Dict[str, Any]:
-        return self.evaluate(prompt, adj_1, noun_1, adj_2, noun_2, model_output)
