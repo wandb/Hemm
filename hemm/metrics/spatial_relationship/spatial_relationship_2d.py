@@ -1,17 +1,15 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Union
 
 import weave
 from PIL import Image
 
 import wandb
 
-from ..base import BaseMetric
-from .judges import DETRSpatialRelationShipJudge
 from .judges.commons import BoundingBox
 from .utils import annotate_with_bounding_box, get_iou
 
 
-class SpatialRelationshipMetric2D(BaseMetric):
+class SpatialRelationshipMetric2D(weave.Scorer):
     """Spatial relationship metric for image generation as proposed in Section 4.2 from the paper
     [T2I-CompBench: A Comprehensive Benchmark for Open-world Compositional Text-to-image Generation](https://arxiv.org/pdf/2307.06350).
 
@@ -54,21 +52,8 @@ class SpatialRelationshipMetric2D(BaseMetric):
         name (Optional[str], optional): The name of the metric.
     """
 
-    def __init__(
-        self,
-        judge: Union[weave.Model, DETRSpatialRelationShipJudge],
-        iou_threshold: Optional[float] = 0.1,
-        distance_threshold: Optional[float] = 150,
-        name: Optional[str] = "spatial_relationship_score",
-    ) -> None:
-        super().__init__()
-        self.judge = judge
-        self.judge_config = self.judge.model_dump(mode="json")
-        self.iou_threshold = iou_threshold
-        self.distance_threshold = distance_threshold
-        self.name = name
-        self.scores = []
-        self.config = judge.model_dump()
+    judge: weave.Model
+    iou_threshold: float = 0.1
 
     @weave.op()
     def compose_judgement(
@@ -203,7 +188,7 @@ class SpatialRelationshipMetric2D(BaseMetric):
         }
 
     @weave.op()
-    def evaluate(
+    def score(
         self,
         prompt: str,
         entity_1: str,
@@ -231,14 +216,3 @@ class SpatialRelationshipMetric2D(BaseMetric):
             prompt, image, entity_1, entity_2, relationship, boxes
         )
         return {self.name: judgement["score"]}
-
-    @weave.op()
-    async def evaluate_async(
-        self,
-        prompt: str,
-        entity_1: str,
-        entity_2: str,
-        relationship: str,
-        model_output: Dict[str, Any],
-    ) -> Dict[str, Union[bool, float, int]]:
-        return self.evaluate(prompt, entity_1, entity_2, relationship, model_output)
