@@ -23,24 +23,21 @@ class PSNRMetric(BaseImageQualityMetric):
 
     psnr_base: float
     psnr_data_range: Optional[Union[float, Tuple[float, float]]]
-    image_height: int
-    image_width: int
     _psnr_metric: Callable
 
     def __init__(
         self,
         psnr_data_range: Optional[Union[float, Tuple[float, float]]] = None,
         psnr_base: float = 10.0,
-        image_size: Optional[Tuple[int, int]] = (512, 512),
     ) -> None:
         super().__init__(
             psnr_data_range=psnr_data_range,
             psnr_base=psnr_base,
-            image_height=image_size[0],
-            image_width=image_size[1],
         )
         self._psnr_metric = partial(
-            peak_signal_noise_ratio, data_range=self.p, base=psnr_base
+            peak_signal_noise_ratio,
+            data_range=self.psnr_data_range,
+            base=self.psnr_base,
         )
 
     @weave.op()

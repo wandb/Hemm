@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Any, Callable, Dict, Literal, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Literal, Union
 
 import numpy as np
 import torch
@@ -19,8 +19,8 @@ class LPIPSMetric(BaseImageQualityMetric):
     Args:
         lpips_net_type (str): The network type to use for computing LPIPS. One of "alex", "vgg",
             or "squeeze".
-        image_size (Tuple[int, int]): The size to which images will be resized before computing
-            LPIPS.
+        image_height (int): The height to which images will be resized before computing LPIPS.
+        image_width (int): The width to which images will be resized before computing LPIPS.
     """
 
     lpips_net_type: Literal["alex", "vgg", "squeeze"]
@@ -31,12 +31,13 @@ class LPIPSMetric(BaseImageQualityMetric):
     def __init__(
         self,
         lpips_net_type: Literal["alex", "vgg", "squeeze"] = "alex",
-        image_size: Optional[Tuple[int, int]] = (512, 512),
+        image_height: int = 512,
+        image_width: int = 512,
     ) -> None:
         super().__init__(
             lpips_net_type=lpips_net_type,
-            image_height=image_size[0],
-            image_width=image_size[1],
+            image_height=image_height,
+            image_width=image_width,
         )
         self._lpips_metric = partial(
             learned_perceptual_image_patch_similarity, net_type=self.lpips_net_type
@@ -49,7 +50,12 @@ class LPIPSMetric(BaseImageQualityMetric):
         ground_truth_image = (
             torch.from_numpy(
                 np.expand_dims(
-                    np.array(ground_truth_pil_image.resize(self.image_size)), axis=0
+                    np.array(
+                        ground_truth_pil_image.resize(
+                            (self.image_height, self.image_width)
+                        )
+                    ),
+                    axis=0,
                 ).astype(np.uint8)
             )
             .permute(0, 3, 2, 1)
@@ -58,7 +64,12 @@ class LPIPSMetric(BaseImageQualityMetric):
         generated_image = (
             torch.from_numpy(
                 np.expand_dims(
-                    np.array(generated_pil_image.resize(self.image_size)), axis=0
+                    np.array(
+                        generated_pil_image.resize(
+                            (self.image_height, self.image_width)
+                        )
+                    ),
+                    axis=0,
                 ).astype(np.uint8)
             )
             .permute(0, 3, 2, 1)

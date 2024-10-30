@@ -12,9 +12,13 @@ def test_image_quality_metrics():
         diffusion_model_name_or_path="CompVis/stable-diffusion-v1-4",
         enable_cpu_offfload=False,
     )
-    psnr_metric = PSNRMetric(image_size=(model.image_height, model.image_width))
-    ssim_metric = SSIMMetric(image_size=(model.image_height, model.image_width))
-    lpips_metric = LPIPSMetric(image_size=(model.image_height, model.image_width))
+    psnr_metric = PSNRMetric()
+    ssim_metric = SSIMMetric(
+        image_height=model.image_height, image_width=model.image_width
+    )
+    lpips_metric = LPIPSMetric(
+        image_height=model.image_height, image_width=model.image_width
+    )
     dataset = weave.ref("COCO:v1").get().rows[:2]
     evaluation = weave.Evaluation(
         dataset=dataset, scorers=[psnr_metric, ssim_metric, lpips_metric]
