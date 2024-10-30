@@ -1,6 +1,6 @@
 # Hemm: Holistic Evaluation of Multi-modal Generative Models
 
-Hemm is a library for performing comprehensive benchmark of text-to-image diffusion models on image quality and prompt comprehension integrated with [Weights & Biases](https://wandb.ai/site) and [Weave](https://wandb.github.io/weave/). 
+Hemm is a library for performing comprehensive benchmark of text-to-image diffusion models on image quality and prompt comprehension integrated with [Weave](https://wandb.github.io/weave/), a lightweight toolkit for tracking and evaluating LLM applications, built by [Weights & Biases](https://wandb.ai/site).
 
 Hemm is highly inspired by the following projects:
 

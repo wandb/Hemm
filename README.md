@@ -2,7 +2,7 @@
 
 [![](https://img.shields.io/badge/Hemm-docs-blue)](https://wandb.github.io/Hemm/)
 
-Hemm is a library for performing comprehensive benchmark of text-to-image diffusion models on image quality and prompt comprehension integrated with [Weights & Biases](https://wandb.ai/site) and [Weave](https://wandb.github.io/weave/).
+Hemm is a library for performing comprehensive benchmark of text-to-image diffusion models on image quality and prompt comprehension integrated with [Weave](https://wandb.github.io/weave/), a lightweight toolkit for tracking and evaluating LLM applications, built by [Weights & Biases](https://wandb.ai/site).
 
 Hemm is highly inspired by the following projects:
 - [Holistic Evaluation of Text-To-Image Models](https://crfm.stanford.edu/helm/heim/v1.0.0/)
