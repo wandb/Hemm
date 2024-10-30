@@ -88,4 +88,4 @@ class LPIPSMetric(weave.Scorer):
     ) -> Union[float, Dict[str, float]]:
         _ = prompt
         metric_output = self.compute_metric(ground_truth_image, model_output["image"])
-        return {"score": metric_output.score}
+        return {"score": metric_output["score"]}

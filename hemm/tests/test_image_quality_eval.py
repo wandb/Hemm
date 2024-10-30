@@ -12,7 +12,9 @@ def test_image_quality_metrics():
         diffusion_model_name_or_path="CompVis/stable-diffusion-v1-4",
         enable_cpu_offfload=False,
     )
-    psnr_metric = PSNRMetric()
+    psnr_metric = PSNRMetric(
+        image_height=model.image_height, image_width=model.image_width
+    )
     ssim_metric = SSIMMetric(
         image_height=model.image_height, image_width=model.image_width
     )
