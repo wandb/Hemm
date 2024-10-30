@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict
 
 import weave
 
@@ -38,19 +38,9 @@ class DisentangledVQAMetric(weave.Scorer):
 
     Args:
         judge (Union[weave.Model, BlipVQAJudge]): The judge model to evaluate the attribute-binding capability.
-        name (Optional[str]): The name of the metric. Defaults to "disentangled_vlm_metric".
     """
 
-    def __init__(
-        self,
-        judge: Union[weave.Model, BlipVQAJudge],
-        name: Optional[str] = "disentangled_vlm_metric",
-    ) -> None:
-        super().__init__()
-        self.judge = judge
-        self.config = self.judge.model_dump()
-        self.scores = []
-        self.name = name
+    judge: BlipVQAJudge
 
     @weave.op()
     def score(

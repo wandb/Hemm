@@ -7,7 +7,7 @@ from hemm.metrics.vqa.judges import BlipVQAJudge
 from hemm.models import DiffusersModel
 
 
-def test_desentangled_vqa_evaluation():
+def test_disentangled_vqa_evaluation():
     weave.init(project_name="hemm-eval/unit-tests")
     model = DiffusersModel(
         diffusion_model_name_or_path="CompVis/stable-diffusion-v1-4",
