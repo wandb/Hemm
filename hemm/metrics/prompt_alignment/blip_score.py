@@ -1,14 +1,11 @@
-from typing import Any, Dict, Union
+from typing import Any, Dict
 
 import weave
-from PIL import Image
 from torch.nn import functional as F
 from transformers import BlipForConditionalGeneration, BlipProcessor
 
-from .base import BasePromptAlignmentMetric
 
-
-class BLIPScoreMertric(BasePromptAlignmentMetric):
+class BLIPScoreMertric(weave.Scorer):
     model_name: str = "Salesforce/blip-image-captioning-base"
     device: str = "cuda"
     _blip_processor: BlipProcessor
@@ -26,30 +23,26 @@ class BLIPScoreMertric(BasePromptAlignmentMetric):
         )
 
     @weave.op()
-    def compute_metric(
-        self, pil_image: Image, prompt: str
-    ) -> Union[float, Dict[str, Any]]:
+    def score(self, prompt: str, model_output: Dict[str, Any]) -> Dict[str, float]:
         pixel_values = self.blip_processor(
-            images=pil_image, return_tensors="pt"
+            images=model_output["image"], return_tensors="pt"
         ).pixel_values
-        text_input_ids = self.blip_processor(
+        text_input_ids = self._blip_processor(
             text=prompt, return_tensors="pt", padding=True, truncation=True
         ).input_ids
-        outputs = self.blip_model(
+        outputs = self._blip_model(
             pixel_values=pixel_values.to(self.device),
             input_ids=text_input_ids.to(self.device),
         )
         logits = outputs.logits[:, :-1, :]
         shift_labels = text_input_ids[..., 1:].contiguous()
-        return float(
-            F.cross_entropy(
-                logits.view(-1, logits.size(-1)).to(self.device),
-                shift_labels.view(-1).to(self.device),
+        return {
+            "score": float(
+                F.cross_entropy(
+                    logits.view(-1, logits.size(-1)).to(self.device),
+                    shift_labels.view(-1).to(self.device),
+                )
+                .detach()
+                .item()
             )
-            .detach()
-            .item()
-        )
-
-    @weave.op()
-    def score(self, prompt: str, model_output: Dict[str, Any]) -> Dict[str, float]:
-        return super().evaluate(prompt, model_output)
+        }

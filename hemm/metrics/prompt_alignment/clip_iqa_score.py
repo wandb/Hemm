@@ -1,17 +1,14 @@
 from functools import partial
-from typing import Any, Callable, Dict, List, Union
+from typing import Any, Callable, Dict, List
 
 import numpy as np
 import torch
 import weave
-from PIL import Image
 from torchmetrics.functional.multimodal import clip_image_quality_assessment
 from tqdm.auto import tqdm
 
-from .base import BasePromptAlignmentMetric
 
-
-class CLIPImageQualityScoreMetric(BasePromptAlignmentMetric):
+class CLIPImageQualityScoreMetric(weave.Scorer):
     """[CLIP Image Quality Assessment](https://arxiv.org/abs/2207.12396) metric
     for to measuring the visual content of images.
 
@@ -61,23 +58,20 @@ class CLIPImageQualityScoreMetric(BasePromptAlignmentMetric):
         )
 
     @weave.op()
-    def compute_metric(
-        self, pil_image: Image, prompt: str
-    ) -> Union[float, Dict[str, float]]:
-        images = np.expand_dims(np.array(pil_image), axis=0).astype(np.uint8) / 255.0
+    def score(self, prompt: str, model_output: Dict[str, Any]) -> Dict[str, float]:
+        images = (
+            np.expand_dims(np.array(model_output["image"]), axis=0).astype(np.uint8)
+            / 255.0
+        )
         score_dict = {}
         for prompt in tqdm(
             self.built_in_prompts, desc="Calculating IQA scores", leave=False
         ):
             clip_iqa_score = float(
-                self.clip_iqa_fn(
+                self._clip_iqa_fn(
                     images=torch.from_numpy(images).permute(0, 3, 1, 2),
                     prompts=tuple([prompt] * images.shape[0]),
                 ).detach()
             )
             score_dict[f"{self.name}_{prompt}"] = clip_iqa_score
         return score_dict
-
-    @weave.op()
-    def score(self, prompt: str, model_output: Dict[str, Any]) -> Dict[str, float]:
-        return super().evaluate(prompt, model_output)

@@ -1,16 +1,13 @@
 from functools import partial
-from typing import Any, Callable, Dict, Union
+from typing import Any, Callable, Dict
 
 import numpy as np
 import torch
 import weave
-from PIL import Image
 from torchmetrics.functional.multimodal import clip_score
 
-from .base import BasePromptAlignmentMetric
 
-
-class CLIPScoreMetric(BasePromptAlignmentMetric):
+class CLIPScoreMetric(weave.Scorer):
     """[CLIP score](https://arxiv.org/abs/2104.08718) metric for text-to-image similarity.
     CLIP Score is a reference free metric that can be used to evaluate the correlation between
     a generated caption for an image and the actual content of the image. It has been found to
@@ -28,16 +25,12 @@ class CLIPScoreMetric(BasePromptAlignmentMetric):
         self._clip_score_fn = partial(clip_score, model_name_or_path=model_name)
 
     @weave.op()
-    def compute_metric(
-        self, pil_image: Image.Image, prompt: str
-    ) -> Union[float, Dict[str, float]]:
-        images = np.expand_dims(np.array(pil_image), axis=0)
-        return float(
-            self.clip_score_fn(
-                torch.from_numpy(images).permute(0, 3, 1, 2), prompt
-            ).detach()
-        )
-
-    @weave.op()
     def score(self, prompt: str, model_output: Dict[str, Any]) -> Dict[str, float]:
-        return super().evaluate(prompt, model_output)
+        images = np.expand_dims(np.array(model_output["image"]), axis=0)
+        return {
+            "score": float(
+                self._clip_score_fn(
+                    torch.from_numpy(images).permute(0, 3, 1, 2), prompt
+                ).detach()
+            )
+        }
