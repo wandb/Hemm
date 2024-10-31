@@ -1,6 +1,6 @@
 import os
 import subprocess
-from typing import List
+from typing import Dict, List
 
 import spacy
 import weave
@@ -9,7 +9,7 @@ from PIL import Image
 from pydantic import BaseModel
 
 from .....utils import base64_encode_image
-from .commons import JudgeMent, JudgeQuestion, PromptCategory, TaggedPromptParts
+from .commons import JudgeMent, PromptCategory, TaggedPromptParts
 
 
 class OpenAIJudgeMent(BaseModel):
@@ -91,7 +91,7 @@ class OpenAIJudge(weave.Model):
         return tagged_prompt_parts
 
     @weave.op()
-    def frame_question(self, prompt: str, image: Image.Image) -> List[JudgeQuestion]:
+    def frame_question(self, prompt: str, image: Image.Image) -> List[Dict[str, str]]:
         """Frame the question corresponding to the given prompt and image for
         the chain-of-thought system of judgement.
 
@@ -100,20 +100,21 @@ class OpenAIJudge(weave.Model):
             image (Image.Image): The image to frame the question for.
 
         Returns:
-            List[JudgeQuestion]: List of questions to ask for the given prompt.
+            List[Dict[str, str]]: List of questions to ask for the given prompt.
         """
+        prompt = str(prompt)
         if self.prompt_property in [PromptCategory.spatial, PromptCategory.spatial_3d]:
             self._total_score = 5
-            question = JudgeQuestion(
-                image_desciption_system_prompt="""
+            question = {
+                "image_desciption_system_prompt": """
 You are a helpful assistant meant to describe images is detail.
 You should pay special attention to the objects and their spatial layout in the image.
                 """,
-                judgement_question_system_prompt="""
+                "judgement_question_system_prompt": """
 You are a helpful assistant meant to identify objects and their spatial layout in the image.
 You have to extract the question, the score, and the explanation from the user's response.
                 """,
-                judgement_question=f"""
+                "judgement_question": f"""
 Looking at the image and given a detailed description of the image, evaluate if the text \"{prompt}\" is correctly portrayed in the image.
 Give a score from 1 to 5, according to the following criteria:
 
@@ -133,20 +134,20 @@ Here are some more rules for scoring that you should follow:
 3. The spatial layout of the objects in the image should be consistent with the text prompt. You should deduct 1 point from the score if the
     spatial layout of the objects in the image is not consistent with the text prompt.
                 """,
-            )
+            }
             return [(question, image)]
         elif self.prompt_property == PromptCategory.action:
             self._total_score = 5
-            question = JudgeQuestion(
-                image_desciption_system_prompt="""
+            question = {
+                "image_desciption_system_prompt": """
 You are a helpful assistant meant to describe images is detail.
 You should pay special attention to the the actions, events, objects and their relationships in the image.
                 """,
-                judgement_question_system_prompt="""
+                "judgement_question_system_prompt": """
 You are a helpful assistant meant to identify the actions, events, objects and their relationships in the image.
 You have to extract the question, the score, and the explanation from the user's response.
                 """,
-                judgement_question=f"""
+                "judgement_question": f"""
 Looking at the image and given a detailed description of the image, evaluate if the text \"{prompt}\" is correctly portrayed in the image.
 Give a score from 1 to 5, according to the following criteria:
 
@@ -166,20 +167,20 @@ Here are some more rules for scoring that you should follow:
 3. The spatial layout of the objects in the image should be consistent with the text prompt. You should deduct 1 point from the score if the
     spatial layout of the objects in the image is not consistent with the text prompt.
                 """,
-            )
+            }
             return [(question, image)]
         elif self.prompt_property == PromptCategory.numeracy:
             self._total_score = 5
-            question = JudgeQuestion(
-                image_desciption_system_prompt="""
+            question = {
+                "image_desciption_system_prompt": """
 You are a helpful assistant meant to describe images is detail.
 You should pay special attention to the objects and their quantities in the image.
                 """,
-                judgement_question_system_prompt="""
+                "judgement_question_system_prompt": """
 You are a helpful assistant meant to identify objects and their quantities in the image.
 You have to extract the question, the score, and the explanation from the user's response.
                 """,
-                judgement_question=f"""
+                "judgement_question": f"""
 Looking at the image and given a detailed description of the image, evaluate how well the image aligns with the text prompt: \"{prompt}\"
 Give a score from 1 to 5, according to the following criteria:
 
@@ -199,23 +200,23 @@ Here are some more rules for scoring that you should follow:
 3. The spatial layout of the objects in the image should be consistent with the text prompt. You should deduct 1 point from the score if the
     spatial layout of the objects in the image is not consistent with the text prompt.
                 """,
-            )
+            }
             return [(question, image)]
         elif self.prompt_property == PromptCategory.complex:
             self._total_score = 5
-            question = JudgeQuestion(
-                image_desciption_system_prompt="""
+            question = {
+                "image_desciption_system_prompt": """
 You are a helpful assistant meant to describe images is detail.
 You should pay special attention to the objects in the image and their attributes
 (such as color, shape, texture), spatial layout and action relationships.
                 """,
-                judgement_question_system_prompt="""
+                "judgement_question_system_prompt": """
 You are a helpful assistant meant to evaluate the correspondence of the image to a given text prompt.
 Focus on the objects in the image and their attributes (such as color, shape, texture),
 spatial layout and action relationships. You have to extract the question, the score, and the
 explanation from the user's response.
                 """,
-                judgement_question=f"""
+                "judgement_question": f"""
 Looking at the image and given a detailed description of the image, evaluate how well the image aligns with the text prompt: \"{prompt}\"
 Give a score from 1 to 5, according to the following criteria:
 
@@ -235,21 +236,21 @@ Here are some more rules for scoring that you should follow:
 3. The spatial layout of the objects in the image should be consistent with the text prompt. You should deduct 1 point from the score if the
     spatial layout of the objects in the image is not consistent with the text prompt.
                 """,
-            )
+            }
             return [(question, image)]
         tagged_prompt_parts = self.extract_prompt_parts(prompt)
         questions: List[str] = []
         for tagged_prompt_part in tagged_prompt_parts:
-            question = JudgeQuestion(
-                image_desciption_system_prompt=f"""
+            question = {
+                "image_desciption_system_prompt": f"""
 You are a helpful assistant meant to describe images is detail.
 You should pay special attention to any objects and their {self.prompt_property.name} in the given image.
                 """,
-                judgement_question_system_prompt=f"""
+                "judgement_question_system_prompt": f"""
 You are a helpful assistant meant to identify any objects and their {self.prompt_property.name}
 in the given image. You have to extract the question, the score, and the explanation from the user's response.
                 """,
-                judgement_question=f"""
+                "judgement_question": f"""
 Looking at the image and given a detailed description of the image, evaluate if there is a {tagged_prompt_part.entity} in the image.
 Give a score from 1 to 4, according to the following criteria:
 
@@ -268,13 +269,13 @@ Here are some more rules for scoring that you should follow:
 3. The spatial layout of the objects in the image should be consistent with the text prompt. You should deduct 1 point from the score if the
     spatial layout of the objects in the image is not consistent with the text prompt.
                 """,
-            )
+            }
             questions.append((question, image))
         return questions
 
     @weave.op
     def execute_chain_of_thought(
-        self, question: JudgeQuestion, image: Image.Image
+        self, question: Dict[str, str], image: Image.Image
     ) -> OpenAIJudgeMent:
         image_description_explanation = (
             self._openai_client.chat.completions.create(
@@ -283,7 +284,7 @@ Here are some more rules for scoring that you should follow:
                 messages=[
                     {
                         "role": "system",
-                        "content": question.image_desciption_system_prompt,
+                        "content": question["image_desciption_system_prompt"],
                     },
                     {
                         "role": "user",
@@ -299,7 +300,9 @@ Here are some more rules for scoring that you should follow:
             .choices[0]
             .message.content
         )
-        question.judgement_question += f"""
+        question[
+            "judgement_question"
+        ] += f"""
 
 Here is a detailed explanation of the image:
 ---
@@ -309,19 +312,19 @@ Here is a detailed explanation of the image:
 Provide your analysis and explanation to justify the score.
         """
         judgement_response = (
-            self._openai_client.beta.chat.completions.parse(
+            weave.op()(self._openai_client.beta.chat.completions.parse)(
                 model=self.openai_model,
                 response_format=JudgeMent,
                 seed=self.seed,
                 messages=[
                     {
                         "role": "system",
-                        "content": question.judgement_question_system_prompt,
+                        "content": question["judgement_question_system_prompt"],
                     },
                     {
                         "role": "user",
                         "content": [
-                            {"type": "text", "text": question.judgement_question},
+                            {"type": "text", "text": question["judgement_question"]},
                             {
                                 "type": "image_url",
                                 "image_url": {"url": base64_encode_image(image)},

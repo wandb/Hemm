@@ -7,7 +7,7 @@ theme:
     # Palette toggle for light mode
     - scheme: default
       toggle:
-        icon: material/brightness-7 
+        icon: material/brightness-7
         name: Switch to dark mode
     # Palette toggle for dark mode
     - scheme: slate
@@ -57,7 +57,6 @@ extra_javascript:
 
 nav:
   - Home: 'index.md'
-  - Evaluation-Pipelines: 'eval_pipelines.md'
   - Models:
     - Diffusion-Models: 'models/diffusion_model.md'
     - FalAI-Models: 'models/falai_model.md'

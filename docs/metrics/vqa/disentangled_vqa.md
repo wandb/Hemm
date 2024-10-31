@@ -33,25 +33,29 @@ This module aims to implement the Disentangled VQA metric inspired by Section 4.
     ## Step 2: Evaluate
 
     ```python
-    import wandb
+    import asyncio
+
     import weave
 
-    wandb.init(project=project, entity=entity, job_type="evaluation")
+    from hemm.metrics.vqa import DisentangledVQAMetric
+    from hemm.metrics.vqa.judges import BlipVQAJudge
+    from hemm.models import DiffusersModel
+
     weave.init(project_name=project)
 
-    diffusion_model = BaseDiffusionModel(
+    diffusion_model = DiffusersModel(
         diffusion_model_name_or_path=diffusion_model_address,
         enable_cpu_offfload=diffusion_model_enable_cpu_offfload,
         image_height=image_size[0],
         image_width=image_size[1],
     )
-    evaluation_pipeline = EvaluationPipeline(model=diffusion_model)
 
     judge = BlipVQAJudge()
     metric = DisentangledVQAMetric(judge=judge, name="disentangled_blip_metric")
     evaluation_pipeline.add_metric(metric)
 
-    evaluation_pipeline(dataset=dataset)
+    evaluation = weave.Evaluation(dataset=dataset, scorers=[metric])
+    asyncio.run(evaluation.evaluate(model))
     ```
 
 ## Metrics

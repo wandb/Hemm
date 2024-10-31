@@ -1,13 +1,12 @@
-from typing import Optional, Tuple
+import asyncio
+from typing import Optional
 
 import fire
 import weave
 
-import wandb
-from hemm.eval_pipelines import EvaluationPipeline
 from hemm.metrics.spatial_relationship import SpatialRelationshipMetric2D
 from hemm.metrics.spatial_relationship.judges import DETRSpatialRelationShipJudge
-from hemm.models import BaseDiffusionModel
+from hemm.models import DiffusersModel
 
 
 def main(
@@ -17,33 +16,31 @@ def main(
     dataset_limit: Optional[int] = None,
     diffusion_model_address: str = "stabilityai/stable-diffusion-2-1",
     diffusion_model_enable_cpu_offfload: bool = False,
-    image_size: Tuple[int, int] = (1024, 1024),
+    image_height: int = 1024,
+    image_width: int = 1024,
     detr_model_address: str = "facebook/detr-resnet-50",
     detr_revision: str = "no_timm",
+    iou_threshold: Optional[float] = 0.1,
 ):
-    wandb.init(project=project, entity=entity, job_type="evaluation")
     weave.init(project_name=f"{entity}/{project}")
 
     dataset = weave.ref(dataset_ref).get()
     dataset = dataset.rows[:dataset_limit] if dataset_limit else dataset
 
-    diffusion_model = BaseDiffusionModel(
+    model = DiffusersModel(
         diffusion_model_name_or_path=diffusion_model_address,
         enable_cpu_offfload=diffusion_model_enable_cpu_offfload,
-        image_height=image_size[0],
-        image_width=image_size[1],
+        image_height=image_height,
+        image_width=image_width,
     )
-    evaluation_pipeline = EvaluationPipeline(model=diffusion_model)
 
     judge = DETRSpatialRelationShipJudge(
         model_address=detr_model_address, revision=detr_revision
     )
-    metric = SpatialRelationshipMetric2D(
-        judge=judge, name="2d_spatial_relationship_score"
-    )
-    evaluation_pipeline.add_metric(metric)
+    metric = SpatialRelationshipMetric2D(judge=judge, iou_threshold=iou_threshold)
 
-    evaluation_pipeline(dataset=dataset)
+    evaluation = weave.Evaluation(dataset=dataset, scorers=[metric])
+    asyncio.run(evaluation.evaluate(model))
 
 
 if __name__ == "__main__":

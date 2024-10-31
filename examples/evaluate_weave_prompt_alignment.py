@@ -1,10 +1,10 @@
+import asyncio
+
 import fire
 import weave
 
-import wandb
-from hemm.eval_pipelines import EvaluationPipeline
 from hemm.metrics.prompt_alignment import CLIPImageQualityScoreMetric, CLIPScoreMetric
-from hemm.models import BaseDiffusionModel
+from hemm.models import DiffusersModel
 
 
 def main(
@@ -15,26 +15,22 @@ def main(
     dataset: str = "parti-prompts:v0",
     project: str = "propmpt-alignment",
 ):
-    wandb.init(project=project, job_type="evaluation")
     weave.init(project_name=project)
 
-    model = BaseDiffusionModel(
+    model = DiffusersModel(
         diffusion_model_name_or_path=diffusion_model_name_or_path,
         enable_cpu_offfload=diffusion_model_enable_cpu_offfload,
     )
-    evaluation_pipeline = EvaluationPipeline(model=model)
 
-    # Add CLIP Scorer metric
     clip_scorer = CLIPScoreMetric(clip_model_name_or_path=clip_model_name_or_path)
-    evaluation_pipeline.add_metric(clip_scorer)
-
-    # Add CLIP IQA Metric
     clip_iqa_scorer = CLIPImageQualityScoreMetric(
         clip_model_name_or_path=clip_iqa_model_name_or_path
     )
-    evaluation_pipeline.add_metric(clip_iqa_scorer)
 
-    evaluation_pipeline(dataset=dataset)
+    evaluation = weave.Evaluation(
+        dataset=dataset, scorers=[clip_scorer, clip_iqa_scorer]
+    )
+    asyncio.run(evaluation.evaluate(model))
 
 
 if __name__ == "__main__":

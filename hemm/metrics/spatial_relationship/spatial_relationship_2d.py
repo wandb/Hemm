@@ -1,49 +1,42 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Union
 
 import weave
 from PIL import Image
 
-import wandb
-
-from ..base import BaseMetric
-from .judges import DETRSpatialRelationShipJudge
 from .judges.commons import BoundingBox
 from .utils import annotate_with_bounding_box, get_iou
 
 
-class SpatialRelationshipMetric2D(BaseMetric):
+class SpatialRelationshipMetric2D(weave.Scorer):
     """Spatial relationship metric for image generation as proposed in Section 4.2 from the paper
     [T2I-CompBench: A Comprehensive Benchmark for Open-world Compositional Text-to-image Generation](https://arxiv.org/pdf/2307.06350).
 
-    ??? example "Sample usage"
+    !!! example "Sample usage"
         ```python
-        import wandb
+        import asyncio
         import weave
 
-        from hemm.eval_pipelines import BaseDiffusionModel, EvaluationPipeline
-        from hemm.metrics.image_quality import LPIPSMetric, PSNRMetric, SSIMMetric
+        from hemm.models import DiffusersModel
+        from hemm.metrics.spatial_relationship.judges import DETRSpatialRelationShipJudge
 
-        # Initialize Weave and WandB
-        wandb.init(project="image-quality-leaderboard", job_type="evaluation")
+        # Initialize Weave
         weave.init(project_name="image-quality-leaderboard")
 
-        # Initialize the diffusion model to be evaluated as a `weave.Model` using `BaseWeaveModel`
-        model = BaseDiffusionModel(diffusion_model_name_or_path="CompVis/stable-diffusion-v1-4")
-
-        # Add the model to the evaluation pipeline
-        evaluation_pipeline = EvaluationPipeline(model=model)
+        # Initialize the diffusion model to be evaluated as a `weave.Model`
+        model = DiffusersModel(diffusion_model_name_or_path="CompVis/stable-diffusion-v1-4")
 
         # Define the judge model for 2d spatial relationship metric
         judge = DETRSpatialRelationShipJudge(
             model_address=detr_model_address, revision=detr_revision
         )
 
-        # Add 2d spatial relationship Metric to the evaluation pipeline
+        # Define 2d spatial relationship Metric to the evaluation pipeline
         metric = SpatialRelationshipMetric2D(judge=judge, name="2d_spatial_relationship_score")
-        evaluation_pipeline.add_metric(metric)
 
         # Evaluate!
-        evaluation_pipeline(dataset="t2i_compbench_spatial_prompts:v0")
+        dataset = weave.ref("2d-spatial-t2i_compbench_spatial_prompts-mscoco:v0").get()
+        evaluation = weave.Evaluation(dataset=dataset, scorers=[metric])
+        asyncio.run(evaluation.evaluate(model))
         ```
 
     Args:
@@ -54,21 +47,9 @@ class SpatialRelationshipMetric2D(BaseMetric):
         name (Optional[str], optional): The name of the metric.
     """
 
-    def __init__(
-        self,
-        judge: Union[weave.Model, DETRSpatialRelationShipJudge],
-        iou_threshold: Optional[float] = 0.1,
-        distance_threshold: Optional[float] = 150,
-        name: Optional[str] = "spatial_relationship_score",
-    ) -> None:
-        super().__init__()
-        self.judge = judge
-        self.judge_config = self.judge.model_dump(mode="json")
-        self.iou_threshold = iou_threshold
-        self.distance_threshold = distance_threshold
-        self.name = name
-        self.scores = []
-        self.config = judge.model_dump()
+    judge: weave.Model
+    iou_threshold: float = 0.1
+    distance_threshold: float = 150
 
     @weave.op()
     def compose_judgement(
@@ -187,23 +168,10 @@ class SpatialRelationshipMetric2D(BaseMetric):
                         score = self.iou_threshold / iou
             judgement["score"] = score
 
-        self.scores.append(
-            {
-                **judgement,
-                **{
-                    "judge_annotated_image": wandb.Image(annotated_image),
-                    "judge_config": self.judge_config,
-                },
-            }
-        )
-        return {
-            **judgement,
-            **{"judge_annotated_image": annotated_image},
-            "judge_config": self.judge_config,
-        }
+        return {**judgement, **{"judge_annotated_image": annotated_image}}
 
     @weave.op()
-    def evaluate(
+    def score(
         self,
         prompt: str,
         entity_1: str,
@@ -231,14 +199,3 @@ class SpatialRelationshipMetric2D(BaseMetric):
             prompt, image, entity_1, entity_2, relationship, boxes
         )
         return {self.name: judgement["score"]}
-
-    @weave.op()
-    async def evaluate_async(
-        self,
-        prompt: str,
-        entity_1: str,
-        entity_2: str,
-        relationship: str,
-        model_output: Dict[str, Any],
-    ) -> Dict[str, Union[bool, float, int]]:
-        return self.evaluate(prompt, entity_1, entity_2, relationship, model_output)

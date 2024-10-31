@@ -1,6 +1,6 @@
 # Hemm: Holistic Evaluation of Multi-modal Generative Models
 
-Hemm is a library for performing comprehensive benchmark of text-to-image diffusion models on image quality and prompt comprehension integrated with [Weights & Biases](https://wandb.ai/site) and [Weave](https://wandb.github.io/weave/). 
+Hemm is a library for performing comprehensive benchmark of text-to-image diffusion models on image quality and prompt comprehension integrated with [Weave](https://wandb.github.io/weave/), a lightweight toolkit for tracking and evaluating LLM applications, built by [Weights & Biases](https://wandb.ai/site).
 
 Hemm is highly inspired by the following projects:
 
@@ -39,48 +39,32 @@ First, you need to publish your evaluation dataset to Weave. Check out [this tut
 Once you have a dataset on your Weave project, you can evaluate a text-to-image generation model on the metrics.
 
 ```python
-import wandb
+import asyncio
 import weave
+from hemm.metrics.vqa import MultiModalLLMEvaluationMetric
+from hemm.metrics.vqa.judges.mmllm_judges import OpenAIJudge
+from hemm.models import DiffusersModel
 
-
-from hemm.eval_pipelines import BaseDiffusionModel, EvaluationPipeline
-from hemm.metrics.prompt_alignment import CLIPImageQualityScoreMetric, CLIPScoreMetric
-
-
-# Initialize Weave and WandB
-wandb.init(project="image-quality-leaderboard", job_type="evaluation")
+# Initialize Weave
 weave.init(project_name="image-quality-leaderboard")
 
+# The `DiffusersModel` is a `weave.Model` that uses a
+# `diffusers.DiffusionPipeline` under the hood.
+# You can write your own model `weave.Model` if your
+# model is not diffusers compatible.
+model = DiffusersModel(
+    diffusion_model_name_or_path="stabilityai/stable-diffusion-2-1",
+    image_height=1024,
+    image_width=1024,
+)
 
-# Initialize the diffusion model to be evaluated as a `weave.Model` using `BaseWeaveModel`
-# The `BaseDiffusionModel` class uses a `diffusers.DiffusionPipeline` under the hood.
-# You can write your own model `weave.Model` if your model is not diffusers compatible.
-model = BaseDiffusionModel(diffusion_model_name_or_path="CompVis/stable-diffusion-v1-4")
-
-
-# Add the model to the evaluation pipeline
-evaluation_pipeline = EvaluationPipeline(model=model)
-
-
-# Add PSNR Metric to the evaluation pipeline
-psnr_metric = PSNRMetric(image_size=evaluation_pipeline.image_size)
-evaluation_pipeline.add_metric(psnr_metric)
-
-
-# Add SSIM Metric to the evaluation pipeline
-ssim_metric = SSIMMetric(image_size=evaluation_pipeline.image_size)
-evaluation_pipeline.add_metric(ssim_metric)
-
-
-# Add LPIPS Metric to the evaluation pipeline
-lpips_metric = LPIPSMetric(image_size=evaluation_pipeline.image_size)
-evaluation_pipeline.add_metric(lpips_metric)
-
+# Define the metric
+metric = MultiModalLLMEvaluationMetric(judge=OpenAIJudge())
 
 # Get the Weave dataset reference
-dataset = weave.ref("COCO:v0").get()
-
+dataset=weave.ref("Dataset:v2").get()
 
 # Evaluate!
-evaluation_pipeline(dataset=dataset)
+evaluation = weave.Evaluation(dataset=dataset, scorers=[metric])
+summary = asyncio.run(evaluation.evaluate(model))
 ```

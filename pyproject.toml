@@ -14,23 +14,24 @@ dependencies = [
     "instructor>=1.6.1",
     "jsonlines>=4.0.0",
     "openai>=1.51.2",
+    "opencv-python>=4.10.0.84",
     "sentencepiece>=0.2.0",
     "torcheval>=0.0.7",
     "torchmetrics[multimodal]>=1.4.1,<2.0.0",
     "transformers>=4.45.2",
     "spacy>=3.8.2",
     "wandb>=0.18.3",
-    "weave==0.51.14",
+    "weave==0.51.17",
     "uv>=0.4.22",
     "pip>=24.2",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=8.3.3",
     "isort>=5.13.2",
     "black>=24.10.0",
     "ruff>=0.6.9",
+    "pytest>=8.3.3",
 ]
 
 docs = [

@@ -1,23 +1,11 @@
 from abc import abstractmethod
 from typing import Any, Dict, Union
 
+import weave
 from PIL import Image
 
-from ..base import BaseMetric
 
-
-class BasePromptAlignmentMetric(BaseMetric):
-    """Base class for Prompt Alignment Metrics.
-
-    Args:
-        name (str): Name of the metric.
-    """
-
-    def __init__(self, name: str) -> None:
-        super().__init__()
-        self.scores = []
-        self.name = name
-        self.config = {}
+class BasePromptAlignmentMetric(weave.Scorer):
 
     @abstractmethod
     def compute_metric(
@@ -47,5 +35,4 @@ class BasePromptAlignmentMetric(BaseMetric):
             Dict[str, float]: Metric score.
         """
         score = self.compute_metric(model_output["image"], prompt)
-        self.scores.append(score)
-        return {self.name: score}
+        return {"score": score}
