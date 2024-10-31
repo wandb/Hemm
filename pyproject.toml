@@ -21,7 +21,7 @@ dependencies = [
     "transformers>=4.45.2",
     "spacy>=3.8.2",
     "wandb>=0.18.3",
-    "weave==0.51.17",
+    "weave>=0.51.17",
     "uv>=0.4.22",
     "pip>=24.2",
 ]
