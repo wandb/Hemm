@@ -84,10 +84,10 @@ class OpenAIJudge(weave.Model):
                     adjective = adjective.replace("the ", "")
                     adjective = adjective.replace("a ", "")
                     adjective = adjective.replace("an ", "")
+                    tagged_prompt_parts.append(
+                        TaggedPromptParts(entity=chunk_np, noun=noun, adjective=adjective)
+                    )
                     break
-            tagged_prompt_parts.append(
-                TaggedPromptParts(entity=chunk_np, noun=noun, adjective=adjective)
-            )
         return tagged_prompt_parts
 
     @weave.op()
